@@ -93,7 +93,9 @@ describe("reference app build boundary", () => {
     expect(css).toMatch(/--var-ui-color-background-app:\s*light-dark\(/);
   });
 
-  it("pins TypeStyles ^0.23.1 on widgets, display, editor, and the reference app", () => {
+  // @var-ui/core and @var-ui/react depend on this exact typestyles version. A different copy would
+  // get its own style registry, so var-ui's theme and our styles would never meet.
+  it("pins the same TypeStyles version as var-ui on widgets, display, editor, and the reference app", () => {
     const manifests = [
       "../../../packages/widgets/package.json",
       "../../../packages/display/package.json",
@@ -106,7 +108,7 @@ describe("reference app build boundary", () => {
         devDependencies?: Record<string, string>;
       }>(relative);
       const range = manifest.dependencies?.typestyles ?? manifest.devDependencies?.typestyles;
-      expect(range, relative).toBe("^0.23.1");
+      expect(range, relative).toBe("0.32.1");
     }
   });
 

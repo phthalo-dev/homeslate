@@ -40,10 +40,10 @@
     "@homeslate/schema": "workspace:*",
     "@internationalized/date": "^3.12.4",
     "@tabler/icons-react": "^3.35.0",
-    "@var-ui/core": "^0.1.0",
-    "@var-ui/react": "^0.1.0",
+    "@var-ui/core": "^0.2.1",
+    "@var-ui/react": "^0.2.1",
     "dayjs": "^1.11.19",
-    "typestyles": "^0.23.1",
+    "typestyles": "0.32.1",
     "uuid": "^13.0.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.9"

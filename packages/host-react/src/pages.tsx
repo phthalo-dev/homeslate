@@ -203,7 +203,8 @@ export function DisplayListPage() {
                 Import
               </Button>
               <Button
-                intent="primary"
+                tone="accent"
+                appearance="filled"
                 onPress={() => {
                   setPickerError(null);
                   setPickerOpen(true);
@@ -596,7 +597,8 @@ export function KioskPage() {
               onComplete={(value) => setPasscode(value)}
             />
             <Button
-              intent="primary"
+              tone="accent"
+              appearance="filled"
               size="sm"
               isDisabled={pinValue.length !== 4}
               onPress={() => setPasscode(pinValue)}

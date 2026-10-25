@@ -10,7 +10,7 @@ import {
   Text,
   TextField,
 } from "@var-ui/react";
-import { useDebouncedValue } from "@var-ui/react";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { IconAlertTriangle, IconMapPin, IconRefresh } from "@tabler/icons-react";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useWeatherAlerts } from "../hooks/useWeatherAlerts";

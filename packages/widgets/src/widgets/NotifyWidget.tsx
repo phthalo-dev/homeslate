@@ -192,7 +192,13 @@ export function NotifyWidget({ widget, isEditing }: WidgetProps<NotifyConfig>) {
             }}
           />
           <div className={classes.row}>
-            <Button intent="primary" size="sm" onPress={send} isDisabled={!canSend || pending}>
+            <Button
+              tone="accent"
+              appearance="filled"
+              size="sm"
+              onPress={send}
+              isDisabled={!canSend || pending}
+            >
               <IconSend size={14} />
               {sending ? "Sending…" : "Send"}
             </Button>

@@ -53,7 +53,8 @@ export function TemplatePickerChoices(props: {
               </HStack>
               <Button
                 size="sm"
-                intent={choice.id === "blank" ? "primary" : undefined}
+                tone={choice.id === "blank" ? "accent" : undefined}
+                appearance={choice.id === "blank" ? "filled" : undefined}
                 isDisabled={isPending}
                 aria-label={`Create ${choice.name} display`}
                 onPress={() => onCreate(documentForNewDisplay(choice.id))}

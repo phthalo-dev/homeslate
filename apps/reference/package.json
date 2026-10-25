@@ -24,9 +24,9 @@
     "@hono/node-server": "1.19.17",
     "@internationalized/date": "^3.12.2",
     "@tabler/icons-react": "^3.35.0",
-    "@var-ui/core": "^0.1.0",
-    "@var-ui/icons": "^0.1.0",
-    "@var-ui/react": "^0.1.0",
+    "@var-ui/core": "^0.2.1",
+    "@var-ui/icons": "^0.2.1",
+    "@var-ui/react": "^0.2.1",
     "dayjs": "^1.11.19",
     "hono": "4.13.5",
     "react": "^19.2.0",
@@ -35,10 +35,10 @@
     "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
-    "@typestyles/vite": "^0.4.4",
+    "@typestyles/vite": "^0.5.3",
     "@vitejs/plugin-react": "^5.1.1",
     "tsx": "4.23.13",
-    "typestyles": "^0.23.1",
+    "typestyles": "0.32.1",
     "vite": "catalog:",
     "vite-plugin-pwa": "^2.0.0",
     "vite-plus": "catalog:"

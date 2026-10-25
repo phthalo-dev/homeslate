@@ -25,7 +25,7 @@ export function RouteErrorFallback({ productName, onReload }: RouteErrorFallback
         </Text>
         <Heading level={1}>Something went wrong</Heading>
         <Text>This page hit an error. Reload to try again.</Text>
-        <Button intent="primary" onPress={onReload}>
+        <Button tone="accent" appearance="filled" onPress={onReload}>
           Reload
         </Button>
         <a href="/">Back to displays</a>

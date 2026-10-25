@@ -1,11 +1,10 @@
 import { useMemo, useEffect, useRef, useState, useCallback, type JSX } from "react";
 import GridLayout from "react-grid-layout/legacy";
 import { v4 as uuidv4 } from "uuid";
-import { getWidgetByType, getWidgetTypes } from "@homeslate/widgets";
+import { getWidgetByType, getWidgetTypes, useElementSize } from "@homeslate/widgets";
 import type { StickyNote, View } from "@homeslate/schema";
 import { WidgetWrapper, type WidgetRegistryApi } from "./WidgetWrapper";
 import { StickyNote as StickyNoteWidget } from "./StickyNote";
-import { useElementSize } from "@var-ui/react";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import * as classes from "./DocumentCanvas.styles";

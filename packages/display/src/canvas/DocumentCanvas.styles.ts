@@ -97,50 +97,50 @@ export const fadeIn = styles.class("documentcanvas-fadeIn", {
   animation: `${viewFadeIn} 0.35s ease`,
 });
 
-global.style(".react-grid-item.react-grid-placeholder", {
+global.rule(".react-grid-item.react-grid-placeholder", {
   background:
     "color-mix(in srgb, var(--var-ui-color-tone-accent-foreground) 20%, transparent) !important",
   border:
     "2px dashed color-mix(in srgb, var(--var-ui-color-tone-accent-foreground) 50%, transparent) !important",
   borderRadius: "var(--var-ui-radius-md)",
 });
-global.style(".react-grid-item.resizing", {
+global.rule(".react-grid-item.resizing", {
   zIndex: 100,
   opacity: 0.9,
 });
-global.style(".react-resizable-handle", {
+global.rule(".react-resizable-handle", {
   backgroundImage: "none !important",
   opacity: 0,
   transition: "opacity 0.2s ease",
 });
-global.style(".react-grid-item:hover .react-resizable-handle", {
+global.rule(".react-grid-item:hover .react-resizable-handle", {
   opacity: 1,
 });
-global.style(
+global.rule(
   ".react-resizable-handle-se, .react-resizable-handle-sw, .react-resizable-handle-ne, .react-resizable-handle-nw",
   { width: "20px !important", height: "20px !important" },
 );
-global.style(".react-resizable-handle-se", { bottom: 0, right: 0, cursor: "se-resize" });
-global.style(".react-resizable-handle-sw", { bottom: 0, left: 0, cursor: "sw-resize" });
-global.style(".react-resizable-handle-ne", { top: 0, right: 0, cursor: "ne-resize" });
-global.style(".react-resizable-handle-nw", { top: 0, left: 0, cursor: "nw-resize" });
-global.style(".react-resizable-handle-e, .react-resizable-handle-w", {
+global.rule(".react-resizable-handle-se", { bottom: 0, right: 0, cursor: "se-resize" });
+global.rule(".react-resizable-handle-sw", { bottom: 0, left: 0, cursor: "sw-resize" });
+global.rule(".react-resizable-handle-ne", { top: 0, right: 0, cursor: "ne-resize" });
+global.rule(".react-resizable-handle-nw", { top: 0, left: 0, cursor: "nw-resize" });
+global.rule(".react-resizable-handle-e, .react-resizable-handle-w", {
   width: "10px !important",
   height: "50% !important",
   top: "25% !important",
   cursor: "ew-resize",
 });
-global.style(".react-resizable-handle-e", { right: 0 });
-global.style(".react-resizable-handle-w", { left: 0 });
-global.style(".react-resizable-handle-n, .react-resizable-handle-s", {
+global.rule(".react-resizable-handle-e", { right: 0 });
+global.rule(".react-resizable-handle-w", { left: 0 });
+global.rule(".react-resizable-handle-n, .react-resizable-handle-s", {
   height: "10px !important",
   width: "50% !important",
   left: "25% !important",
   cursor: "ns-resize",
 });
-global.style(".react-resizable-handle-n", { top: 0 });
-global.style(".react-resizable-handle-s", { bottom: 0 });
-global.style(
+global.rule(".react-resizable-handle-n", { top: 0 });
+global.rule(".react-resizable-handle-s", { bottom: 0 });
+global.rule(
   ".react-resizable-handle-se::after, .react-resizable-handle-sw::after, .react-resizable-handle-ne::after, .react-resizable-handle-nw::after",
   {
     content: '""',
@@ -152,11 +152,11 @@ global.style(
     transition: "all 0.2s ease",
   },
 );
-global.style(".react-resizable-handle-se::after", { right: 4, bottom: 4 });
-global.style(".react-resizable-handle-sw::after", { left: 4, bottom: 4 });
-global.style(".react-resizable-handle-ne::after", { right: 4, top: 4 });
-global.style(".react-resizable-handle-nw::after", { left: 4, top: 4 });
-global.style(".react-resizable-handle-e::after, .react-resizable-handle-w::after", {
+global.rule(".react-resizable-handle-se::after", { right: 4, bottom: 4 });
+global.rule(".react-resizable-handle-sw::after", { left: 4, bottom: 4 });
+global.rule(".react-resizable-handle-ne::after", { right: 4, top: 4 });
+global.rule(".react-resizable-handle-nw::after", { left: 4, top: 4 });
+global.rule(".react-resizable-handle-e::after, .react-resizable-handle-w::after", {
   content: '""',
   position: "absolute",
   width: 4,
@@ -167,9 +167,9 @@ global.style(".react-resizable-handle-e::after, .react-resizable-handle-w::after
   background: "color-mix(in srgb, var(--var-ui-color-tone-accent-foreground) 60%, transparent)",
   transition: "all 0.2s ease",
 });
-global.style(".react-resizable-handle-e::after", { right: 2 });
-global.style(".react-resizable-handle-w::after", { left: 2 });
-global.style(".react-resizable-handle-n::after, .react-resizable-handle-s::after", {
+global.rule(".react-resizable-handle-e::after", { right: 2 });
+global.rule(".react-resizable-handle-w::after", { left: 2 });
+global.rule(".react-resizable-handle-n::after, .react-resizable-handle-s::after", {
   content: '""',
   position: "absolute",
   height: 4,
@@ -180,15 +180,15 @@ global.style(".react-resizable-handle-n::after, .react-resizable-handle-s::after
   background: "color-mix(in srgb, var(--var-ui-color-tone-accent-foreground) 60%, transparent)",
   transition: "all 0.2s ease",
 });
-global.style(".react-resizable-handle-n::after", { top: 2 });
-global.style(".react-resizable-handle-s::after", { bottom: 2 });
-global.style(".react-resizable-handle:hover::after", {
+global.rule(".react-resizable-handle-n::after", { top: 2 });
+global.rule(".react-resizable-handle-s::after", { bottom: 2 });
+global.rule(".react-resizable-handle:hover::after", {
   background: "var(--var-ui-color-tone-accent-foreground)",
   transform: "scale(1.2)",
 });
-global.style(".react-resizable-handle-e:hover::after, .react-resizable-handle-w:hover::after", {
+global.rule(".react-resizable-handle-e:hover::after, .react-resizable-handle-w:hover::after", {
   transform: "translateY(-50%) scale(1.2)",
 });
-global.style(".react-resizable-handle-n:hover::after, .react-resizable-handle-s:hover::after", {
+global.rule(".react-resizable-handle-n:hover::after, .react-resizable-handle-s:hover::after", {
   transform: "translateX(-50%) scale(1.2)",
 });

@@ -106,7 +106,13 @@ export function ViewsPanel(props: {
               if (event.key === "Enter") addBlankView();
             }}
           />
-          <Button intent="primary" size="sm" isDisabled={!newName.trim()} onPress={addBlankView}>
+          <Button
+            tone="accent"
+            appearance="filled"
+            size="sm"
+            isDisabled={!newName.trim()}
+            onPress={addBlankView}
+          >
             <IconPlus size={14} />
             New view
           </Button>

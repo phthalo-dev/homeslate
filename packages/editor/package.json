@@ -32,9 +32,9 @@
     "@homeslate/schema": "workspace:*",
     "@homeslate/widgets": "workspace:*",
     "@tabler/icons-react": "^3.35.0",
-    "@var-ui/core": "^0.1.0",
-    "@var-ui/react": "^0.1.0",
-    "typestyles": "^0.23.1",
+    "@var-ui/core": "^0.2.1",
+    "@var-ui/react": "^0.2.1",
+    "typestyles": "0.32.1",
     "uuid": "^13.0.0"
   },
   "peerDependencies": {

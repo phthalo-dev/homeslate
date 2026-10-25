@@ -1,16 +1,10 @@
 import { useEffect, useMemo, type CSSProperties } from "react";
-import {
-  createDesignTheme,
-  disposeDesignTheme,
-  type DesignTheme,
-  type DesignThemeColorMode,
-  type DesignThemeTokenValues,
-  type ExtendTokenValues,
-} from "@var-ui/core";
+import { defaultTheme, disposeDesignTheme, registerDefaultTheme } from "@var-ui/core";
 import type { ColorMode, ThemeDocument } from "@homeslate/schema";
+import { toDesignThemeTokens } from "./themeTokens";
 
-/** What `createDesignTheme` returns for our token documents (extend values are user-defined). */
-export type DisplayTheme = DesignTheme<Record<string, ExtendTokenValues>>;
+/** What a theme document compiles to (a child of var-ui's default theme). */
+export type DisplayTheme = ReturnType<typeof defaultTheme.override>;
 
 export function displayThemeName(docId: string): string {
   return `homeslate-${docId}`;
@@ -24,12 +18,12 @@ export function createDisplayTheme(
   doc: ThemeDocument,
   name = displayThemeName(doc.id),
 ): DisplayTheme {
-  return createDesignTheme({
+  // Themes are children of the default theme, so it has to be registered first (idempotent).
+  registerDefaultTheme();
+  return defaultTheme.override({
     name,
-    tokens: doc.tokens as DesignThemeTokenValues | undefined,
-    colorMode: doc.colorMode as DesignThemeColorMode | undefined,
-    extend: doc.extend as Record<string, ExtendTokenValues> | undefined,
-  });
+    tokens: toDesignThemeTokens(doc),
+  } as Parameters<typeof defaultTheme.override>[0]);
 }
 
 function readModeAwareString(value: unknown, mode: ColorMode): string | undefined {

@@ -30,7 +30,7 @@
     "@homeslate/schema": "workspace:*",
     "@homeslate/widgets": "workspace:*",
     "@tabler/icons-react": "^3.35.0",
-    "@var-ui/react": "^0.1.0",
+    "@var-ui/react": "^0.2.1",
     "react-aria-components": "^1.19.0",
     "react-router-dom": "^7.13.1",
     "uuid": "^13.0.0"

@@ -98,18 +98,21 @@ export function ClockWidget({ widget }: WidgetProps<ClockConfig>) {
   const align = alignMap[textAlign];
 
   return (
-    <div ref={containerRef} className={clock({ transparent: transparentBackground }).root}>
+    <div
+      ref={containerRef}
+      className={clock({ transparent: transparentBackground }).root.className}
+    >
       <Stack
         gap="none"
         align={align}
         justify="center"
         style={{ textAlign, width: "100%", height: "100%" }}
       >
-        <Text className={clock().time} style={{ fontSize: `${fontSize}px` }}>
+        <Text className={clock().time.className} style={{ fontSize: `${fontSize}px` }}>
           {formatTime()}
         </Text>
         {showDate && (
-          <Text className={clock().date} style={{ fontSize: `${dateSize}px` }}>
+          <Text className={clock().date.className} style={{ fontSize: `${dateSize}px` }}>
             {formatDate()}
           </Text>
         )}

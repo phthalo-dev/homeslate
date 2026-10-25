@@ -1,4 +1,4 @@
-import "@var-ui/core/base-styles";
+import "@var-ui/core/styles";
 import "@var-ui/core/register-default-theme";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

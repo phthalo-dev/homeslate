@@ -204,7 +204,7 @@ export function DisplaySettingsPanel(props: {
           {passcodeEnabled && (
             <Button
               appearance="ghost"
-              intent="danger"
+              tone="danger"
               size="sm"
               isPending={pinSaving}
               onPress={() => void savePin(null)}
