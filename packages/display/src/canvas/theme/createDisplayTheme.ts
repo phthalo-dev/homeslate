@@ -6,9 +6,6 @@ import { toDesignThemeTokens } from "./themeTokens";
 /** What a theme document compiles to (a child of var-ui's default theme). */
 export type DisplayTheme = ReturnType<typeof defaultTheme.override>;
 
-/** What `createDesignTheme` returns for our token documents (extend values are user-defined). */
-export type DisplayTheme = DesignTheme<Record<string, ExtendTokenValues>>;
-
 export function displayThemeName(docId: string): string {
   return `homeslate-${docId}`;
 }
