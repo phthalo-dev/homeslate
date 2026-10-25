@@ -1,6 +1,6 @@
 {
   "name": "@homeslate/agent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "LAN agent that connects a home network's Home Assistant to a hosted homeslate relay over an outbound WebSocket.",
   "license": "MIT",
   "repository": {
