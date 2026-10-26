@@ -1,5 +1,17 @@
 # @homeslate/widgets
 
+## 1.3.0
+
+### Minor Changes
+
+- [#47](https://github.com/phthalo-dev/homeslate/pull/47) [`f9005fc`](https://github.com/phthalo-dev/homeslate/commit/f9005fc1d1cbb82c1fd2b59814a0e901d4a0abf0) Thanks [@dbanksdesign](https://github.com/dbanksdesign)! - Error messages now render in the danger color: `<Text tone="danger">` was ignored by var-ui, so they appeared as plain text. `@homeslate/widgets` exports an `ErrorText` component for this (until var-ui adds a `danger` tone). The "remove" button in the entity picker now shows its icon. Type errors across the packages are fixed and TypeScript errors now fail CI.
+
+- [#48](https://github.com/phthalo-dev/homeslate/pull/48) [`07182e9`](https://github.com/phthalo-dev/homeslate/commit/07182e9823ae7ca9febd0eefca8f47f423dce80a) Thanks [@dbanksdesign](https://github.com/dbanksdesign)! - Move to `@var-ui/*` 0.2 and `typestyles` 0.32. Apps that use these packages need the same versions (`typestyles` must be exactly 0.32.1, the version var-ui depends on, so there is one style registry).
+  
+  - Buttons use `tone` + `appearance` instead of the removed `intent`.
+  - Themes are built as children of var-ui's default theme: `colorMode` and `extend` in a theme document are converted to `{ light, dark }` token leaves.
+  - `useDebouncedValue` and `useElementSize`, which var-ui dropped, are now exported from `@homeslate/widgets`.
+
 ## 1.2.0
 
 ### Minor Changes

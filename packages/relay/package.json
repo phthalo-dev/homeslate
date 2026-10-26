@@ -1,6 +1,6 @@
 {
   "name": "@homeslate/relay",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Runtime-agnostic relay that forwards homeslate API Home Assistant calls to connected LAN agents.",
   "license": "MIT",
   "repository": {
