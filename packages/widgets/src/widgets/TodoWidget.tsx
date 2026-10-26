@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import {
   Button,
+  Checkbox,
   HStack,
   IconButton,
   SegmentedControl,
@@ -12,7 +13,7 @@ import {
   Text,
   TextField,
 } from "@var-ui/react";
-import { IconCheck, IconCheckbox, IconPlus, IconRefresh, IconX } from "@tabler/icons-react";
+import { IconCheckbox, IconPlus, IconRefresh, IconX } from "@tabler/icons-react";
 import { v4 as uuidv4 } from "uuid";
 import type { WidgetProps, WidgetConfig } from "../types";
 import { useOverlayPortalContainer } from "../overlayPortal";
@@ -95,19 +96,22 @@ function TodoRows({
     <div className={`${classes.container} ${transparentBackground ? classes.transparent : ""}`}>
       <Stack gap="xs" className={classes.list}>
         {displayRows.map((row) => (
-          <div key={row.id} className={classes.itemRow}>
-            <button
-              className={`${classes.item} ${row.checked ? classes.itemChecked : ""}`}
-              onClick={() => onToggle(row.id)}
-              disabled={disabled}
-            >
-              <span className={`${classes.checkbox} ${row.checked ? classes.checkboxChecked : ""}`}>
-                {row.checked && <IconCheck size={11} strokeWidth={3} />}
-              </span>
-              <Text className={classes.itemText} size="sm">
-                {row.text}
-              </Text>
-            </button>
+          <div
+            key={row.id}
+            className={`${classes.itemRow} ${row.checked ? classes.itemChecked : ""}`}
+          >
+            <div className={classes.item}>
+              <Checkbox
+                isSelected={row.checked}
+                isDisabled={disabled}
+                onChange={() => onToggle(row.id)}
+                aria-label={row.text}
+              >
+                <Text className={classes.itemText} size="sm">
+                  {row.text}
+                </Text>
+              </Checkbox>
+            </div>
             <IconButton
               name="close"
               icon={<IconX size={14} />}

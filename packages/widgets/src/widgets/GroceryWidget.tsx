@@ -1,5 +1,15 @@
-import { Button, HStack, IconButton, Select, Stack, Switch, Text, TextField } from "@var-ui/react";
-import { IconCheck, IconPlus, IconRefresh, IconTrash } from "@tabler/icons-react";
+import {
+  Button,
+  Checkbox,
+  HStack,
+  IconButton,
+  Select,
+  Stack,
+  Switch,
+  Text,
+  TextField,
+} from "@var-ui/react";
+import { IconPlus, IconRefresh, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { WidgetConfig, WidgetProps } from "../types";
@@ -83,19 +93,20 @@ function LocalGroceryList({ widget, isEditing, onConfigChange }: WidgetProps<Gro
             return (
               <div key={item.id}>
                 {showAisle && <div className={classes.aisle}>{aisle}</div>}
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <button
-                    type="button"
-                    className={`${classes.row} ${item.checked ? classes.rowDone : ""}`}
-                    onClick={() => toggle(item.id)}
+                <HStack
+                  align="center"
+                  gap="xs"
+                  className={`${classes.row} ${item.checked ? classes.rowDone : ""}`}
+                >
+                  <Checkbox
+                    isSelected={item.checked}
+                    onChange={() => toggle(item.id)}
+                    aria-label={item.text}
                   >
-                    <span
-                      className={`${classes.checkbox} ${item.checked ? classes.checkboxOn : ""}`}
-                    >
-                      {item.checked && <IconCheck size={12} stroke={3} />}
-                    </span>
-                    <span className={classes.label}>{item.text}</span>
-                  </button>
+                    <Text size="sm" className={classes.label}>
+                      {item.text}
+                    </Text>
+                  </Checkbox>
                   <IconButton
                     name="close"
                     icon={<IconTrash size={14} />}
@@ -108,7 +119,7 @@ function LocalGroceryList({ widget, isEditing, onConfigChange }: WidgetProps<Gro
                       }
                     }}
                   />
-                </div>
+                </HStack>
               </div>
             );
           })}
@@ -231,17 +242,21 @@ function HomeAssistantGroceryList({
           {visible.map((item) => {
             const checked = item.status === "completed";
             return (
-              <div key={item.uid} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <button
-                  type="button"
-                  className={`${classes.row} ${checked ? classes.rowDone : ""}`}
-                  onClick={() => void setCompleted(item.uid, !checked)}
+              <HStack
+                key={item.uid}
+                align="center"
+                gap="xs"
+                className={`${classes.row} ${checked ? classes.rowDone : ""}`}
+              >
+                <Checkbox
+                  isSelected={checked}
+                  onChange={() => void setCompleted(item.uid, !checked)}
+                  aria-label={item.summary}
                 >
-                  <span className={`${classes.checkbox} ${checked ? classes.checkboxOn : ""}`}>
-                    {checked && <IconCheck size={12} stroke={3} />}
-                  </span>
-                  <span className={classes.label}>{item.summary}</span>
-                </button>
+                  <Text size="sm" className={classes.label}>
+                    {item.summary}
+                  </Text>
+                </Checkbox>
                 <IconButton
                   name="close"
                   icon={<IconTrash size={14} />}
@@ -254,7 +269,7 @@ function HomeAssistantGroceryList({
                     }
                   }}
                 />
-              </div>
+              </HStack>
             );
           })}
         </div>

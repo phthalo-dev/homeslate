@@ -5,9 +5,11 @@ import {
   Spinner,
   Button,
   Surface,
+  HStack,
   MultiSelector,
   NumberInput,
   Link,
+  Switch,
 } from "@var-ui/react";
 import { IconNews, IconRefresh, IconExternalLink } from "@tabler/icons-react";
 import type { WidgetProps, WidgetConfig } from "../types";
@@ -176,27 +178,22 @@ export function NewsWidgetSettings({ widget, onConfigChange }: WidgetProps<NewsC
         onChange={(value) => onConfigChange({ maxItems: Number(value) || 10 })}
       />
 
-      <div>
-        <label className={classes.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={showSource}
-            onChange={(e) => onConfigChange({ showSource: e.target.checked })}
-          />
-          <Text size="sm">Show source name</Text>
-        </label>
-      </div>
-
-      <div>
-        <label className={classes.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={showDescription}
-            onChange={(e) => onConfigChange({ showDescription: e.target.checked })}
-          />
-          <Text size="sm">Show article description</Text>
-        </label>
-      </div>
+      <HStack justify="between" align="center">
+        <Text size="sm">Show source name</Text>
+        <Switch
+          aria-label="Show source name"
+          isSelected={showSource}
+          onChange={(value) => onConfigChange({ showSource: value })}
+        />
+      </HStack>
+      <HStack justify="between" align="center">
+        <Text size="sm">Show article description</Text>
+        <Switch
+          aria-label="Show article description"
+          isSelected={showDescription}
+          onChange={(value) => onConfigChange({ showDescription: value })}
+        />
+      </HStack>
     </Stack>
   );
 }

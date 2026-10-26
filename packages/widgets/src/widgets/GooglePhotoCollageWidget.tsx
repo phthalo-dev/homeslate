@@ -6,6 +6,7 @@ import {
   HStack,
   Spinner,
   Alert,
+  FileInput,
   Link,
   NumberInput,
   ProgressBar,
@@ -422,7 +423,6 @@ export function GooglePhotoCollageWidgetSettings({
   // Upload tab state
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Google Photos tab
   const { isAuthenticated, isLoading: authLoading, signIn } = useGoogleRuntime();
@@ -492,7 +492,7 @@ export function GooglePhotoCollageWidgetSettings({
   };
 
   // Handle device file upload
-  const handleFileUpload = async (files: FileList | null) => {
+  const handleFileUpload = async (files: File[] | null) => {
     if (!files || files.length === 0) return;
     setUploadError(null);
     setUploading(true);
@@ -521,7 +521,6 @@ export function GooglePhotoCollageWidgetSettings({
       onConfigChange({ photos: [...photos, ...newPhotos] });
     }
     setUploading(false);
-    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
@@ -582,30 +581,24 @@ export function GooglePhotoCollageWidgetSettings({
             label: "Device",
             content: (
               <Stack gap="xs">
-                <input
-                  ref={fileInputRef}
-                  type="file"
+                <FileInput
+                  label="Choose photos from this device"
+                  description="Supports JPEG, PNG, GIF, WebP. Max 20 MB per photo."
                   accept="image/*"
                   multiple
-                  style={{ display: "none" }}
-                  onChange={(e) => void handleFileUpload(e.currentTarget.files)}
+                  maxSize={20 * 1024 * 1024}
+                  value={null}
+                  isDisabled={uploading}
+                  onChange={(files) => {
+                    if (!files) return;
+                    void handleFileUpload(Array.isArray(files) ? files : [files]);
+                  }}
                 />
-                <Button
-                  onPress={() => fileInputRef.current?.click()}
-                  isPending={uploading}
-                  size="sm"
-                  appearance="outline"
-                >
-                  {uploading ? "Uploading..." : "Choose Photos from Device"}
-                </Button>
                 {uploadError && (
                   <Alert variant="danger" appearance="subtle">
                     <Text size="sm">{uploadError}</Text>
                   </Alert>
                 )}
-                <Text size="sm" tone="secondary">
-                  Supports JPEG, PNG, GIF, WebP. Max 20 MB per photo.
-                </Text>
               </Stack>
             ),
           },

@@ -1,7 +1,8 @@
-import { Button, IconButton, Stack, Text, TextField } from "@var-ui/react";
+import { Button, ColorInput, HStack, IconButton, Stack, Text, TextField } from "@var-ui/react";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { v4 as uuidv4 } from "uuid";
 import type { HouseholdMember } from "@homeslate/schema";
+import { useOverlayPortalContainer } from "../overlayPortal";
 import * as classes from "./HouseholdEditor.styles";
 
 export const HOUSEHOLD_MEMBER_COLORS = [
@@ -38,6 +39,7 @@ export function HouseholdEditor({
   onChange: (members: HouseholdMember[]) => void;
   readOnly?: boolean;
 }) {
+  const portalContainer = useOverlayPortalContainer();
   const update = (id: string, patch: Partial<HouseholdMember>) => {
     onChange(members.map((member) => (member.id === id ? { ...member, ...patch } : member)));
   };
@@ -50,7 +52,7 @@ export function HouseholdEditor({
         </Text>
       )}
       {members.map((member) => (
-        <div key={member.id} className={classes.row}>
+        <HStack key={member.id} align="center" gap="sm" className={classes.row}>
           <span className={classes.disc} style={{ background: member.color }} aria-hidden>
             {member.name.trim().charAt(0).toUpperCase() || "?"}
           </span>
@@ -64,12 +66,14 @@ export function HouseholdEditor({
           />
           {!readOnly && (
             <>
-              <input
-                type="color"
-                className={classes.swatch}
+              <ColorInput
+                label={`Color for ${member.name}`}
                 value={member.color}
-                aria-label={`Color for ${member.name}`}
-                onChange={(event) => update(member.id, { color: event.currentTarget.value })}
+                onChange={(value) => update(member.id, { color: value })}
+                swatches={[...HOUSEHOLD_MEMBER_COLORS]}
+                size="sm"
+                portalContainer={portalContainer}
+                className={classes.colorField}
               />
               <IconButton
                 name="close"
@@ -81,7 +85,7 @@ export function HouseholdEditor({
               />
             </>
           )}
-        </div>
+        </HStack>
       ))}
       {!readOnly && members.length < MAX_HOUSEHOLD_MEMBERS && (
         <Button

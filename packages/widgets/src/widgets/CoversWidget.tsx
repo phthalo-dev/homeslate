@@ -1,4 +1,4 @@
-import { Button, HStack, Stack, Switch, Text } from "@var-ui/react";
+import { Button, HStack, Slider, Stack, Switch, Text } from "@var-ui/react";
 import {
   IconCarGarage,
   IconChevronDown,
@@ -236,28 +236,29 @@ export function CoversWidget({ widget, isEditing }: WidgetProps<CoversConfig>) {
               </div>
 
               {showSlider && cover.available && (
-                <div className={classes.sliderRow}>
-                  <input
-                    type="range"
+                <HStack gap="sm" align="center" className={classes.sliderRow}>
+                  <Slider
                     className={classes.range}
-                    min={0}
-                    max={100}
+                    aria-label={`Position for ${cover.name}`}
+                    minValue={0}
+                    maxValue={100}
                     step={1}
                     value={sliderValue}
-                    aria-label={`Position for ${cover.name}`}
-                    onChange={(event) =>
-                      setDrafts((prev) => ({
-                        ...prev,
-                        [entityId]: Number(event.target.value),
-                      }))
-                    }
-                    onPointerUp={() => setPosition(cover, sliderValue)}
-                    onKeyUp={() => setPosition(cover, sliderValue)}
+                    showOutput={false}
+                    isDisabled={pending}
+                    onChange={(value) => {
+                      const next = typeof value === "number" ? value : (value[0] ?? sliderValue);
+                      setDrafts((prev) => ({ ...prev, [entityId]: next }));
+                    }}
+                    onChangeEnd={(value) => {
+                      const next = typeof value === "number" ? value : (value[0] ?? sliderValue);
+                      setPosition(cover, next);
+                    }}
                   />
                   <Text size="xs" tone="secondary">
                     {Math.round(sliderValue)}%
                   </Text>
-                </div>
+                </HStack>
               )}
             </div>
           );

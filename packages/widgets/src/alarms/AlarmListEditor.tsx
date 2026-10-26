@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import {
+  Chip,
   HStack,
   IconButton,
   Select,
@@ -198,16 +199,14 @@ export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmLis
                 {DAY_LABELS.map((label, idx) => {
                   const active = alarm.days.includes(idx);
                   return (
-                    <button
+                    <Chip
                       key={idx}
-                      type="button"
-                      className={`${classes.dayChip} ${active ? classes.dayChipActive : ""}`}
-                      onClick={() => toggleDay(alarm.id, idx)}
-                      aria-pressed={active}
+                      isSelected={active}
+                      onChange={() => toggleDay(alarm.id, idx)}
                       aria-label={DAY_NAMES_SHORT[idx]}
                     >
                       {label}
-                    </button>
+                    </Chip>
                   );
                 })}
               </HStack>

@@ -1,4 +1,14 @@
-import { Button, HStack, Select, Spinner, Stack, Switch, Text } from "@var-ui/react";
+import {
+  Button,
+  HStack,
+  Select,
+  Slider,
+  Spinner,
+  Stack,
+  Switch,
+  Text,
+  ToggleButton,
+} from "@var-ui/react";
 import { IconPower, IconRefresh, IconWind } from "@tabler/icons-react";
 import { useState } from "react";
 import type { WidgetConfig, WidgetProps } from "../types";
@@ -149,21 +159,20 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
       </div>
 
       <div className={classes.powerRow}>
-        <button
-          type="button"
+        <ToggleButton
           className={`${classes.powerButton} ${fan.isOn ? classes.powerButtonOn : ""}`}
-          onClick={() =>
+          isSelected={fan.isOn}
+          isDisabled={pending}
+          aria-label={fan.isOn ? "Turn off" : "Turn on"}
+          onChange={() =>
             void call(fan.isOn ? "turn_off" : "turn_on", {}, (current) => ({
               ...current,
               isOn: !current.isOn,
             }))
           }
-          disabled={pending}
-          aria-label={fan.isOn ? "Turn off" : "Turn on"}
-          aria-pressed={fan.isOn}
         >
           <IconPower size={22} />
-        </button>
+        </ToggleButton>
         <span className={classes.state}>
           <Text size="sm" tone="secondary">
             {fanStateLabel(fan)}
@@ -177,24 +186,25 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
       </div>
 
       {showSpeed && (
-        <div className={classes.speedRow}>
-          <input
-            type="range"
+        <HStack gap="sm" align="center" className={classes.speedRow}>
+          <Slider
             className={classes.range}
-            min={1}
-            max={100}
+            aria-label="Fan speed"
+            minValue={1}
+            maxValue={100}
             step={1}
             value={speed}
-            aria-label="Fan speed"
-            onChange={(event) => setDraft(Number(event.target.value))}
-            onPointerUp={() => void commitSpeed(speed)}
-            onKeyUp={() => void commitSpeed(speed)}
-            disabled={pending}
+            showOutput={false}
+            isDisabled={pending}
+            onChange={(value) => setDraft(typeof value === "number" ? value : (value[0] ?? speed))}
+            onChangeEnd={(value) =>
+              void commitSpeed(typeof value === "number" ? value : (value[0] ?? speed))
+            }
           />
           <Text size="xs" tone="secondary">
             {speed}%
           </Text>
-        </div>
+        </HStack>
       )}
 
       {showPresetControl && (
