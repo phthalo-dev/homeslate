@@ -1,6 +1,6 @@
 {
   "name": "@homeslate/host-react",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "React web shell for homeslate hosts: routed app, Google runtime, and debounced persist.",
   "license": "MIT",
   "repository": {

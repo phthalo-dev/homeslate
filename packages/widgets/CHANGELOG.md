@@ -1,5 +1,11 @@
 # @homeslate/widgets
 
+## 1.3.1
+
+### Patch Changes
+
+- [#50](https://github.com/phthalo-dev/homeslate/pull/50) [`4f692a9`](https://github.com/phthalo-dev/homeslate/commit/4f692a9d5cd7e34e7ecc0d873353c35176c6f810) Thanks [@dbanksdesign](https://github.com/dbanksdesign)! - Render widget controls with VarUI instead of native HTML. Sliders, switches, checkboxes, scene buttons, alarm day chips, color picking, and photo uploads follow the design system.
+
 ## 1.3.0
 
 ### Minor Changes
