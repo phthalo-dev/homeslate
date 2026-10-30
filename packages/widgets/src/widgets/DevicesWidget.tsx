@@ -1,6 +1,19 @@
-import { Button, HStack, NumberInput, Stack, Switch, Text } from "@var-ui/react";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  HStack,
+  NumberInput,
+  SimpleGrid,
+  Slider,
+  Spinner,
+  Stack,
+  Switch,
+  Text,
+} from "@var-ui/react";
 import { IconBulb, IconRefresh } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntityList, useHomeAssistantService } from "../hooks/useHomeAssistant";
@@ -37,6 +50,24 @@ const DOMAIN_LABELS: Record<DeviceDomain, string> = {
 
 type DeviceOverrideMap = Record<string, DeviceOverride>;
 
+function gridColumns(columns: number): 1 | 2 | 3 | 4 {
+  const rounded = Math.min(4, Math.max(1, Math.round(columns)));
+  if (rounded === 1 || rounded === 3 || rounded === 4) return rounded;
+  return 2;
+}
+
+function sliderNumber(value: number | number[]): number {
+  return typeof value === "number" ? value : (value[0] ?? 1);
+}
+
+function DeviceShell({ transparent, children }: { transparent: boolean; children: ReactNode }) {
+  return (
+    <Stack gap="sm" className={`${classes.container} ${transparent ? classes.transparent : ""}`}>
+      {children}
+    </Stack>
+  );
+}
+
 export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>) {
   const {
     entityIds = [],
@@ -61,7 +92,7 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
   };
 
   const tier = getDevicesSizeTier(widget.layout.w, widget.layout.h);
-  const columnCount = Math.min(4, Math.max(1, Math.round(columns)));
+  const columnCount = gridColumns(columns);
   const showBrightnessControls = tier === "full" && showBrightness;
   const onCount = ids.filter((entityId) => merged(entityId)?.isOn).length;
 
@@ -78,9 +109,8 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
     });
   };
 
-  const toggle = async (device: HomeAssistantDevice) => {
-    if (!device.available || pendingId === device.entityId) return;
-    const nextOn = !device.isOn;
+  const toggle = async (device: HomeAssistantDevice, nextOn: boolean) => {
+    if (!device.available || pendingId === device.entityId || nextOn === device.isOn) return;
     setControlError(null);
     setPendingId(device.entityId);
     setOverrides((prev) => ({
@@ -120,42 +150,42 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
 
   if (ids.length === 0) {
     return (
-      <div className={`${classes.container} ${transparentBackground ? classes.transparent : ""}`}>
-        <div className={classes.empty}>
-          <IconBulb size={32} className={classes.emptyIcon} />
-          <Text className={classes.emptyTitle}>{DEVICES_EMPTY_COPY}</Text>
-        </div>
-      </div>
+      <DeviceShell transparent={transparentBackground}>
+        <EmptyState
+          className={classes.empty}
+          icon={<IconBulb size={24} />}
+          title={DEVICES_EMPTY_COPY}
+        />
+      </DeviceShell>
     );
   }
 
   if (status === 501) {
     return (
-      <div className={`${classes.container} ${transparentBackground ? classes.transparent : ""}`}>
-        <div className={classes.empty}>
-          <Text className={classes.emptyTitle}>Home Assistant isn't connected</Text>
-          <Text size="sm" tone="secondary">
-            {error ?? DEVICES_MISSING_CONFIG_COPY}
-          </Text>
-        </div>
-      </div>
+      <DeviceShell transparent={transparentBackground}>
+        <EmptyState
+          className={classes.empty}
+          title="Home Assistant isn't connected"
+          description={error ?? DEVICES_MISSING_CONFIG_COPY}
+        />
+      </DeviceShell>
     );
   }
 
   return (
-    <div className={`${classes.container} ${transparentBackground ? classes.transparent : ""}`}>
+    <DeviceShell transparent={transparentBackground}>
       {(error || controlError) && (
-        <div className={classes.errorBox}>
+        <HStack justify="between" align="center" gap="sm">
           <ErrorText size="sm">{controlError ?? error}</ErrorText>
           <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
-        </div>
+        </HStack>
       )}
 
       {tier !== "compact" && (
-        <div className={classes.header}>
+        <HStack justify="between" align="center" gap="sm">
           <Text size="sm" tone="secondary">
             {onCount} on
           </Text>
@@ -168,85 +198,90 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
               isLoading={isLoading}
             />
           )}
-        </div>
+        </HStack>
       )}
 
-      <div
-        className={classes.grid}
-        style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
-      >
+      <SimpleGrid cols={columnCount} spacing="sm" className={classes.grid}>
         {ids.map((entityId) => {
           const device = merged(entityId);
           if (!device) {
             return (
-              <div key={entityId} className={classes.card}>
-                <Text size="sm" tone="secondary">
-                  Loading…
-                </Text>
-              </div>
+              <Card key={entityId} className={classes.card}>
+                <HStack justify="center">
+                  <Spinner size="sm" />
+                </HStack>
+              </Card>
             );
           }
           const pending = pendingId === device.entityId;
           const brightnessValue = drafts[entityId] ?? device.brightnessPct ?? 100;
+          const cardClass = [
+            classes.card,
+            device.isOn ? classes.cardOn : "",
+            pending ? classes.cardPending : "",
+            device.available ? "" : classes.cardUnavailable,
+          ]
+            .filter(Boolean)
+            .join(" ");
           return (
-            <div
-              key={entityId}
-              className={`${classes.card} ${device.isOn ? classes.cardOn : ""} ${
-                pending ? classes.cardPending : ""
-              } ${device.available ? "" : classes.cardUnavailable}`}
-            >
-              <button
-                type="button"
-                className={classes.toggleButton}
-                onClick={() => void toggle(device)}
-                disabled={!device.available || pending}
-                aria-pressed={device.isOn}
-                aria-label={`Toggle ${device.name}`}
-              >
-                <span className={classes.deviceDetails}>
-                  <span className={classes.deviceName}>{device.name}</span>
-                  <span className={classes.deviceState}>{deviceStatusLabel(device)}</span>
-                </span>
-                {device.domain === "fan" && device.percentage !== null && (
-                  <span className={classes.fanChip}>{Math.round(device.percentage)}%</span>
-                )}
-                <span className={`${classes.pill} ${device.isOn ? classes.pillOn : ""}`}>
-                  <span
-                    className={`${classes.pillKnob} ${device.isOn ? classes.pillKnobOn : ""}`}
-                  />
-                </span>
-              </button>
-              {showBrightnessControls &&
-                device.domain === "light" &&
-                device.isOn &&
-                device.available && (
-                  <div className={classes.brightnessRow}>
-                    <input
-                      type="range"
-                      className={classes.range}
-                      min={1}
-                      max={100}
-                      step={1}
-                      value={brightnessValue}
-                      aria-label={`Brightness for ${device.name}`}
-                      onChange={(event) =>
-                        setDrafts((prev) => ({
-                          ...prev,
-                          [entityId]: Number(event.target.value),
-                        }))
-                      }
-                      onPointerUp={() => void commitBrightness(device, brightnessValue)}
-                      onKeyUp={() => void commitBrightness(device, brightnessValue)}
-                    />
-                    <Text size="xs" tone="secondary">
-                      {Math.round(brightnessValue)}%
-                    </Text>
-                  </div>
-                )}
-            </div>
+            <Card key={entityId} className={cardClass}>
+              <Stack gap="sm">
+                <HStack justify="between" align="center" gap="sm">
+                  <Stack gap="none" className={classes.toggleRow}>
+                    <Switch
+                      aria-label={`Toggle ${device.name}`}
+                      isSelected={device.isOn}
+                      isDisabled={!device.available || pending}
+                      onChange={(nextOn) => void toggle(device, nextOn)}
+                    >
+                      <Stack gap="none">
+                        <Text as="span" weight="semibold" lineClamp={1}>
+                          {device.name}
+                        </Text>
+                        <Text as="span" size="sm" tone="secondary">
+                          {deviceStatusLabel(device)}
+                        </Text>
+                      </Stack>
+                    </Switch>
+                  </Stack>
+                  {device.domain === "fan" && device.percentage !== null && (
+                    <Badge tone="neutral" appearance="subtle">
+                      {Math.round(device.percentage)}%
+                    </Badge>
+                  )}
+                </HStack>
+                {showBrightnessControls &&
+                  device.domain === "light" &&
+                  device.isOn &&
+                  device.available && (
+                    <HStack gap="sm" align="center">
+                      <Slider
+                        className={classes.brightness}
+                        aria-label={`Brightness for ${device.name}`}
+                        minValue={1}
+                        maxValue={100}
+                        step={1}
+                        value={brightnessValue}
+                        showOutput={false}
+                        isDisabled={pending}
+                        onChange={(value) =>
+                          setDrafts((prev) => ({
+                            ...prev,
+                            [entityId]: sliderNumber(value),
+                          }))
+                        }
+                        onChangeEnd={(value) => void commitBrightness(device, sliderNumber(value))}
+                      />
+                      <Text size="xs" tone="secondary">
+                        {Math.round(brightnessValue)}%
+                      </Text>
+                    </HStack>
+                  )}
+              </Stack>
+            </Card>
           );
         })}
-      </div>
+      </SimpleGrid>
 
       {tier === "compact" && !isEditing && (
         <WidgetDataStatus
@@ -257,7 +292,7 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
           isLoading={isLoading}
         />
       )}
-    </div>
+    </DeviceShell>
   );
 }
 

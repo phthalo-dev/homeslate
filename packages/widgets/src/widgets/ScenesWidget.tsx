@@ -1,4 +1,14 @@
-import { Button, HStack, NumberInput, Select, Stack, Switch, Text, TextField } from "@var-ui/react";
+import {
+  Button,
+  HStack,
+  NumberInput,
+  Select,
+  SimpleGrid,
+  Stack,
+  Switch,
+  Text,
+  TextField,
+} from "@var-ui/react";
 import {
   IconBulb,
   IconDeviceTv,
@@ -127,31 +137,30 @@ export function ScenesWidget({ widget, isEditing }: WidgetProps<ScenesConfig>) {
           </Button>
         </div>
       )}
-      <div
+      <SimpleGrid
+        cols={columnCount === 1 || columnCount === 3 || columnCount === 4 ? columnCount : 2}
+        spacing="sm"
         className={classes.grid}
-        style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
       >
         {items.map((item) => {
           const name = item.label?.trim() || byId.get(item.entityId)?.name || sceneLabel(item);
           const pending = pendingId === item.entityId;
           return (
-            <button
+            <Button
               key={item.entityId}
-              type="button"
               className={`${classes.card} ${pending ? classes.cardPressed : ""}`}
-              onClick={() => void fire(item)}
-              disabled={pending}
-              title={item.entityId}
+              onPress={() => void fire(item)}
+              isDisabled={pending}
             >
               <span className={classes.cardIcon}>
                 <SceneGlyph name={item.icon} />
               </span>
-              <span className={classes.cardLabel}>{name}</span>
-              <span className={classes.cardDomain}>{domainLabel(item.entityId)}</span>
-            </button>
+              <Text className={classes.cardLabel}>{name}</Text>
+              <Text className={classes.cardDomain}>{domainLabel(item.entityId)}</Text>
+            </Button>
           );
         })}
-      </div>
+      </SimpleGrid>
       {!isEditing && (
         <WidgetDataStatus
           widgetId={widget.id}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Text, Stack, Spinner, Button, Surface, TextField, HStack } from "@var-ui/react";
+import { Text, Stack, Spinner, Button, Surface, TextField, HStack, Switch } from "@var-ui/react";
 import { IconChartLine, IconRefresh } from "@tabler/icons-react";
 import type { WidgetProps, WidgetConfig } from "../types";
 import { useStocks } from "../hooks/useStocks";
@@ -309,27 +309,22 @@ export function StocksWidgetSettings({ widget, onConfigChange }: WidgetProps<Sto
         </div>
       )}
 
-      <div>
-        <label className={classes.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={showChange}
-            onChange={(e) => onConfigChange({ showChange: e.target.checked })}
-          />
-          <Text size="sm">Show price change</Text>
-        </label>
-      </div>
-
-      <div>
-        <label className={classes.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={showDayRange}
-            onChange={(e) => onConfigChange({ showDayRange: e.target.checked })}
-          />
-          <Text size="sm">Show day high/low</Text>
-        </label>
-      </div>
+      <HStack justify="between" align="center">
+        <Text size="sm">Show price change</Text>
+        <Switch
+          aria-label="Show price change"
+          isSelected={showChange}
+          onChange={(value) => onConfigChange({ showChange: value })}
+        />
+      </HStack>
+      <HStack justify="between" align="center">
+        <Text size="sm">Show day high/low</Text>
+        <Switch
+          aria-label="Show day high/low"
+          isSelected={showDayRange}
+          onChange={(value) => onConfigChange({ showDayRange: value })}
+        />
+      </HStack>
     </Stack>
   );
 }

@@ -23,6 +23,11 @@ export const disc = styles.class("householdeditor-disc", {
   color: "var(--var-ui-color-tone-accent-foregroundOnBackground, var(--var-ui-color-text-primary))",
 });
 
+export const colorField = styles.class("householdeditor-colorField", {
+  width: "9rem",
+  flexShrink: 0,
+});
+
 export const swatch = styles.class("householdeditor-swatch", {
   width: "1.5rem",
   height: "1.5rem",

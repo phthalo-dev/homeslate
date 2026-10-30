@@ -1,4 +1,4 @@
-import { Button, HStack, Select, Spinner, Stack, Switch, Text } from "@var-ui/react";
+import { Button, HStack, Select, Slider, Spinner, Stack, Switch, Text } from "@var-ui/react";
 import {
   IconDeviceTv,
   IconMusic,
@@ -287,17 +287,21 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
               {mediaPlayer.isMuted ? <IconVolumeOff size={16} /> : <IconVolume size={16} />}
             </Button>
           )}
-          <input
-            type="range"
+          <Slider
             className={classes.range}
-            min={0}
-            max={100}
+            aria-label="Volume"
+            minValue={0}
+            maxValue={100}
             step={1}
             value={volumePct}
-            aria-label="Volume"
-            onChange={(event) => setVolumeDraft(Number(event.target.value))}
-            onPointerUp={() => void commitVolume(volumePct)}
-            onKeyUp={() => void commitVolume(volumePct)}
+            showOutput={false}
+            isDisabled={pending}
+            onChange={(value) =>
+              setVolumeDraft(typeof value === "number" ? value : (value[0] ?? volumePct))
+            }
+            onChangeEnd={(value) =>
+              void commitVolume(typeof value === "number" ? value : (value[0] ?? volumePct))
+            }
           />
           <Text size="xs" tone="secondary">
             {volumePct}%

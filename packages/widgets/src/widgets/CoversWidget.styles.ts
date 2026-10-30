@@ -112,7 +112,8 @@ export const sliderRow = styles.class("coverswidget-sliderRow", {
 
 export const range = styles.class("coverswidget-range", {
   flex: "1",
-  accentColor: "var(--var-ui-color-accent)",
+  minWidth: "0",
+  width: "100%",
 });
 
 export const errorBox = styles.class("coverswidget-error", {

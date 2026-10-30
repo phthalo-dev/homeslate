@@ -1,5 +1,15 @@
-import { IconButton, Button, HStack, Select, Stack, Switch, Text, TextField } from "@var-ui/react";
-import { IconCheck, IconPlus, IconTrash } from "@tabler/icons-react";
+import {
+  IconButton,
+  Button,
+  Checkbox,
+  HStack,
+  Select,
+  Stack,
+  Switch,
+  Text,
+  TextField,
+} from "@var-ui/react";
+import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { v4 as uuidv4 } from "uuid";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { useHousehold } from "../household/HouseholdContext";
@@ -73,11 +83,10 @@ export function ChoresWidget({ widget, onConfigChange }: WidgetProps<ChoresConfi
             const member = members.find((item) => item.id === chore.assigneeId);
             const complete = done.has(chore.id);
             return (
-              <button
+              <HStack
                 key={chore.id}
-                type="button"
+                align="center"
                 className={`${classes.row} ${complete ? classes.rowDone : ""}`}
-                onClick={() => toggle(chore.id)}
               >
                 <span
                   className={classes.disc}
@@ -88,11 +97,16 @@ export function ChoresWidget({ widget, onConfigChange }: WidgetProps<ChoresConfi
                 >
                   {member?.name.trim().charAt(0).toUpperCase() ?? "?"}
                 </span>
-                <span className={classes.label}>{chore.title}</span>
-                <span className={`${classes.checkbox} ${complete ? classes.checkboxOn : ""}`}>
-                  {complete && <IconCheck size={12} stroke={3} />}
-                </span>
-              </button>
+                <Checkbox
+                  isSelected={complete}
+                  onChange={() => toggle(chore.id)}
+                  aria-label={chore.title}
+                >
+                  <Text size="sm" className={classes.label}>
+                    {chore.title}
+                  </Text>
+                </Checkbox>
+              </HStack>
             );
           })}
         </div>

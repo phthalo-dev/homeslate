@@ -91,7 +91,8 @@ export const speedRow = styles.class("fanwidget-speedRow", {
 
 export const range = styles.class("fanwidget-range", {
   flex: "1",
-  accentColor: "var(--var-ui-color-accent)",
+  minWidth: "0",
+  width: "100%",
 });
 
 export const modeRow = styles.class("fanwidget-modeRow", {

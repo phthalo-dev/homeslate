@@ -142,7 +142,8 @@ export const volumeRow = styles.class("mediaplayerwidget-volumeRow", {
 
 export const range = styles.class("mediaplayerwidget-range", {
   flex: "1",
-  accentColor: "var(--var-ui-color-accent)",
+  minWidth: "0",
+  width: "100%",
 });
 
 export const errorBox = styles.class("mediaplayerwidget-error", {

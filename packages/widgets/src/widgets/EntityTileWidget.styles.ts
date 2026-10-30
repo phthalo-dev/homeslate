@@ -87,7 +87,8 @@ export const sliderRow = styles.class("entitytilewidget-sliderRow", {
 
 export const range = styles.class("entitytilewidget-range", {
   flex: "1",
-  accentColor: "var(--var-ui-color-accent)",
+  minWidth: "0",
+  width: "100%",
 });
 
 export const errorBox = styles.class("entitytilewidget-error", {

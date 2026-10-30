@@ -1,4 +1,14 @@
-import { Button, HStack, Select, Spinner, Stack, Switch, Text, TextField } from "@var-ui/react";
+import {
+  Button,
+  HStack,
+  Select,
+  Slider,
+  Spinner,
+  Stack,
+  Switch,
+  Text,
+  TextField,
+} from "@var-ui/react";
 import {
   IconBulb,
   IconCamera,
@@ -290,24 +300,31 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
                 </Button>
               </div>
               {descriptor.isOn && (
-                <div className={classes.sliderRow}>
-                  <input
-                    type="range"
+                <HStack gap="sm" align="center" className={classes.sliderRow}>
+                  <Slider
                     className={classes.range}
-                    min={1}
-                    max={100}
+                    aria-label={`Brightness for ${displayName}`}
+                    minValue={1}
+                    maxValue={100}
                     step={1}
                     value={brightness}
-                    aria-label={`Brightness for ${displayName}`}
-                    onChange={(event) => setBrightnessDraft(Number(event.target.value))}
-                    onPointerUp={() => void commitBrightness(brightness)}
-                    onKeyUp={() => void commitBrightness(brightness)}
-                    disabled={!canControl || pending}
+                    showOutput={false}
+                    isDisabled={!canControl || pending}
+                    onChange={(value) =>
+                      setBrightnessDraft(
+                        typeof value === "number" ? value : (value[0] ?? brightness),
+                      )
+                    }
+                    onChangeEnd={(value) =>
+                      void commitBrightness(
+                        typeof value === "number" ? value : (value[0] ?? brightness),
+                      )
+                    }
                   />
                   <Text size="xs" tone="secondary">
                     {brightness}%
                   </Text>
-                </div>
+                </HStack>
               )}
             </>
           )}
@@ -335,24 +352,29 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
                 </Button>
               </div>
               {descriptor.position !== null && (
-                <div className={classes.sliderRow}>
-                  <input
-                    type="range"
+                <HStack gap="sm" align="center" className={classes.sliderRow}>
+                  <Slider
                     className={classes.range}
-                    min={0}
-                    max={100}
+                    aria-label={`Position for ${displayName}`}
+                    minValue={0}
+                    maxValue={100}
                     step={1}
                     value={position}
-                    aria-label={`Position for ${displayName}`}
-                    onChange={(event) => setPositionDraft(Number(event.target.value))}
-                    onPointerUp={() => void commitPosition(position)}
-                    onKeyUp={() => void commitPosition(position)}
-                    disabled={!canControl || pending}
+                    showOutput={false}
+                    isDisabled={!canControl || pending}
+                    onChange={(value) =>
+                      setPositionDraft(typeof value === "number" ? value : (value[0] ?? position))
+                    }
+                    onChangeEnd={(value) =>
+                      void commitPosition(
+                        typeof value === "number" ? value : (value[0] ?? position),
+                      )
+                    }
                   />
                   <Text size="xs" tone="secondary">
                     {position}%
                   </Text>
-                </div>
+                </HStack>
               )}
             </>
           )}

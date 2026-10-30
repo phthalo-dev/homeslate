@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   IconButton,
   HStack,
   NumberInput,
@@ -13,7 +14,6 @@ import {
   IconBackpack,
   IconBed,
   IconBook,
-  IconCheck,
   IconDental,
   IconDroplet,
   IconPlus,
@@ -155,19 +155,23 @@ export function DailyRoutineWidget({
               const Icon = iconOf(step.icon);
               const done = doneIds.has(step.id);
               return (
-                <button
+                <HStack
                   key={step.id}
-                  type="button"
+                  align="center"
                   className={`${classes.row} ${classes.routineRow} ${done ? classes.rowDone : ""}`}
-                  onClick={() => persistToggle(step.id)}
                 >
                   <span className={classes.number}>{index + 1}</span>
                   {Icon ? <Icon size={22} /> : null}
-                  <span className={classes.label}>{step.label}</span>
-                  <span className={`${classes.checkbox} ${done ? classes.checkboxOn : ""}`}>
-                    {done && <IconCheck size={12} stroke={3} />}
-                  </span>
-                </button>
+                  <Checkbox
+                    isSelected={done}
+                    onChange={() => persistToggle(step.id)}
+                    aria-label={step.label}
+                  >
+                    <Text size="sm" className={classes.label}>
+                      {step.label}
+                    </Text>
+                  </Checkbox>
+                </HStack>
               );
             })}
           </div>
