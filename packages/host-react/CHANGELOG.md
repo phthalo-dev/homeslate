@@ -1,5 +1,14 @@
 # @homeslate/host-react
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`4f692a9`](https://github.com/phthalo-dev/homeslate/commit/4f692a9d5cd7e34e7ecc0d873353c35176c6f810)]:
+  - @homeslate/widgets@1.3.1
+  - @homeslate/display@1.2.1
+  - @homeslate/editor@1.1.1
+
 ## 0.3.0
 
 ### Minor Changes

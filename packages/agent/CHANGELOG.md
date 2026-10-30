@@ -1,5 +1,13 @@
 # @homeslate/agent
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`4f692a9`](https://github.com/phthalo-dev/homeslate/commit/4f692a9d5cd7e34e7ecc0d873353c35176c6f810)]:
+  - @homeslate/widgets@1.3.1
+  - @homeslate/server@0.3.2
+
 ## 0.1.1
 
 ### Patch Changes
