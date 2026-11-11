@@ -1,5 +1,13 @@
 # @homeslate/adapters
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [[`a01b4fe`](https://github.com/phthalo-dev/homeslate/commit/a01b4fed63aeb389125a45783eccd3e6e2ff4430), [`ce1a9b4`](https://github.com/phthalo-dev/homeslate/commit/ce1a9b46b6b2f48670a0d432519754e1a6f1d6aa), [`4f692a9`](https://github.com/phthalo-dev/homeslate/commit/4f692a9d5cd7e34e7ecc0d873353c35176c6f810)]:
+  - @homeslate/schema@0.1.3
+  - @homeslate/widgets@0.2.0
+
 ## 0.2.1
 
 ### Patch Changes

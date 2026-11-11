@@ -1,5 +1,11 @@
 # @homeslate/schema
 
+## 0.1.3
+
+### Patch Changes
+
+- [#53](https://github.com/phthalo-dev/homeslate/pull/53) [`a01b4fe`](https://github.com/phthalo-dev/homeslate/commit/a01b4fed63aeb389125a45783eccd3e6e2ff4430) Thanks [@dbanksdesign](https://github.com/dbanksdesign)! - Return `@homeslate/schema` to the 0.x line. The package is still settling its shape, so it goes back to `0.x` (next release is `0.1.3`) instead of `1.x`. The published `1.0.0` and `1.1.0` stay on npm; this is a fresh `0.x` release, not a delete.
+
 ## 1.1.0
 
 ### Minor Changes
