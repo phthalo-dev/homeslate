@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { HStack, Select, Stack, Switch, Text } from "@var-ui/react";
 import type { WidgetProps, WidgetConfig, TextAlign } from "../types";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { clock } from "./ClockWidget.styles";
 
 export interface ClockConfig extends WidgetConfig {
@@ -14,20 +13,20 @@ export interface ClockConfig extends WidgetConfig {
 }
 
 const TIMEZONE_OPTIONS = [
-  { id: "local", label: "Local Time" },
-  { id: "America/New_York", label: "Eastern Time" },
-  { id: "America/Chicago", label: "Central Time" },
-  { id: "America/Denver", label: "Mountain Time" },
-  { id: "America/Los_Angeles", label: "Pacific Time" },
-  { id: "Europe/London", label: "London" },
-  { id: "Europe/Paris", label: "Paris" },
-  { id: "Asia/Tokyo", label: "Tokyo" },
+  { value: "local", label: "Local Time" },
+  { value: "America/New_York", label: "Eastern Time" },
+  { value: "America/Chicago", label: "Central Time" },
+  { value: "America/Denver", label: "Mountain Time" },
+  { value: "America/Los_Angeles", label: "Pacific Time" },
+  { value: "Europe/London", label: "London" },
+  { value: "Europe/Paris", label: "Paris" },
+  { value: "Asia/Tokyo", label: "Tokyo" },
 ];
 
 const ALIGN_OPTIONS = [
-  { id: "left", label: "Left" },
-  { id: "center", label: "Center" },
-  { id: "right", label: "Right" },
+  { value: "left", label: "Left" },
+  { value: "center", label: "Center" },
+  { value: "right", label: "Right" },
 ];
 
 export function ClockWidget({ widget }: WidgetProps<ClockConfig>) {
@@ -123,7 +122,6 @@ export function ClockWidget({ widget }: WidgetProps<ClockConfig>) {
 
 export function ClockWidgetSettings({ widget, onConfigChange }: WidgetProps<ClockConfig>) {
   const { showSeconds, showDate, use24Hour, timezone, textAlign = "center" } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
 
   return (
     <Stack gap="md">
@@ -131,43 +129,41 @@ export function ClockWidgetSettings({ widget, onConfigChange }: WidgetProps<Cloc
         <Text size="sm">Show Seconds</Text>
         <Switch
           aria-label="Show Seconds"
-          isSelected={showSeconds}
-          onChange={(value) => onConfigChange({ showSeconds: value })}
+          checked={showSeconds}
+          onCheckedChange={(value) => onConfigChange({ showSeconds: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Show Date</Text>
         <Switch
           aria-label="Show Date"
-          isSelected={showDate}
-          onChange={(value) => onConfigChange({ showDate: value })}
+          checked={showDate}
+          onCheckedChange={(value) => onConfigChange({ showDate: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">24-Hour Format</Text>
         <Switch
           aria-label="24-Hour Format"
-          isSelected={use24Hour}
-          onChange={(value) => onConfigChange({ use24Hour: value })}
+          checked={use24Hour}
+          onCheckedChange={(value) => onConfigChange({ use24Hour: value })}
         />
       </HStack>
       <Select
         label="Timezone"
         options={TIMEZONE_OPTIONS}
-        selectedKey={timezone}
-        onSelectionChange={(key) => onConfigChange({ timezone: String(key ?? "local") })}
-        portalContainer={portalContainer}
+        value={timezone}
+        onValueChange={(key) => onConfigChange({ timezone: String(key ?? "local") })}
       />
       <Select
         label="Text Alignment"
         options={ALIGN_OPTIONS}
-        selectedKey={textAlign}
-        onSelectionChange={(key) => {
+        value={textAlign}
+        onValueChange={(key) => {
           if (key === "left" || key === "center" || key === "right") {
             onConfigChange({ textAlign: key });
           }
         }}
-        portalContainer={portalContainer}
       />
     </Stack>
   );

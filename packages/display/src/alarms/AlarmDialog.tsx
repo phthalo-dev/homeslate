@@ -51,11 +51,10 @@ export function AlarmDialog({
       <div className={classes.card}>
         <div className={classes.topRow}>
           <IconButton
-            name={muted ? "stop" : "clock"}
             icon={muted ? <IconVolumeOff size={22} /> : <IconVolume size={22} />}
             appearance="ghost"
             size="lg"
-            onPress={onToggleMute}
+            onClick={onToggleMute}
             aria-label={muted ? "Unmute alarm" : "Mute alarm"}
           />
         </div>
@@ -73,24 +72,24 @@ export function AlarmDialog({
           </Text>
         ) : null}
         <div className={classes.actions}>
-          <Button size="lg" onPress={onDismiss}>
+          <Button size="lg" onClick={onDismiss}>
             Dismiss
           </Button>
           {!showSnoozeChoices ? (
-            <Button size="lg" appearance="subtle" onPress={onOpenSnooze}>
+            <Button size="lg" appearance="subtle" onClick={onOpenSnooze}>
               Snooze
             </Button>
           ) : (
             <div className={classes.snoozeRow}>
               {SNOOZE_MINUTES.map((m) => (
-                <Button key={m} size="lg" appearance="subtle" onPress={() => onSnooze(m)}>
+                <Button key={m} size="lg" appearance="subtle" onClick={() => onSnooze(m)}>
                   {m} min
                 </Button>
               ))}
             </div>
           )}
           {showRestart && onRestart && !showSnoozeChoices ? (
-            <Button size="lg" appearance="outline" onPress={onRestart}>
+            <Button size="lg" appearance="outline" onClick={onRestart}>
               Restart
             </Button>
           ) : null}

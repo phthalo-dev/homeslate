@@ -6,17 +6,17 @@ import type { AlarmDefinition, DisplayDocument, HolidayId } from "@homeslate/sch
 import { errorMessage } from "./api";
 
 const INTERVAL_OPTIONS = [
-  { id: "15000", label: "15 seconds" },
-  { id: "30000", label: "30 seconds" },
-  { id: "60000", label: "1 minute" },
-  { id: "300000", label: "5 minutes" },
-  { id: "600000", label: "10 minutes" },
-  { id: "1800000", label: "30 minutes" },
+  { value: "15000", label: "15 seconds" },
+  { value: "30000", label: "30 seconds" },
+  { value: "60000", label: "1 minute" },
+  { value: "300000", label: "5 minutes" },
+  { value: "600000", label: "10 minutes" },
+  { value: "1800000", label: "30 minutes" },
 ];
 
 const HOLIDAY_OPTIONS = [
-  { id: "auto", label: "Auto (today)" },
-  ...HOLIDAY_PREVIEW_OPTIONS.map((option) => ({ id: option.value, label: option.label })),
+  { value: "auto", label: "Auto (today)" },
+  ...HOLIDAY_PREVIEW_OPTIONS.map((option) => ({ value: option.value, label: option.label })),
 ];
 
 function Section(props: { title: string; children: ReactNode }): JSX.Element {
@@ -80,18 +80,18 @@ export function DisplaySettingsPanel(props: {
             </Text>
           </Stack>
           <Switch
-            isSelected={rotation.enabled}
-            isDisabled={visibleViewCount <= 1}
+            checked={rotation.enabled}
+            disabled={visibleViewCount <= 1}
             aria-label="Auto-rotate views"
-            onChange={(enabled) => patchRotation({ enabled })}
+            onCheckedChange={(enabled) => patchRotation({ enabled })}
           />
         </HStack>
         {rotation.enabled && visibleViewCount > 1 && (
           <Select
             aria-label="Rotation interval"
             options={INTERVAL_OPTIONS}
-            selectedKey={String(rotation.intervalMs)}
-            onSelectionChange={(key) => {
+            value={String(rotation.intervalMs)}
+            onValueChange={(key) => {
               if (key != null) patchRotation({ intervalMs: Number(key) });
             }}
           />
@@ -114,9 +114,9 @@ export function DisplaySettingsPanel(props: {
             </Text>
           </Stack>
           <Switch
-            isSelected={document.settings.wakeLockEnabled !== false}
+            checked={document.settings.wakeLockEnabled !== false}
             aria-label="Keep the screen awake"
-            onChange={(enabled) => patchSettings({ wakeLockEnabled: enabled })}
+            onCheckedChange={(enabled) => patchSettings({ wakeLockEnabled: enabled })}
           />
         </HStack>
       </Section>
@@ -130,9 +130,9 @@ export function DisplaySettingsPanel(props: {
             </Text>
           </Stack>
           <Switch
-            isSelected={document.settings.stickyNotesEnabled ?? false}
+            checked={document.settings.stickyNotesEnabled ?? false}
             aria-label="Enable sticky notes"
-            onChange={(enabled) => patchSettings({ stickyNotesEnabled: enabled })}
+            onCheckedChange={(enabled) => patchSettings({ stickyNotesEnabled: enabled })}
           />
         </HStack>
       </Section>
@@ -154,9 +154,9 @@ export function DisplaySettingsPanel(props: {
             </Text>
           </Stack>
           <Switch
-            isSelected={document.settings.voiceEnabled ?? false}
+            checked={document.settings.voiceEnabled ?? false}
             aria-label="Enable voice commands"
-            onChange={(enabled) => patchSettings({ voiceEnabled: enabled })}
+            onCheckedChange={(enabled) => patchSettings({ voiceEnabled: enabled })}
           />
         </HStack>
       </Section>
@@ -170,9 +170,9 @@ export function DisplaySettingsPanel(props: {
             </Text>
           </Stack>
           <Switch
-            isSelected={document.settings.holidayEffectsEnabled ?? false}
+            checked={document.settings.holidayEffectsEnabled ?? false}
             aria-label="Enable holiday UI"
-            onChange={(enabled) => patchSettings({ holidayEffectsEnabled: enabled })}
+            onCheckedChange={(enabled) => patchSettings({ holidayEffectsEnabled: enabled })}
           />
         </HStack>
         <Stack gap="xs">
@@ -183,8 +183,8 @@ export function DisplaySettingsPanel(props: {
           <Select
             aria-label="Preview holiday"
             options={HOLIDAY_OPTIONS}
-            selectedKey={document.settings.holidayPreviewId ?? "auto"}
-            onSelectionChange={(key) => {
+            value={document.settings.holidayPreviewId ?? "auto"}
+            onValueChange={(key) => {
               const next: HolidayId | undefined =
                 key == null || key === "auto" ? undefined : (String(key) as HolidayId);
               patchSettings({ holidayPreviewId: next });
@@ -206,8 +206,8 @@ export function DisplaySettingsPanel(props: {
               appearance="ghost"
               tone="danger"
               size="sm"
-              isPending={pinSaving}
-              onPress={() => void savePin(null)}
+              loading={pinSaving}
+              onClick={() => void savePin(null)}
             >
               Remove PIN
             </Button>
@@ -216,20 +216,20 @@ export function DisplaySettingsPanel(props: {
         <HStack gap="sm" align="center">
           <PinInput
             length={4}
-            type="numeric"
+            characters="numeric"
             aria-label="Viewer passcode"
             value={pin}
             errorMessage={pinError ?? undefined}
-            onChange={(value) => {
+            onValueChange={(value) => {
               setPin(value);
               setPinError(null);
             }}
           />
           <Button
             size="sm"
-            isDisabled={pin.length !== 4}
-            isPending={pinSaving}
-            onPress={() => void savePin(pin)}
+            disabled={pin.length !== 4}
+            loading={pinSaving}
+            onClick={() => void savePin(pin)}
           >
             {passcodeEnabled ? "Change PIN" : "Enable PIN"}
           </Button>

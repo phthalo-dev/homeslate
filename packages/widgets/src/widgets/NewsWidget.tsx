@@ -76,7 +76,7 @@ export function NewsWidget({ widget }: WidgetProps<NewsConfig>) {
           <Text size="sm" style={{ color: "var(--var-ui-color-tone-danger-foreground)" }}>
             {error}
           </Text>
-          <Button appearance="subtle" size="sm" onPress={refresh}>
+          <Button appearance="subtle" size="sm" onClick={refresh}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -155,7 +155,7 @@ export function NewsWidgetSettings({ widget, onConfigChange }: WidgetProps<NewsC
   const { feedUrls, maxItems, showSource, showDescription } = widget.config;
 
   const feedOptions = popularFeeds.map((feed) => ({
-    id: feed.url,
+    value: feed.url,
     label: feed.name,
   }));
 
@@ -167,31 +167,31 @@ export function NewsWidgetSettings({ widget, onConfigChange }: WidgetProps<NewsC
         description="Select up to 5 news sources"
         options={feedOptions}
         value={feedUrls}
-        onChange={(value) => onConfigChange({ feedUrls: value.slice(0, 5) })}
+        onValueChange={(value) => onConfigChange({ feedUrls: value.slice(0, 5) })}
       />
 
       <NumberInput
         label="Maximum Articles"
-        minValue={3}
-        maxValue={20}
+        min={3}
+        max={20}
         value={maxItems}
-        onChange={(value) => onConfigChange({ maxItems: Number(value) || 10 })}
+        onValueChange={(value) => onConfigChange({ maxItems: Number(value) || 10 })}
       />
 
       <HStack justify="between" align="center">
         <Text size="sm">Show source name</Text>
         <Switch
           aria-label="Show source name"
-          isSelected={showSource}
-          onChange={(value) => onConfigChange({ showSource: value })}
+          checked={showSource}
+          onCheckedChange={(value) => onConfigChange({ showSource: value })}
         />
       </HStack>
       <HStack justify="between" align="center">
         <Text size="sm">Show article description</Text>
         <Switch
           aria-label="Show article description"
-          isSelected={showDescription}
-          onChange={(value) => onConfigChange({ showDescription: value })}
+          checked={showDescription}
+          onCheckedChange={(value) => onConfigChange({ showDescription: value })}
         />
       </HStack>
     </Stack>

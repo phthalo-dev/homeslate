@@ -12,7 +12,7 @@ import {
   ScrollArea,
   SegmentedControl,
   Select,
-  SimpleTooltip,
+  Tooltip,
   Stack,
   Surface,
   Tabs,
@@ -20,12 +20,8 @@ import {
   TextAreaField,
   TextField,
   Typeahead,
-} from "@var-ui/react";
-import {
-  OverlayPortalContext,
   useDebouncedValue,
-  useOverlayPortalContainer,
-} from "@homeslate/widgets";
+} from "@var-ui/react";
 import {
   IconAlertCircle,
   IconCheck,
@@ -200,12 +196,11 @@ function canPreviewColorValue(value: string): boolean {
 }
 
 const PRESET_SELECT_OPTIONS = THEME_PRESET_OPTIONS.map((option) => ({
-  id: option.value,
+  value: option.value,
   label: option.label,
 }));
 
 function TokenControl({ entry, references, onChange }: TokenControlProps) {
-  const portalContainer = useOverlayPortalContainer();
   const isReference = ALIAS_VALUE_RE.test(entry.value);
   const referenceValue = references.some((option) => option.value === entry.value)
     ? entry.value
@@ -263,167 +258,162 @@ function TokenControl({ entry, references, onChange }: TokenControlProps) {
                 label="Color value"
                 size="sm"
                 value={entry.value}
-                onChange={(value) => onChange(entry, value)}
+                onValueChange={(value) => onChange(entry, value)}
                 placeholder="#6366f1, oklch(...), or {foundation.color.red.500}"
                 className={classes.colorValueInput}
               />
               <HStack gap="xs" className={classes.colorSourceActions}>
-                <SimpleTooltip content="Browse palettes" portalContainer={portalContainer}>
-                  <IconButton
-                    name="search"
-                    icon={<IconPalette size={16} />}
-                    appearance="ghost"
-                    aria-label="Browse palettes"
-                    onPress={() => setPaletteBrowserOpen(true)}
-                  />
-                </SimpleTooltip>
-                <SimpleTooltip content="Reference another token" portalContainer={portalContainer}>
-                  <IconButton
-                    name="copy"
-                    icon={<IconLink size={16} />}
-                    appearance="ghost"
-                    aria-label="Reference another token"
-                    onPress={() => setReferenceBrowserOpen(true)}
-                    isDisabled={references.length === 0}
-                  />
-                </SimpleTooltip>
-                <SimpleTooltip content="Pick custom color" portalContainer={portalContainer}>
-                  <IconButton
-                    name="colorModeLight"
-                    icon={<IconColorPicker size={16} />}
-                    appearance="ghost"
-                    aria-label="Pick custom color"
-                    onPress={() => setCustomColorOpen(true)}
-                  />
-                </SimpleTooltip>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    <IconButton
+                      icon={<IconPalette size={16} />}
+                      appearance="ghost"
+                      aria-label="Browse palettes"
+                      onClick={() => setPaletteBrowserOpen(true)}
+                    />
+                  </Tooltip.Trigger>
+                  <Tooltip.Popup>Browse palettes</Tooltip.Popup>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    <IconButton
+                      icon={<IconLink size={16} />}
+                      appearance="ghost"
+                      aria-label="Reference another token"
+                      onClick={() => setReferenceBrowserOpen(true)}
+                      disabled={references.length === 0}
+                    />
+                  </Tooltip.Trigger>
+                  <Tooltip.Popup>Reference another token</Tooltip.Popup>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
+                    <IconButton
+                      icon={<IconColorPicker size={16} />}
+                      appearance="ghost"
+                      aria-label="Pick custom color"
+                      onClick={() => setCustomColorOpen(true)}
+                    />
+                  </Tooltip.Trigger>
+                  <Tooltip.Popup>Pick custom color</Tooltip.Popup>
+                </Tooltip.Root>
               </HStack>
             </HStack>
             <Dialog.Root
-              isOpen={customColorOpen}
+              open={customColorOpen}
               onOpenChange={(isOpen) => {
                 if (!isOpen) setCustomColorOpen(false);
               }}
-              portalContainer={portalContainer}
             >
-              <Dialog.Backdrop>
-                <Dialog.Popup>
-                  <Dialog.Title>Pick custom color</Dialog.Title>
-                  <ColorInput
-                    label="Color value"
-                    size="sm"
-                    value={customColorValue}
-                    onChange={(value) => onChange(entry, value)}
-                    placeholder="#6366f1"
-                    swatches={TAILWIND_COMPACT_COLOR_SWATCHES}
-                    portalContainer={portalContainer}
-                  />
-                </Dialog.Popup>
-              </Dialog.Backdrop>
+              <Dialog.Popup>
+                <Dialog.Title>Pick custom color</Dialog.Title>
+                <ColorInput
+                  label="Color value"
+                  size="sm"
+                  value={customColorValue}
+                  onValueChange={(value) => onChange(entry, value)}
+                  placeholder="#6366f1"
+                  swatches={TAILWIND_COMPACT_COLOR_SWATCHES}
+                />
+              </Dialog.Popup>
             </Dialog.Root>
             <Dialog.Root
-              isOpen={referenceBrowserOpen}
+              open={referenceBrowserOpen}
               onOpenChange={(isOpen) => {
                 if (!isOpen) setReferenceBrowserOpen(false);
               }}
-              portalContainer={portalContainer}
             >
-              <Dialog.Backdrop>
-                <Dialog.Popup>
-                  <Dialog.Title>Reference another token</Dialog.Title>
-                  <Typeahead
-                    label="Search token references"
-                    options={references.map((option) => ({
-                      id: option.value,
-                      label: option.label,
-                    }))}
-                    selectedKey={referenceValue}
-                    onSelectionChange={(key) => {
-                      if (key == null) return;
-                      onChange(entry, String(key));
-                      setReferenceBrowserOpen(false);
-                    }}
-                    placeholder="Search token references"
-                  />
-                </Dialog.Popup>
-              </Dialog.Backdrop>
+              <Dialog.Popup>
+                <Dialog.Title>Reference another token</Dialog.Title>
+                <Typeahead
+                  label="Search token references"
+                  options={references.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                  value={referenceValue}
+                  onValueChange={(key) => {
+                    if (key == null) return;
+                    onChange(entry, String(key));
+                    setReferenceBrowserOpen(false);
+                  }}
+                  placeholder="Search token references"
+                />
+              </Dialog.Popup>
             </Dialog.Root>
             <Dialog.Root
-              isOpen={paletteBrowserOpen}
+              open={paletteBrowserOpen}
               onOpenChange={(isOpen) => {
                 if (!isOpen) setPaletteBrowserOpen(false);
               }}
-              portalContainer={portalContainer}
             >
-              <Dialog.Backdrop>
-                <Dialog.Popup>
-                  <Dialog.Title>Browse palettes</Dialog.Title>
-                  <Stack gap="sm">
-                    <TextField
-                      label="Search palettes, shades, paths, or OKLCH"
-                      size="sm"
-                      value={paletteQuery}
-                      onChange={setPaletteQuery}
-                      placeholder="red 500, foundation.color.sky.950, oklch..."
-                    />
-                    <Text size="xs" tone="secondary">
-                      Pick a direct OKLCH value. Use the reference button if you want to keep the
-                      token path instead.
-                    </Text>
-                    <div className={classes.paletteBrowserGrid}>
-                      {filteredPaletteNames.map((name) => (
-                        <div key={name} className={classes.paletteFamilyRow}>
-                          <div className={classes.paletteFamilyLabel}>
-                            <Text size="sm" weight="semibold">
-                              {name}
-                            </Text>
-                            <Text size="xs" tone="secondary">
-                              {`foundation.color.${name}`}
-                            </Text>
-                          </div>
-                          <div className={classes.paletteShadeGrid}>
-                            {TAILWIND_PALETTE_STEPS.map((step) => {
-                              const value = TAILWIND_COLOR_PALETTES[name][step];
-                              const tokenPath = tailwindTokenPath(name, step);
-                              return (
-                                <button
-                                  key={step}
-                                  type="button"
-                                  className={classes.paletteShadeButton}
-                                  onClick={() => {
-                                    onChange(entry, value);
-                                    setPaletteBrowserOpen(false);
-                                  }}
-                                  title={`${tokenPath} (${value})`}
-                                >
-                                  <span
-                                    className={classes.paletteShadeChip}
-                                    style={{ background: value }}
-                                  />
-                                  <span className={classes.paletteShadeLabel}>{step}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
+              <Dialog.Popup>
+                <Dialog.Title>Browse palettes</Dialog.Title>
+                <Stack gap="sm">
+                  <TextField
+                    label="Search palettes, shades, paths, or OKLCH"
+                    size="sm"
+                    value={paletteQuery}
+                    onValueChange={setPaletteQuery}
+                    placeholder="red 500, foundation.color.sky.950, oklch..."
+                  />
+                  <Text size="xs" tone="secondary">
+                    Pick a direct OKLCH value. Use the reference button if you want to keep the
+                    token path instead.
+                  </Text>
+                  <div className={classes.paletteBrowserGrid}>
+                    {filteredPaletteNames.map((name) => (
+                      <div key={name} className={classes.paletteFamilyRow}>
+                        <div className={classes.paletteFamilyLabel}>
+                          <Text size="sm" weight="semibold">
+                            {name}
+                          </Text>
+                          <Text size="xs" tone="secondary">
+                            {`foundation.color.${name}`}
+                          </Text>
                         </div>
-                      ))}
-                    </div>
-                    {filteredPaletteNames.length === 0 && (
-                      <Text size="sm" tone="secondary">
-                        No palette colors match that search.
-                      </Text>
-                    )}
-                  </Stack>
-                </Dialog.Popup>
-              </Dialog.Backdrop>
+                        <div className={classes.paletteShadeGrid}>
+                          {TAILWIND_PALETTE_STEPS.map((step) => {
+                            const value = TAILWIND_COLOR_PALETTES[name][step];
+                            const tokenPath = tailwindTokenPath(name, step);
+                            return (
+                              <button
+                                key={step}
+                                type="button"
+                                className={classes.paletteShadeButton}
+                                onClick={() => {
+                                  onChange(entry, value);
+                                  setPaletteBrowserOpen(false);
+                                }}
+                                title={`${tokenPath} (${value})`}
+                              >
+                                <span
+                                  className={classes.paletteShadeChip}
+                                  style={{ background: value }}
+                                />
+                                <span className={classes.paletteShadeLabel}>{step}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {filteredPaletteNames.length === 0 && (
+                    <Text size="sm" tone="secondary">
+                      No palette colors match that search.
+                    </Text>
+                  )}
+                </Stack>
+              </Dialog.Popup>
             </Dialog.Root>
           </>
         ) : (
           <>
             <SegmentedControl
               size="sm"
-              selectedKeys={new Set([isReference ? "reference" : "direct"])}
-              onSelectionChange={(keys) => {
-                const value = [...keys][0];
+              value={isReference ? "reference" : "direct"}
+              onValueChange={(value) => {
                 if (value === "direct" && isReference) {
                   onChange(entry, defaultDirectValue(entry.type));
                   return;
@@ -433,8 +423,8 @@ function TokenControl({ entry, references, onChange }: TokenControlProps) {
                 }
               }}
               options={[
-                { id: "direct", label: "Direct" },
-                { id: "reference", label: "Reference" },
+                { value: "direct", label: "Direct" },
+                { value: "reference", label: "Reference" },
               ]}
               style={{ width: "100%" }}
             />
@@ -443,15 +433,15 @@ function TokenControl({ entry, references, onChange }: TokenControlProps) {
                 label={typeLabel}
                 size="sm"
                 value={entry.value}
-                onChange={(value) => onChange(entry, value)}
+                onValueChange={(value) => onChange(entry, value)}
                 placeholder={entry.type === "fontFamily" ? "'Outfit', sans-serif" : "12px"}
               />
             ) : (
               <Typeahead
                 label={`Reference ${typeLabel.toLowerCase()}`}
-                options={references.map((option) => ({ id: option.value, label: option.label }))}
-                selectedKey={referenceValue}
-                onSelectionChange={(key) => key != null && onChange(entry, String(key))}
+                options={references.map((option) => ({ value: option.value, label: option.label }))}
+                value={referenceValue}
+                onValueChange={(key) => key != null && onChange(entry, String(key))}
                 placeholder="Reference another token"
               />
             )}
@@ -497,11 +487,6 @@ export function ThemeEditor({
   const [pendingEditId, setPendingEditId] = useState<string | null>(null);
   const [discardOpen, setDiscardOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const [portalContainer, setPortalContainer] = useState<Element | undefined>(undefined);
-
-  useEffect(() => {
-    setPortalContainer(rootRef.current ?? undefined);
-  }, []);
 
   const editingTheme = useMemo(
     () =>
@@ -765,485 +750,480 @@ export function ThemeEditor({
   const focusedTheme = themeDocuments.find((d) => d.id === libraryFocusId);
 
   return (
-    <OverlayPortalContext.Provider value={portalContainer}>
-      <div ref={rootRef} className={classes.page}>
-        {libraryNotice && (
-          <Alert variant="info" appearance="subtle">
-            <HStack justify="between" align="start" gap="sm">
-              <Text size="sm">{libraryNotice}</Text>
-              <IconButton
-                name="close"
-                aria-label="Dismiss notice"
-                appearance="ghost"
-                size="sm"
-                onPress={() => setLibraryNotice(null)}
-              />
+    <div ref={rootRef} className={classes.page}>
+      {libraryNotice && (
+        <Alert tone="info" appearance="subtle">
+          <HStack justify="between" align="start" gap="sm">
+            <Text size="sm">{libraryNotice}</Text>
+            <IconButton
+              aria-label="Dismiss notice"
+              icon={<IconX size={14} />}
+              appearance="ghost"
+              size="sm"
+              onClick={() => setLibraryNotice(null)}
+            />
+          </HStack>
+        </Alert>
+      )}
+
+      <div className={classes.mainLayout}>
+        <Surface padding="md" className={classes.library}>
+          <Stack gap="md" style={{ height: "100%", minHeight: 0 }}>
+            <HStack justify="between">
+              <Text weight="semibold">Theme library</Text>
+              <Badge appearance="subtle">{themeDocuments.length} saved</Badge>
             </HStack>
-          </Alert>
-        )}
 
-        <div className={classes.mainLayout}>
-          <Surface padding="md" className={classes.library}>
-            <Stack gap="md" style={{ height: "100%", minHeight: 0 }}>
-              <HStack justify="between">
-                <Text weight="semibold">Theme library</Text>
-                <Badge appearance="subtle">{themeDocuments.length} saved</Badge>
-              </HStack>
-
-              <ScrollArea className={classes.libraryScroll}>
-                <Stack gap="xs">
-                  {themeDocuments.length === 0 ? (
-                    <Text size="sm" tone="secondary">
-                      No themes yet. Create one below.
-                    </Text>
-                  ) : (
-                    themeDocuments.map((doc) => {
-                      const isFocus = libraryFocusId === doc.id;
-                      const isLive = activeThemeDocumentId === doc.id;
-                      return (
-                        <div
-                          key={doc.id}
-                          className={`${classes.themeRow} ${isFocus ? classes.themeRowSelected : ""} ${isLive ? classes.themeRowActive : ""}`}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => beginEdit(doc.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              beginEdit(doc.id);
-                            }
-                          }}
-                        >
-                          <div className={classes.themeRowHeader}>
-                            <Text size="sm" weight="semibold" lineClamp={2}>
-                              {doc.name}
-                            </Text>
-                            {isLive && (
-                              <Badge tone="success" appearance="solid">
-                                Active
-                              </Badge>
-                            )}
-                          </div>
-                          <Text className={classes.themeRowMeta} lineClamp={1}>
-                            {doc.id}
+            <ScrollArea className={classes.libraryScroll}>
+              <Stack gap="xs">
+                {themeDocuments.length === 0 ? (
+                  <Text size="sm" tone="secondary">
+                    No themes yet. Create one below.
+                  </Text>
+                ) : (
+                  themeDocuments.map((doc) => {
+                    const isFocus = libraryFocusId === doc.id;
+                    const isLive = activeThemeDocumentId === doc.id;
+                    return (
+                      <div
+                        key={doc.id}
+                        className={`${classes.themeRow} ${isFocus ? classes.themeRowSelected : ""} ${isLive ? classes.themeRowActive : ""}`}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => beginEdit(doc.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            beginEdit(doc.id);
+                          }
+                        }}
+                      >
+                        <div className={classes.themeRowHeader}>
+                          <Text size="sm" weight="semibold" lineClamp={2}>
+                            {doc.name}
                           </Text>
-                          <div className={classes.themeRowActions}>
-                            <SimpleTooltip
-                              content="Edit JSON & preview"
-                              portalContainer={portalContainer}
-                            >
+                          {isLive && (
+                            <Badge tone="success" appearance="solid">
+                              Active
+                            </Badge>
+                          )}
+                        </div>
+                        <Text className={classes.themeRowMeta} lineClamp={1}>
+                          {doc.id}
+                        </Text>
+                        <div className={classes.themeRowActions}>
+                          <Tooltip.Root>
+                            <Tooltip.Trigger>
                               <IconButton
-                                name="wrench"
                                 icon={<IconEdit size={14} />}
                                 appearance="subtle"
                                 tone="accent"
                                 size="sm"
                                 aria-label="Edit JSON & preview"
-                                onPress={() => beginEdit(doc.id)}
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  beginEdit(doc.id);
+                                }}
                               />
-                            </SimpleTooltip>
-                            <SimpleTooltip
-                              content="Set as active theme"
-                              portalContainer={portalContainer}
-                            >
+                            </Tooltip.Trigger>
+                            <Tooltip.Popup>Edit JSON & preview</Tooltip.Popup>
+                          </Tooltip.Root>
+                          <Tooltip.Root>
+                            <Tooltip.Trigger>
                               <IconButton
-                                name="check"
                                 icon={<IconCheck size={14} />}
                                 appearance="subtle"
                                 tone="success"
                                 size="sm"
                                 aria-label="Set as active theme"
-                                isDisabled={isLive}
-                                onPress={() => activateTheme(doc.id)}
-                                onClick={(e) => e.stopPropagation()}
+                                disabled={isLive}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  activateTheme(doc.id);
+                                }}
                               />
-                            </SimpleTooltip>
-                            <SimpleTooltip content="Delete theme" portalContainer={portalContainer}>
+                            </Tooltip.Trigger>
+                            <Tooltip.Popup>Set as active theme</Tooltip.Popup>
+                          </Tooltip.Root>
+                          <Tooltip.Root>
+                            <Tooltip.Trigger>
                               <IconButton
-                                name="close"
                                 icon={<IconTrash size={14} />}
                                 appearance="subtle"
                                 tone="danger"
                                 size="sm"
                                 aria-label="Delete theme"
-                                onPress={() => setDeleteTargetId(doc.id)}
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteTargetId(doc.id);
+                                }}
                               />
-                            </SimpleTooltip>
-                          </div>
+                            </Tooltip.Trigger>
+                            <Tooltip.Popup>Delete theme</Tooltip.Popup>
+                          </Tooltip.Root>
                         </div>
-                      );
-                    })
-                  )}
-                </Stack>
-              </ScrollArea>
-
-              <Stack
-                gap="sm"
-                style={{
-                  borderTop: "1px solid var(--var-ui-color-border-default)",
-                  paddingTop: "0.75rem",
-                }}
-              >
-                <Text
-                  size="xs"
-                  weight="semibold"
-                  tone="secondary"
-                  style={{ textTransform: "uppercase" }}
-                >
-                  New theme
-                </Text>
-                <TextField
-                  label="Name"
-                  size="sm"
-                  value={themeName}
-                  onChange={setThemeName}
-                  placeholder="My theme"
-                />
-                <Select
-                  label="From preset"
-                  options={PRESET_SELECT_OPTIONS}
-                  selectedKey={presetId}
-                  onSelectionChange={(key) => key != null && setPresetId(String(key))}
-                  portalContainer={portalContainer}
-                />
-                <Button size="sm" onPress={createNewTheme} isDisabled={!themeName.trim()}>
-                  <IconPlus size={14} />
-                  Create theme
-                </Button>
-              </Stack>
-            </Stack>
-          </Surface>
-
-          <Surface padding="md" className={classes.workspace}>
-            {!editingThemeId ? (
-              <div className={classes.workspaceEmpty}>
-                <Stack gap="sm" align="center" style={{ maxWidth: 360 }}>
-                  <Text weight="semibold" style={{ textAlign: "center" }}>
-                    Edit workspace
-                  </Text>
-                  <Text size="sm" tone="secondary" style={{ textAlign: "center" }}>
-                    Choose a theme in the library and click the pencil to edit its JSON and see a
-                    live preview. Active theme is used when you save config; use the checkmark in
-                    the library to switch which one is active.
-                  </Text>
-                  {focusedTheme && (
-                    <Button appearance="subtle" onPress={() => beginEdit(focusedTheme.id)}>
-                      <IconEdit size={16} />
-                      Edit &quot;{focusedTheme.name}&quot;
-                    </Button>
-                  )}
-                </Stack>
-              </div>
-            ) : (
-              <Stack gap="md" className={classes.workspaceBody}>
-                <HStack justify="between" align="start" wrap className={classes.workspaceHeader}>
-                  <div>
-                    <Text weight="semibold">Editing</Text>
-                    <Text size="sm" tone="secondary" as="div">
-                      {editingTheme?.name ?? editingThemeId}
-                      {isDirty ? (
-                        <Badge
-                          tone="warning"
-                          appearance="subtle"
-                          style={{ marginInlineStart: "0.5rem" }}
-                        >
-                          Unsaved
-                        </Badge>
-                      ) : null}
-                    </Text>
-                  </div>
-                  <HStack gap="xs">
-                    <Button appearance="outline" size="sm" onPress={closeEditor}>
-                      <IconX size={16} />
-                      Close
-                    </Button>
-                    <Button size="sm" onPress={saveJson}>
-                      Save JSON
-                    </Button>
-                  </HStack>
-                </HStack>
-
-                <div className={classes.editorPreviewRow}>
-                  <div className={classes.editorColumn}>
-                    <Stack gap="sm">
-                      <Tabs
-                        className={classes.editorTabsList}
-                        selectedKey={editorTab ?? "quick"}
-                        onSelectionChange={(key: Key) => setEditorTab(String(key))}
-                        tabs={[
-                          {
-                            id: "quick",
-                            label: "Widget tokens",
-                            content:
-                              previewResult.status === "ok" ? (
-                                <Stack gap="sm">
-                                  <div className={classes.widgetTokenIntro}>
-                                    <TextField
-                                      size="sm"
-                                      label="Filter widget tokens"
-                                      placeholder="Search token, CSS variable, or value"
-                                      value={widgetTokenQuery}
-                                      onChange={setWidgetTokenQuery}
-                                      className={classes.widgetTokenSearch}
-                                    />
-                                  </div>
-
-                                  {widgetTokenSections.length === 0 ? (
-                                    <Surface padding="md">
-                                      <Text size="sm" tone="secondary">
-                                        No widget-related tokens match this filter.
-                                      </Text>
-                                    </Surface>
-                                  ) : (
-                                    <Stack gap="md">
-                                      {widgetTokenSections.map((section) => (
-                                        <section key={section.id} className={classes.tokenSection}>
-                                          <HStack justify="between" gap="xs" align="start">
-                                            <div>
-                                              <Text
-                                                size="xs"
-                                                weight="semibold"
-                                                tone="secondary"
-                                                style={{ textTransform: "uppercase" }}
-                                              >
-                                                {section.title}
-                                              </Text>
-                                              <Text size="xs" tone="secondary">
-                                                {section.description}
-                                              </Text>
-                                            </div>
-                                            <Badge appearance="outline">
-                                              {section.entries.length} tokens
-                                            </Badge>
-                                          </HStack>
-                                          <div className={classes.colorTokenGrid}>
-                                            {section.entries.map((entry) => (
-                                              <TokenControl
-                                                key={entry.referencePath}
-                                                entry={entry}
-                                                references={referencesFor(entry)}
-                                                onChange={updateToken}
-                                              />
-                                            ))}
-                                          </div>
-                                        </section>
-                                      ))}
-                                    </Stack>
-                                  )}
-                                </Stack>
-                              ) : (
-                                <Alert variant="warning">
-                                  Fix the theme JSON before editing tokens in the GUI.
-                                </Alert>
-                              ),
-                          },
-                          {
-                            id: "all",
-                            label: "All tokens",
-                            content:
-                              previewResult.status === "ok" ? (
-                                <Stack gap="md">
-                                  {groupedTokenEntries.map(([groupName, entries]) => (
-                                    <Stack gap="sm" key={groupName}>
-                                      <Text
-                                        size="xs"
-                                        weight="semibold"
-                                        tone="secondary"
-                                        style={{ textTransform: "uppercase" }}
-                                      >
-                                        {tokenTypeLabel(groupName)}
-                                      </Text>
-                                      <div className={classes.colorTokenGrid}>
-                                        {entries.map((entry) => (
-                                          <TokenControl
-                                            key={entry.referencePath}
-                                            entry={entry}
-                                            references={referencesFor(entry)}
-                                            onChange={updateToken}
-                                          />
-                                        ))}
-                                      </div>
-                                    </Stack>
-                                  ))}
-                                </Stack>
-                              ) : (
-                                <Alert variant="warning">
-                                  Fix the theme JSON before editing tokens in the GUI.
-                                </Alert>
-                              ),
-                          },
-                          {
-                            id: "json",
-                            label: "Theme JSON",
-                            content: (
-                              <TextAreaField
-                                label="Theme JSON"
-                                className={classes.textarea}
-                                value={editorValue}
-                                onChange={setEditorValue}
-                              />
-                            ),
-                          },
-                        ]}
-                      />
-
-                      {saveError && (
-                        <Alert variant="danger" icon={<IconAlertCircle size={16} />}>
-                          <Text size="sm" as="div" style={{ whiteSpace: "pre-wrap", margin: 0 }}>
-                            {saveError}
-                          </Text>
-                        </Alert>
-                      )}
-                      {saveSuccess && (
-                        <Alert variant="success">
-                          <Text size="sm">{saveSuccess}</Text>
-                        </Alert>
-                      )}
-
-                      <Text size="xs" tone="secondary">
-                        Validation matches{" "}
-                        <Code>packages/schema/schemas/theme-document.schema.json</Code>.
-                      </Text>
-                    </Stack>
-                  </div>
-
-                  <div className={classes.previewColumn}>
-                    <Stack gap="sm">
-                      <HStack justify="between" align="center" wrap>
-                        <Text size="sm" weight="semibold">
-                          View preview
-                        </Text>
-                        <HStack gap="xs">
-                          {previewViews.length > 0 && (
-                            <Select
-                              aria-label="Preview view"
-                              options={previewViews.map((view) => ({
-                                id: view.id,
-                                label: view.name,
-                              }))}
-                              selectedKey={activePreviewView?.id ?? null}
-                              onSelectionChange={(key) =>
-                                setPreviewViewId(key == null ? null : String(key))
-                              }
-                              className={classes.previewViewSelect}
-                              portalContainer={portalContainer}
-                            />
-                          )}
-                          <SegmentedControl
-                            size="sm"
-                            selectedKeys={new Set([previewMode])}
-                            onSelectionChange={(keys) => {
-                              const value = [...keys][0];
-                              if (value === "dark" || value === "light") setPreviewMode(value);
-                            }}
-                            options={[
-                              { id: "dark", label: "Dark" },
-                              { id: "light", label: "Light" },
-                            ]}
-                          />
-                        </HStack>
-                      </HStack>
-
-                      <div className={classes.previewShell}>
-                        {previewResult.status === "ok" ? (
-                          <ThemePreviewIsland
-                            doc={previewResult.doc}
-                            colorMode={previewMode}
-                            view={activePreviewView}
-                          />
-                        ) : (
-                          <div className={classes.previewPlaceholder}>
-                            {previewResult.status === "empty" && "Edit JSON to see a preview."}
-                            {previewResult.status === "parse" &&
-                              "Fix JSON syntax to preview this theme."}
-                            {previewResult.status === "invalid" && (
-                              <Stack gap="xs" align="center">
-                                <Text size="sm" weight="medium">
-                                  Preview needs a valid theme document
-                                </Text>
-                                <Text
-                                  size="xs"
-                                  tone="secondary"
-                                  style={{ textAlign: "center", maxWidth: 280 }}
-                                >
-                                  {formatIssues(previewResult.issues)}
-                                </Text>
-                              </Stack>
-                            )}
-                          </div>
-                        )}
                       </div>
-                    </Stack>
-                  </div>
-                </div>
+                    );
+                  })
+                )}
               </Stack>
-            )}
-          </Surface>
-        </div>
+            </ScrollArea>
 
-        <Dialog.Root
-          isOpen={Boolean(deleteTargetId)}
-          onOpenChange={(isOpen) => {
-            if (!isOpen) setDeleteTargetId(null);
-          }}
-          portalContainer={portalContainer}
-        >
-          <Dialog.Backdrop>
-            <Dialog.Popup>
-              <Dialog.Title>Delete theme?</Dialog.Title>
-              <Text size="sm">
-                This removes the theme from this display&apos;s library. This cannot be undone.
+            <Stack
+              gap="sm"
+              style={{
+                borderTop: "1px solid var(--var-ui-color-border-default)",
+                paddingTop: "0.75rem",
+              }}
+            >
+              <Text
+                size="xs"
+                weight="semibold"
+                tone="secondary"
+                style={{ textTransform: "uppercase" }}
+              >
+                New theme
               </Text>
-              <Dialog.Actions>
-                <Button appearance="outline" onPress={() => setDeleteTargetId(null)}>
-                  Cancel
-                </Button>
-                <Button tone="danger" onPress={confirmDelete}>
-                  Delete
-                </Button>
-              </Dialog.Actions>
-            </Dialog.Popup>
-          </Dialog.Backdrop>
-        </Dialog.Root>
+              <TextField
+                label="Name"
+                size="sm"
+                value={themeName}
+                onValueChange={setThemeName}
+                placeholder="My theme"
+              />
+              <Select
+                label="From preset"
+                options={PRESET_SELECT_OPTIONS}
+                value={presetId}
+                onValueChange={(key) => key != null && setPresetId(String(key))}
+              />
+              <Button size="sm" onClick={createNewTheme} disabled={!themeName.trim()}>
+                <IconPlus size={14} />
+                Create theme
+              </Button>
+            </Stack>
+          </Stack>
+        </Surface>
 
-        <Dialog.Root
-          isOpen={discardOpen}
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              setDiscardOpen(false);
-              setPendingEditId(null);
-            }
-          }}
-          portalContainer={portalContainer}
-        >
-          <Dialog.Backdrop>
-            <Dialog.Popup>
-              <Dialog.Title>Discard unsaved changes?</Dialog.Title>
-              <Text size="sm">
-                {pendingEditId
-                  ? "Save or discard your edits before opening another theme."
-                  : "You have unsaved edits. Close the editor and discard them?"}
-              </Text>
-              <Dialog.Actions>
-                <Button
-                  appearance="outline"
-                  onPress={() => {
-                    setDiscardOpen(false);
-                    setPendingEditId(null);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button tone="warning" onPress={handleDiscardClose}>
-                  Discard
-                </Button>
-              </Dialog.Actions>
-            </Dialog.Popup>
-          </Dialog.Backdrop>
-        </Dialog.Root>
+        <Surface padding="md" className={classes.workspace}>
+          {!editingThemeId ? (
+            <div className={classes.workspaceEmpty}>
+              <Stack gap="sm" align="center" style={{ maxWidth: 360 }}>
+                <Text weight="semibold" style={{ textAlign: "center" }}>
+                  Edit workspace
+                </Text>
+                <Text size="sm" tone="secondary" style={{ textAlign: "center" }}>
+                  Choose a theme in the library and click the pencil to edit its JSON and see a live
+                  preview. Active theme is used when you save config; use the checkmark in the
+                  library to switch which one is active.
+                </Text>
+                {focusedTheme && (
+                  <Button appearance="subtle" onClick={() => beginEdit(focusedTheme.id)}>
+                    <IconEdit size={16} />
+                    Edit &quot;{focusedTheme.name}&quot;
+                  </Button>
+                )}
+              </Stack>
+            </div>
+          ) : (
+            <Stack gap="md" className={classes.workspaceBody}>
+              <HStack justify="between" align="start" wrap className={classes.workspaceHeader}>
+                <div>
+                  <Text weight="semibold">Editing</Text>
+                  <Text size="sm" tone="secondary" as="div">
+                    {editingTheme?.name ?? editingThemeId}
+                    {isDirty ? (
+                      <Badge
+                        tone="warning"
+                        appearance="subtle"
+                        style={{ marginInlineStart: "0.5rem" }}
+                      >
+                        Unsaved
+                      </Badge>
+                    ) : null}
+                  </Text>
+                </div>
+                <HStack gap="xs">
+                  <Button appearance="outline" size="sm" onClick={closeEditor}>
+                    <IconX size={16} />
+                    Close
+                  </Button>
+                  <Button size="sm" onClick={saveJson}>
+                    Save JSON
+                  </Button>
+                </HStack>
+              </HStack>
+
+              <div className={classes.editorPreviewRow}>
+                <div className={classes.editorColumn}>
+                  <Stack gap="sm">
+                    <Tabs
+                      className={classes.editorTabsList}
+                      value={editorTab ?? "quick"}
+                      onValueChange={(key: Key) => setEditorTab(String(key))}
+                      tabs={[
+                        {
+                          value: "quick",
+                          label: "Widget tokens",
+                          content:
+                            previewResult.status === "ok" ? (
+                              <Stack gap="sm">
+                                <div className={classes.widgetTokenIntro}>
+                                  <TextField
+                                    size="sm"
+                                    label="Filter widget tokens"
+                                    placeholder="Search token, CSS variable, or value"
+                                    value={widgetTokenQuery}
+                                    onValueChange={setWidgetTokenQuery}
+                                    className={classes.widgetTokenSearch}
+                                  />
+                                </div>
+
+                                {widgetTokenSections.length === 0 ? (
+                                  <Surface padding="md">
+                                    <Text size="sm" tone="secondary">
+                                      No widget-related tokens match this filter.
+                                    </Text>
+                                  </Surface>
+                                ) : (
+                                  <Stack gap="md">
+                                    {widgetTokenSections.map((section) => (
+                                      <section key={section.id} className={classes.tokenSection}>
+                                        <HStack justify="between" gap="xs" align="start">
+                                          <div>
+                                            <Text
+                                              size="xs"
+                                              weight="semibold"
+                                              tone="secondary"
+                                              style={{ textTransform: "uppercase" }}
+                                            >
+                                              {section.title}
+                                            </Text>
+                                            <Text size="xs" tone="secondary">
+                                              {section.description}
+                                            </Text>
+                                          </div>
+                                          <Badge appearance="outline">
+                                            {section.entries.length} tokens
+                                          </Badge>
+                                        </HStack>
+                                        <div className={classes.colorTokenGrid}>
+                                          {section.entries.map((entry) => (
+                                            <TokenControl
+                                              key={entry.referencePath}
+                                              entry={entry}
+                                              references={referencesFor(entry)}
+                                              onChange={updateToken}
+                                            />
+                                          ))}
+                                        </div>
+                                      </section>
+                                    ))}
+                                  </Stack>
+                                )}
+                              </Stack>
+                            ) : (
+                              <Alert tone="warning">
+                                Fix the theme JSON before editing tokens in the GUI.
+                              </Alert>
+                            ),
+                        },
+                        {
+                          value: "all",
+                          label: "All tokens",
+                          content:
+                            previewResult.status === "ok" ? (
+                              <Stack gap="md">
+                                {groupedTokenEntries.map(([groupName, entries]) => (
+                                  <Stack gap="sm" key={groupName}>
+                                    <Text
+                                      size="xs"
+                                      weight="semibold"
+                                      tone="secondary"
+                                      style={{ textTransform: "uppercase" }}
+                                    >
+                                      {tokenTypeLabel(groupName)}
+                                    </Text>
+                                    <div className={classes.colorTokenGrid}>
+                                      {entries.map((entry) => (
+                                        <TokenControl
+                                          key={entry.referencePath}
+                                          entry={entry}
+                                          references={referencesFor(entry)}
+                                          onChange={updateToken}
+                                        />
+                                      ))}
+                                    </div>
+                                  </Stack>
+                                ))}
+                              </Stack>
+                            ) : (
+                              <Alert tone="warning">
+                                Fix the theme JSON before editing tokens in the GUI.
+                              </Alert>
+                            ),
+                        },
+                        {
+                          value: "json",
+                          label: "Theme JSON",
+                          content: (
+                            <TextAreaField
+                              label="Theme JSON"
+                              className={classes.textarea}
+                              value={editorValue}
+                              onValueChange={setEditorValue}
+                            />
+                          ),
+                        },
+                      ]}
+                    />
+
+                    {saveError && (
+                      <Alert tone="danger" icon={<IconAlertCircle size={16} />}>
+                        <Text size="sm" as="div" style={{ whiteSpace: "pre-wrap", margin: 0 }}>
+                          {saveError}
+                        </Text>
+                      </Alert>
+                    )}
+                    {saveSuccess && (
+                      <Alert tone="success">
+                        <Text size="sm">{saveSuccess}</Text>
+                      </Alert>
+                    )}
+
+                    <Text size="xs" tone="secondary">
+                      Validation matches{" "}
+                      <Code>packages/schema/schemas/theme-document.schema.json</Code>.
+                    </Text>
+                  </Stack>
+                </div>
+
+                <div className={classes.previewColumn}>
+                  <Stack gap="sm">
+                    <HStack justify="between" align="center" wrap>
+                      <Text size="sm" weight="semibold">
+                        View preview
+                      </Text>
+                      <HStack gap="xs">
+                        {previewViews.length > 0 && (
+                          <Select
+                            aria-label="Preview view"
+                            options={previewViews.map((view) => ({
+                              value: view.id,
+                              label: view.name,
+                            }))}
+                            value={activePreviewView?.id ?? null}
+                            onValueChange={(key) =>
+                              setPreviewViewId(key == null ? null : String(key))
+                            }
+                            className={classes.previewViewSelect}
+                          />
+                        )}
+                        <SegmentedControl
+                          size="sm"
+                          value={previewMode}
+                          onValueChange={(value) => {
+                            if (value === "dark" || value === "light") setPreviewMode(value);
+                          }}
+                          options={[
+                            { value: "dark", label: "Dark" },
+                            { value: "light", label: "Light" },
+                          ]}
+                        />
+                      </HStack>
+                    </HStack>
+
+                    <div className={classes.previewShell}>
+                      {previewResult.status === "ok" ? (
+                        <ThemePreviewIsland
+                          doc={previewResult.doc}
+                          colorMode={previewMode}
+                          view={activePreviewView}
+                        />
+                      ) : (
+                        <div className={classes.previewPlaceholder}>
+                          {previewResult.status === "empty" && "Edit JSON to see a preview."}
+                          {previewResult.status === "parse" &&
+                            "Fix JSON syntax to preview this theme."}
+                          {previewResult.status === "invalid" && (
+                            <Stack gap="xs" align="center">
+                              <Text size="sm" weight="medium">
+                                Preview needs a valid theme document
+                              </Text>
+                              <Text
+                                size="xs"
+                                tone="secondary"
+                                style={{ textAlign: "center", maxWidth: 280 }}
+                              >
+                                {formatIssues(previewResult.issues)}
+                              </Text>
+                            </Stack>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Stack>
+                </div>
+              </div>
+            </Stack>
+          )}
+        </Surface>
       </div>
-    </OverlayPortalContext.Provider>
+
+      <Dialog.Root
+        open={Boolean(deleteTargetId)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setDeleteTargetId(null);
+        }}
+      >
+        <Dialog.Popup>
+          <Dialog.Title>Delete theme?</Dialog.Title>
+          <Text size="sm">
+            This removes the theme from this display&apos;s library. This cannot be undone.
+          </Text>
+          <Dialog.Actions>
+            <Button appearance="outline" onClick={() => setDeleteTargetId(null)}>
+              Cancel
+            </Button>
+            <Button tone="danger" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </Dialog.Actions>
+        </Dialog.Popup>
+      </Dialog.Root>
+
+      <Dialog.Root
+        open={discardOpen}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setDiscardOpen(false);
+            setPendingEditId(null);
+          }
+        }}
+      >
+        <Dialog.Popup>
+          <Dialog.Title>Discard unsaved changes?</Dialog.Title>
+          <Text size="sm">
+            {pendingEditId
+              ? "Save or discard your edits before opening another theme."
+              : "You have unsaved edits. Close the editor and discard them?"}
+          </Text>
+          <Dialog.Actions>
+            <Button
+              appearance="outline"
+              onClick={() => {
+                setDiscardOpen(false);
+                setPendingEditId(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button tone="warning" onClick={handleDiscardClose}>
+              Discard
+            </Button>
+          </Dialog.Actions>
+        </Dialog.Popup>
+      </Dialog.Root>
+    </div>
   );
 }

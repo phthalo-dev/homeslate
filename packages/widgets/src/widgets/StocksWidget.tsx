@@ -111,7 +111,7 @@ export function StocksWidget({ widget }: WidgetProps<StocksConfig>) {
         </Text>
         <HStack gap="xs">
           {isLoading && <Spinner size="sm" tone="success" />}
-          <Button appearance="ghost" size="sm" onPress={refresh} className={classes.refreshBtn}>
+          <Button appearance="ghost" size="sm" onClick={refresh} className={classes.refreshBtn}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -248,7 +248,7 @@ export function StocksWidgetSettings({ widget, onConfigChange }: WidgetProps<Sto
         <TextField
           placeholder="Search by symbol or company name..."
           value={searchQuery}
-          onChange={(value) => handleSearch(value)}
+          onValueChange={(value) => handleSearch(value)}
         />
         {isSearching && <Spinner size="sm" />}
 
@@ -261,8 +261,8 @@ export function StocksWidgetSettings({ widget, onConfigChange }: WidgetProps<Sto
                   appearance="ghost"
                   size="sm"
 
-                  onPress={() => addSymbol(result.symbol)}
-                  isDisabled={symbols.includes(result.symbol) || symbols.length >= 10}
+                  onClick={() => addSymbol(result.symbol)}
+                  disabled={symbols.includes(result.symbol) || symbols.length >= 10}
                   className={classes.searchResult}
                 >
                   <Text weight="semibold" size="sm">
@@ -299,7 +299,7 @@ export function StocksWidgetSettings({ widget, onConfigChange }: WidgetProps<Sto
                   key={symbol}
                   appearance="subtle"
                   size="sm"
-                  onPress={() => removeSymbol(symbol)}
+                  onClick={() => removeSymbol(symbol)}
                 >
                   {info?.name ?? symbol} ×
                 </Button>
@@ -313,16 +313,16 @@ export function StocksWidgetSettings({ widget, onConfigChange }: WidgetProps<Sto
         <Text size="sm">Show price change</Text>
         <Switch
           aria-label="Show price change"
-          isSelected={showChange}
-          onChange={(value) => onConfigChange({ showChange: value })}
+          checked={showChange}
+          onCheckedChange={(value) => onConfigChange({ showChange: value })}
         />
       </HStack>
       <HStack justify="between" align="center">
         <Text size="sm">Show day high/low</Text>
         <Switch
           aria-label="Show day high/low"
-          isSelected={showDayRange}
-          onChange={(value) => onConfigChange({ showDayRange: value })}
+          checked={showDayRange}
+          onCheckedChange={(value) => onConfigChange({ showDayRange: value })}
         />
       </HStack>
     </Stack>

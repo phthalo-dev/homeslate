@@ -14,7 +14,6 @@ import { useEffect, useState } from "react";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntities, useEntity, useHomeAssistantService } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import type { HomeAssistantEntitySummary } from "./homeAssistant";
 import {
   NOTIFY_EMPTY_COPY,
@@ -149,7 +148,7 @@ export function NotifyWidget({ widget, isEditing }: WidgetProps<NotifyConfig>) {
       <div className={containerClass}>
         <div className={classes.empty}>
           <ErrorText size="sm">{error ?? NOTIFY_TARGET_MISSING_COPY}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -186,7 +185,7 @@ export function NotifyWidget({ widget, isEditing }: WidgetProps<NotifyConfig>) {
             aria-label="Message"
             placeholder={mode === "notify" ? "Message…" : "What should it say?"}
             value={message}
-            onChange={(value) => {
+            onValueChange={(value) => {
               setMessage(value);
               setSent(false);
             }}
@@ -196,8 +195,8 @@ export function NotifyWidget({ widget, isEditing }: WidgetProps<NotifyConfig>) {
               tone="accent"
               appearance="filled"
               size="sm"
-              onPress={send}
-              isDisabled={!canSend || pending}
+              onClick={send}
+              disabled={!canSend || pending}
             >
               <IconSend size={14} />
               {sending ? "Sending…" : "Send"}
@@ -221,7 +220,7 @@ export function NotifyWidget({ widget, isEditing }: WidgetProps<NotifyConfig>) {
         <div className={classes.errorBox}>
           <ErrorText size="xs">{sendError ?? controlError ?? error}</ErrorText>
           {error && (
-            <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+            <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
               <IconRefresh size={14} />
               Retry
             </Button>
@@ -252,7 +251,6 @@ export function NotifyWidgetSettings({ widget, onConfigChange }: WidgetProps<Not
     defaultMessage = "",
     transparentBackground = false,
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const notify = useEntities("notify", NOTIFY_MISSING_CONFIG_COPY);
   const tts = useEntities("tts", NOTIFY_MISSING_CONFIG_COPY);
   const mediaPlayers = useEntities("media_player", NOTIFY_MISSING_CONFIG_COPY);
@@ -261,7 +259,7 @@ export function NotifyWidgetSettings({ widget, onConfigChange }: WidgetProps<Not
 
   const options = (entities: HomeAssistantEntitySummary[]) =>
     entities.map((entity) => ({
-      id: entity.entityId,
+      value: entity.entityId,
       label: `${entity.name} (${entity.entityId})`,
     }));
 
@@ -273,12 +271,11 @@ export function NotifyWidgetSettings({ widget, onConfigChange }: WidgetProps<Not
           size="sm"
           aria-label="Notification mode"
           options={[
-            { id: "notify", label: "Notify" },
-            { id: "tts", label: "Speak" },
+            { value: "notify", label: "Notify" },
+            { value: "tts", label: "Speak" },
           ]}
-          selectedKeys={[mode]}
-          onSelectionChange={(keys) => {
-            const next = [...keys][0];
+          value={mode}
+          onValueChange={(next) => {
             if (next === "notify" || next === "tts") onConfigChange({ mode: next });
           }}
         />
@@ -291,11 +288,10 @@ export function NotifyWidgetSettings({ widget, onConfigChange }: WidgetProps<Not
           label="Notification target"
           placeholder="Select a notify entity…"
           options={options(notify.entities)}
-          selectedKey={notifyEntityId || null}
-          onSelectionChange={(key) => {
+          value={notifyEntityId || null}
+          onValueChange={(key) => {
             if (typeof key === "string") onConfigChange({ notifyEntityId: key });
           }}
-          portalContainer={portalContainer}
         />
       ) : (
         <>
@@ -303,21 +299,19 @@ export function NotifyWidgetSettings({ widget, onConfigChange }: WidgetProps<Not
             label="TTS target"
             placeholder="Select a TTS entity…"
             options={options(tts.entities)}
-            selectedKey={ttsEntityId || null}
-            onSelectionChange={(key) => {
+            value={ttsEntityId || null}
+            onValueChange={(key) => {
               if (typeof key === "string") onConfigChange({ ttsEntityId: key });
             }}
-            portalContainer={portalContainer}
           />
           <Select
             label="Media player"
             placeholder="Select a media player…"
             options={options(mediaPlayers.entities)}
-            selectedKey={mediaPlayerEntityId || null}
-            onSelectionChange={(key) => {
+            value={mediaPlayerEntityId || null}
+            onValueChange={(key) => {
               if (typeof key === "string") onConfigChange({ mediaPlayerEntityId: key });
             }}
-            portalContainer={portalContainer}
           />
         </>
       )}
@@ -328,20 +322,20 @@ export function NotifyWidgetSettings({ widget, onConfigChange }: WidgetProps<Not
         <TextField
           label="Title (optional)"
           value={title}
-          onChange={(value) => onConfigChange({ title: value })}
+          onValueChange={(value) => onConfigChange({ title: value })}
         />
       )}
       <TextField
         label="Default message"
         value={defaultMessage}
-        onChange={(value) => onConfigChange({ defaultMessage: value })}
+        onValueChange={(value) => onConfigChange({ defaultMessage: value })}
       />
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

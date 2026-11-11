@@ -18,14 +18,13 @@ import type { AlarmDefinition, AlarmToneId } from "@homeslate/schema";
 import { isValidTime } from "./isValidTime";
 import { ALARM_TONE_OPTIONS } from "./tones";
 import { hhMmFromTime, timeFromHhMm } from "../dateValue";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import * as classes from "./AlarmListEditor.styles";
 
 const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 const DAY_NAMES_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const TONE_OPTIONS = ALARM_TONE_OPTIONS.map((option) => ({
-  id: option.value,
+  value: option.value,
   label: option.label,
 }));
 
@@ -54,7 +53,7 @@ function AlarmTimeInput({
     <TimeInput
       {...props}
       value={timeValue}
-      onChange={(next: Time | null) => {
+      onValueChange={(next: Time | null) => {
         const hhmm = hhMmFromTime(next);
         if (isValidTime(hhmm)) onChange(hhmm);
       }}
@@ -80,7 +79,6 @@ interface AlarmListEditorProps {
 }
 
 export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmListEditorProps) {
-  const portalContainer = useOverlayPortalContainer();
   const updateAlarm = useCallback(
     (id: string, patch: Partial<AlarmDefinition>) => {
       onChange(alarms.map((a) => (a.id === id ? { ...a, ...patch } : a)));
@@ -119,11 +117,10 @@ export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmLis
         </Text>
         {!readOnly && (
           <IconButton
-            name="check"
             icon={<IconPlus size={18} />}
             appearance="subtle"
             size="lg"
-            onPress={handleAdd}
+            onClick={handleAdd}
             aria-label="Add alarm"
             className={classes.addBtn}
           />
@@ -147,8 +144,8 @@ export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmLis
                 </Text>
               </Stack>
               <Switch
-                isSelected={alarm.enabled}
-                isDisabled
+                checked={alarm.enabled}
+                disabled
                 aria-label={`${alarm.label || "Alarm"} enabled`}
               />
             </HStack>
@@ -157,23 +154,22 @@ export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmLis
               <HStack justify="between" gap="xs">
                 <TextField
                   value={alarm.label}
-                  onChange={(label) => updateAlarm(alarm.id, { label })}
+                  onValueChange={(label) => updateAlarm(alarm.id, { label })}
                   placeholder="Alarm"
                   size="sm"
                   style={{ flex: 1, minWidth: 0 }}
                   aria-label="Alarm label"
                 />
                 <Switch
-                  isSelected={alarm.enabled}
-                  onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
+                  checked={alarm.enabled}
+                  onCheckedChange={(enabled) => updateAlarm(alarm.id, { enabled })}
                   aria-label="Alarm enabled"
                 />
                 <IconButton
-                  name="close"
                   icon={<IconTrash size={16} />}
                   appearance="ghost"
                   tone="danger"
-                  onPress={() => handleDelete(alarm.id)}
+                  onClick={() => handleDelete(alarm.id)}
                   aria-label="Delete alarm"
                 />
               </HStack>
@@ -186,13 +182,12 @@ export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmLis
                 />
                 <Select
                   options={TONE_OPTIONS}
-                  selectedKey={alarm.toneId}
-                  onSelectionChange={(key) =>
+                  value={alarm.toneId}
+                  onValueChange={(key) =>
                     key != null && updateAlarm(alarm.id, { toneId: String(key) as AlarmToneId })
                   }
                   aria-label="Alarm tone"
                   className={classes.toneSelect}
-                  portalContainer={portalContainer}
                 />
               </HStack>
               <HStack gap="xs" className={classes.dayRow}>
@@ -201,8 +196,8 @@ export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmLis
                   return (
                     <Chip
                       key={idx}
-                      isSelected={active}
-                      onChange={() => toggleDay(alarm.id, idx)}
+                      selected={active}
+                      onSelectedChange={() => toggleDay(alarm.id, idx)}
                       aria-label={DAY_NAMES_SHORT[idx]}
                     >
                       {label}
@@ -216,11 +211,10 @@ export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmLis
       ))}
       {!readOnly && (
         <IconButton
-          name="check"
           icon={<IconPlus size={18} />}
           appearance="subtle"
           size="lg"
-          onPress={handleAdd}
+          onClick={handleAdd}
           aria-label="Add alarm"
           className={classes.addBtn}
         />

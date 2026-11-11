@@ -110,7 +110,7 @@ export function HomeStatusWidget({ widget, isEditing }: WidgetProps<HomeStatusCo
         <div className={classes.errorBox}>
           <ErrorText size="sm">{error ?? "No status to show yet."}</ErrorText>
           {error && (
-            <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+            <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
               <IconRefresh size={14} />
               Retry
             </Button>
@@ -177,8 +177,8 @@ export function HomeStatusWidgetSettings({
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

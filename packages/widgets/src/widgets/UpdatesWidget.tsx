@@ -109,7 +109,7 @@ export function UpdatesWidget({ widget, isEditing }: WidgetProps<UpdatesConfig>)
       {(error || controlError) && (
         <div className={classes.errorBox}>
           <ErrorText size="sm">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -159,24 +159,24 @@ export function UpdatesWidget({ widget, isEditing }: WidgetProps<UpdatesConfig>)
                     <Button
                       appearance="subtle"
                       size="sm"
-                      onPress={() =>
+                      onClick={() =>
                         void run(update, "install", { inProgress: true, updatePercentage: 0 })
                       }
-                      isDisabled={pending}
+                      disabled={pending}
                     >
                       Install
                     </Button>
                     <Button
                       appearance="subtle"
                       size="sm"
-                      onPress={() =>
+                      onClick={() =>
                         void run(update, "skip", {
                           state: "off",
                           inProgress: false,
                           updatePercentage: null,
                         })
                       }
-                      isDisabled={pending}
+                      disabled={pending}
                     >
                       Skip
                     </Button>
@@ -226,16 +226,16 @@ export function UpdatesWidgetSettings({ widget, onConfigChange }: WidgetProps<Up
         <Text size="sm">Show up-to-date entities</Text>
         <Switch
           aria-label="Show up-to-date entities"
-          isSelected={showUpToDate}
-          onChange={(value) => onConfigChange({ showUpToDate: value })}
+          checked={showUpToDate}
+          onCheckedChange={(value) => onConfigChange({ showUpToDate: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

@@ -21,7 +21,6 @@ import { GoogleCalendarEmptyState } from "../chrome/GoogleCalendarEmptyState";
 import { displayCalendarEmptyDetail } from "./googleCalendarError";
 import dayjs from "dayjs";
 import type { WidgetProps, WidgetConfig } from "../types";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { useGoogleCalendar } from "../hooks/useGoogleCalendar";
 import { useDisplayCalendar } from "../hooks/useDisplayCalendar";
 import { useGoogleRuntime } from "../googleRuntime";
@@ -198,7 +197,6 @@ function formDataToEventInput(data: EventFormData): CalendarEventInput {
 // ── Main Component ──────────────────────────────────────────────────────────
 
 export function WeekCalendarWidget({ widget }: WidgetProps<WeekCalendarConfig>) {
-  const portalContainer = useOverlayPortalContainer();
   const { selectedCalendarIds, viewMode, weekStartsOn, startHour, endHour, transparentBackground } =
     widget.config;
   const { displayId, isPreview, isAuthenticated } = useGoogleRuntime();
@@ -258,7 +256,7 @@ export function WeekCalendarWidget({ widget }: WidgetProps<WeekCalendarConfig>) 
 
   const handleFormSubmit = useCallback(async () => {
     if (!formData.title.trim()) {
-      setFormError("Title is isRequired");
+      setFormError("Title is required");
       return;
     }
     if (!formData.calendarId) {
@@ -399,12 +397,11 @@ export function WeekCalendarWidget({ widget }: WidgetProps<WeekCalendarConfig>) 
                 {day.format("D")}
               </span>
               <IconButton
-                name="check"
                 icon={<IconPlus size={9} />}
                 appearance="ghost"
                 size="sm"
                 className={classes.dayAddBtn}
-                onPress={() => openCreateModal(day)}
+                onClick={() => openCreateModal(day)}
                 aria-label={`Add event on ${day.format("ddd MMM D")}`}
               />
             </div>
@@ -444,176 +441,170 @@ export function WeekCalendarWidget({ widget }: WidgetProps<WeekCalendarConfig>) 
 
       {/* ── Create event modal ── */}
       <Dialog.Root
-        isOpen={formOpen}
+        open={formOpen}
         onOpenChange={(isOpen) => {
           if (!isOpen) setFormOpen(false);
         }}
-        portalContainer={portalContainer}
       >
-        <Dialog.Backdrop>
-          <Dialog.Popup>
-            <Dialog.Title>New Event</Dialog.Title>
-            <Stack gap="sm">
-              <TextField
-                label="Title"
-                placeholder="Event title"
-                isRequired
-                value={formData.title}
-                onChange={(value) => setFormData((d) => ({ ...d, title: value }))}
-                autoFocus
+        <Dialog.Popup>
+          <Dialog.Title>New Event</Dialog.Title>
+          <Stack gap="sm">
+            <TextField
+              label="Title"
+              placeholder="Event title"
+              required
+              value={formData.title}
+              onValueChange={(value) => setFormData((d) => ({ ...d, title: value }))}
+              autoFocus
+            />
+
+            <Select.Root
+              value={formData.calendarId || null}
+              onValueChange={(v) =>
+                setFormData((d) => ({ ...d, calendarId: v == null ? "" : String(v) }))
+              }
+              required
+            >
+              <Select.Label>Calendar</Select.Label>
+              <Select.Trigger placeholder="Select a calendar">
+                <Select.Value>
+                  {({ defaultChildren, isPlaceholder }) => {
+                    if (isPlaceholder) return "Select a calendar";
+                    const selected = calendarOptions.find((c) => c.id === formData.calendarId);
+                    return (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <span
+                          aria-hidden
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: 999,
+                            background: selected?.color ?? "#4285f4",
+                            flexShrink: 0,
+                          }}
+                        />
+                        {selected?.label ?? defaultChildren}
+                      </span>
+                    );
+                  }}
+                </Select.Value>
+              </Select.Trigger>
+              <Select.Popover>
+                <Select.ListBox>
+                  {calendarOptions.map((cal) => (
+                    <Select.Item key={cal.id} value={cal.id} textValue={cal.label}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <span
+                          aria-hidden
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: 999,
+                            background: cal.color,
+                            flexShrink: 0,
+                          }}
+                        />
+                        {cal.label}
+                      </span>
+                    </Select.Item>
+                  ))}
+                </Select.ListBox>
+              </Select.Popover>
+            </Select.Root>
+
+            <TextField
+              label="Date"
+              type="date"
+              value={formData.date}
+              onValueChange={(value) => setFormData((d) => ({ ...d, date: value }))}
+            />
+
+            <HStack justify="between">
+              <Text size="sm">All day</Text>
+              <Switch
+                checked={formData.allDay}
+                onCheckedChange={(value) => setFormData((d) => ({ ...d, allDay: value }))}
               />
+            </HStack>
 
-              <Select.Root
-                selectedKey={formData.calendarId || null}
-                onSelectionChange={(v) =>
-                  setFormData((d) => ({ ...d, calendarId: v == null ? "" : String(v) }))
-                }
-                isRequired
-              >
-                <Select.Label>Calendar</Select.Label>
-                <Select.Trigger placeholder="Select a calendar">
-                  <Select.Value>
-                    {({ defaultChildren, isPlaceholder }) => {
-                      if (isPlaceholder) return "Select a calendar";
-                      const selected = calendarOptions.find((c) => c.id === formData.calendarId);
-                      return (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                          <span
-                            aria-hidden
-                            style={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: 999,
-                              background: selected?.color ?? "#4285f4",
-                              flexShrink: 0,
-                            }}
-                          />
-                          {selected?.label ?? defaultChildren}
-                        </span>
-                      );
-                    }}
-                  </Select.Value>
-                </Select.Trigger>
-                <Select.Popover portalContainer={portalContainer}>
-                  <Select.ListBox items={calendarOptions}>
-                    {(cal) => (
-                      <Select.Item id={cal.id} textValue={cal.label}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                          <span
-                            aria-hidden
-                            style={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: 999,
-                              background: cal.color,
-                              flexShrink: 0,
-                            }}
-                          />
-                          {cal.label}
-                        </span>
-                      </Select.Item>
-                    )}
-                  </Select.ListBox>
-                </Select.Popover>
-              </Select.Root>
-
-              <TextField
-                label="Date"
-                type="date"
-                value={formData.date}
-                onChange={(value) => setFormData((d) => ({ ...d, date: value }))}
-              />
-
-              <HStack justify="between">
-                <Text size="sm">All day</Text>
-                <Switch
-                  isSelected={formData.allDay}
-                  onChange={(value) => setFormData((d) => ({ ...d, allDay: value }))}
+            {!formData.allDay && (
+              <div className={classes.timeGrid}>
+                <TextField
+                  label="Start time"
+                  type="time"
+                  value={formData.startTime}
+                  onValueChange={(value) => setFormData((d) => ({ ...d, startTime: value }))}
                 />
-              </HStack>
+                <TextField
+                  label="End time"
+                  type="time"
+                  value={formData.endTime}
+                  onValueChange={(value) => setFormData((d) => ({ ...d, endTime: value }))}
+                />
+              </div>
+            )}
 
-              {!formData.allDay && (
-                <div className={classes.timeGrid}>
-                  <TextField
-                    label="Start time"
-                    type="time"
-                    value={formData.startTime}
-                    onChange={(value) => setFormData((d) => ({ ...d, startTime: value }))}
-                  />
-                  <TextField
-                    label="End time"
-                    type="time"
-                    value={formData.endTime}
-                    onChange={(value) => setFormData((d) => ({ ...d, endTime: value }))}
-                  />
-                </div>
-              )}
+            <TextField
+              label="Location"
+              placeholder="Optional"
+              value={formData.location}
+              onValueChange={(value) => setFormData((d) => ({ ...d, location: value }))}
+            />
 
-              <TextField
-                label="Location"
-                placeholder="Optional"
-                value={formData.location}
-                onChange={(value) => setFormData((d) => ({ ...d, location: value }))}
-              />
+            <TextAreaField
+              label="Description"
+              placeholder="Optional"
+              value={formData.description}
+              onValueChange={(value) => setFormData((d) => ({ ...d, description: value }))}
+            />
 
-              <TextAreaField
-                label="Description"
-                placeholder="Optional"
-                value={formData.description}
-                onChange={(value) => setFormData((d) => ({ ...d, description: value }))}
-              />
+            {formError && (
+              <Alert tone="danger" appearance="subtle">
+                <Text size="sm">{formError}</Text>
+              </Alert>
+            )}
 
-              {formError && (
-                <Alert variant="danger" appearance="subtle">
-                  <Text size="sm">{formError}</Text>
-                </Alert>
-              )}
-
-              <HStack justify="end" gap="xs">
-                <Button appearance="ghost" size="sm" onPress={() => setFormOpen(false)}>
-                  Cancel
-                </Button>
-                <Button size="sm" isPending={formLoading} onPress={handleFormSubmit}>
-                  Create Event
-                </Button>
-              </HStack>
-            </Stack>
-          </Dialog.Popup>
-        </Dialog.Backdrop>
+            <HStack justify="end" gap="xs">
+              <Button appearance="ghost" size="sm" onClick={() => setFormOpen(false)}>
+                Cancel
+              </Button>
+              <Button size="sm" loading={formLoading} onClick={handleFormSubmit}>
+                Create Event
+              </Button>
+            </HStack>
+          </Stack>
+        </Dialog.Popup>
       </Dialog.Root>
 
       {/* Event details modal */}
       <Dialog.Root
-        isOpen={!!detailEvent}
+        open={!!detailEvent}
         onOpenChange={(isOpen) => {
           if (!isOpen) closeEventDetails();
         }}
-        portalContainer={portalContainer}
       >
-        <Dialog.Backdrop>
-          <Dialog.Popup>
-            <Dialog.Title>{detailEvent?.title ?? "Event details"}</Dialog.Title>
-            {detailEvent && (
-              <Stack gap="xs">
-                <Text size="sm" weight="semibold">
-                  {formatEventDetailDate(detailEvent)}
+        <Dialog.Popup>
+          <Dialog.Title>{detailEvent?.title ?? "Event details"}</Dialog.Title>
+          {detailEvent && (
+            <Stack gap="xs">
+              <Text size="sm" weight="semibold">
+                {formatEventDetailDate(detailEvent)}
+              </Text>
+              <Text size="sm" tone="secondary">
+                {formatEventDetailTime(detailEvent)}
+              </Text>
+              {detailEvent.calendarName && (
+                <Text size="sm">Calendar: {detailEvent.calendarName}</Text>
+              )}
+              {detailEvent.location && <Text size="sm">Location: {detailEvent.location}</Text>}
+              {detailEvent.description && (
+                <Text size="sm" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                  {detailEvent.description.replace(/<[^>]*>/g, "").trim()}
                 </Text>
-                <Text size="sm" tone="secondary">
-                  {formatEventDetailTime(detailEvent)}
-                </Text>
-                {detailEvent.calendarName && (
-                  <Text size="sm">Calendar: {detailEvent.calendarName}</Text>
-                )}
-                {detailEvent.location && <Text size="sm">Location: {detailEvent.location}</Text>}
-                {detailEvent.description && (
-                  <Text size="sm" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                    {detailEvent.description.replace(/<[^>]*>/g, "").trim()}
-                  </Text>
-                )}
-              </Stack>
-            )}
-          </Dialog.Popup>
-        </Dialog.Backdrop>
+              )}
+            </Stack>
+          )}
+        </Dialog.Popup>
       </Dialog.Root>
 
       {/* Scrollable time grid */}
@@ -708,7 +699,6 @@ export function WeekCalendarWidgetSettings({
   widget,
   onConfigChange,
 }: WidgetProps<WeekCalendarConfig>) {
-  const portalContainer = useOverlayPortalContainer();
   const { selectedCalendarIds, viewMode, weekStartsOn, startHour, endHour } = widget.config;
   const { isAuthenticated, isLoading, signIn } = useGoogleRuntime();
   const { calendars } = useGoogleCalendar({ selectedCalendarIds, daysAhead: 14 });
@@ -729,9 +719,9 @@ export function WeekCalendarWidgetSettings({
             <MultiSelector
               label="Select Calendars"
               placeholder="Choose calendars to display..."
-              options={calendarOptions}
+              options={calendarOptions.map((cal) => ({ value: cal.id, label: cal.label }))}
               value={selectedCalendarIds}
-              onChange={(value) => onConfigChange({ selectedCalendarIds: value })}
+              onValueChange={(value) => onConfigChange({ selectedCalendarIds: value })}
             />
           </>
         ) : (
@@ -739,7 +729,7 @@ export function WeekCalendarWidgetSettings({
             <Text size="sm" tone="secondary">
               Sign in to select your calendars
             </Text>
-            <Button onPress={signIn} isPending={isLoading} size="sm">
+            <Button onClick={signIn} loading={isLoading} size="sm">
               Sign in with Google
             </Button>
           </Stack>
@@ -749,26 +739,24 @@ export function WeekCalendarWidgetSettings({
       <Select
         label="View mode"
         options={[
-          { id: "calendar-week", label: "Calendar week" },
-          { id: "rolling-7", label: "Today + 6 upcoming days" },
+          { value: "calendar-week", label: "Calendar week" },
+          { value: "rolling-7", label: "Today + 6 upcoming days" },
         ]}
-        selectedKey={viewMode}
-        onSelectionChange={(v) =>
+        value={viewMode}
+        onValueChange={(v) =>
           v && onConfigChange({ viewMode: v as WeekCalendarConfig["viewMode"] })
         }
-        portalContainer={portalContainer}
       />
 
       {viewMode === "calendar-week" && (
         <Select
           label="Week starts on"
           options={[
-            { id: "0", label: "Sunday" },
-            { id: "1", label: "Monday" },
+            { value: "0", label: "Sunday" },
+            { value: "1", label: "Monday" },
           ]}
-          selectedKey={String(weekStartsOn)}
-          onSelectionChange={(v) => v && onConfigChange({ weekStartsOn: Number(v) as 0 | 1 })}
-          portalContainer={portalContainer}
+          value={String(weekStartsOn)}
+          onValueChange={(v) => v && onConfigChange({ weekStartsOn: Number(v) as 0 | 1 })}
         />
       )}
 
@@ -776,18 +764,18 @@ export function WeekCalendarWidgetSettings({
         <NumberInput
           label="Start hour"
           description="e.g. 7 = 7 AM"
-          minValue={0}
-          maxValue={endHour - 1}
+          min={0}
+          max={endHour - 1}
           value={startHour}
-          onChange={(v) => onConfigChange({ startHour: Number(v) || 7 })}
+          onValueChange={(v) => onConfigChange({ startHour: Number(v) || 7 })}
         />
         <NumberInput
           label="End hour"
           description="e.g. 21 = 9 PM"
-          minValue={startHour + 1}
-          maxValue={24}
+          min={startHour + 1}
+          max={24}
           value={endHour}
-          onChange={(v) => onConfigChange({ endHour: Number(v) || 21 })}
+          onValueChange={(v) => onConfigChange({ endHour: Number(v) || 21 })}
         />
       </HStack>
 

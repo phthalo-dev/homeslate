@@ -81,7 +81,7 @@ export function PresenceWidget({ widget, isEditing }: WidgetProps<PresenceConfig
       {error && !lastUpdated && (
         <HStack gap="sm" align="center" justify="between">
           <ErrorText size="sm">{error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -161,16 +161,16 @@ export function PresenceSettings({ widget, onConfigChange }: WidgetProps<Presenc
         <Text size="sm">Show zone names</Text>
         <Switch
           aria-label="Show zone names"
-          isSelected={showZones}
-          onChange={(value) => onConfigChange({ showZones: value })}
+          checked={showZones}
+          onCheckedChange={(value) => onConfigChange({ showZones: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

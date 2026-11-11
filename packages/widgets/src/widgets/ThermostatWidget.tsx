@@ -21,7 +21,6 @@ import {
   IconWind,
 } from "@tabler/icons-react";
 import type { WidgetConfig, WidgetProps } from "../types";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useClimateEntities, useThermostat } from "../hooks/useThermostat";
 import {
@@ -64,9 +63,9 @@ function ActionIcon({ action }: { action: string | null }) {
   }
 }
 
-function RetryButton({ onPress }: { onPress: () => void }) {
+function RetryButton({ onClick }: { onClick: () => void }) {
   return (
-    <Button appearance="subtle" size="sm" onPress={onPress}>
+    <Button appearance="subtle" size="sm" onClick={onClick}>
       <IconRefresh size={14} />
       Retry
     </Button>
@@ -102,7 +101,6 @@ export function ThermostatWidget({ widget }: WidgetProps<ThermostatConfig>) {
     setSwingMode,
   } = useThermostat(entityId);
 
-  const portalContainer = useOverlayPortalContainer();
   const containerClass = `${classes.container} ${transparentBackground ? classes.transparent : ""}`;
 
   if (!entityId) {
@@ -148,7 +146,7 @@ export function ThermostatWidget({ widget }: WidgetProps<ThermostatConfig>) {
           <Text size="sm" tone="secondary">
             {error ?? HA_AGENT_OFFLINE_COPY}
           </Text>
-          <RetryButton onPress={refresh} />
+          <RetryButton onClick={refresh} />
         </div>
       </div>
     );
@@ -171,7 +169,7 @@ export function ThermostatWidget({ widget }: WidgetProps<ThermostatConfig>) {
           <Text size="sm" style={{ color: "var(--var-ui-color-tone-danger-foreground)" }}>
             {error ?? "Failed to fetch thermostat"}
           </Text>
-          <RetryButton onPress={refresh} />
+          <RetryButton onClick={refresh} />
         </div>
       </div>
     );
@@ -185,7 +183,7 @@ export function ThermostatWidget({ widget }: WidgetProps<ThermostatConfig>) {
           <Text size="sm" weight="medium">
             {THERMOSTAT_UNAVAILABLE_COPY}
           </Text>
-          <RetryButton onPress={refresh} />
+          <RetryButton onClick={refresh} />
         </div>
       </div>
     );
@@ -238,8 +236,8 @@ export function ThermostatWidget({ widget }: WidgetProps<ThermostatConfig>) {
             appearance="subtle"
             size="sm"
             aria-label={`Lower ${label.toLowerCase()}`}
-            isDisabled={!controlsEnabled}
-            onPress={() => onAdjust(-state.step)}
+            disabled={!controlsEnabled}
+            onClick={() => onAdjust(-state.step)}
           >
             <IconMinus size={16} />
           </Button>
@@ -252,8 +250,8 @@ export function ThermostatWidget({ widget }: WidgetProps<ThermostatConfig>) {
             appearance="subtle"
             size="sm"
             aria-label={`Raise ${label.toLowerCase()}`}
-            isDisabled={!controlsEnabled}
-            onPress={() => onAdjust(state.step)}
+            disabled={!controlsEnabled}
+            onClick={() => onAdjust(state.step)}
           >
             <IconPlus size={16} />
           </Button>
@@ -306,10 +304,9 @@ export function ThermostatWidget({ widget }: WidgetProps<ThermostatConfig>) {
           <SegmentedControl
             size="sm"
             aria-label="Mode"
-            options={state.hvacModes.map((mode) => ({ id: mode, label: hvacModeLabel(mode) }))}
-            selectedKeys={[state.hvacMode]}
-            onSelectionChange={(keys) => {
-              const next = [...keys][0];
+            options={state.hvacModes.map((mode) => ({ value: mode, label: hvacModeLabel(mode) }))}
+            value={state.hvacMode}
+            onValueChange={(next) => {
               if (typeof next === "string" && next !== state.hvacMode) void setHvacMode(next);
             }}
           />
@@ -320,34 +317,37 @@ export function ThermostatWidget({ widget }: WidgetProps<ThermostatConfig>) {
           {showFanControl && state.fanModes.length > 0 && (
             <Select
               label="Fan"
-              options={state.fanModes.map((mode) => ({ id: mode, label: hvacModeLabel(mode) }))}
-              selectedKey={state.fanMode ?? null}
-              onSelectionChange={(key) => {
+              options={state.fanModes.map((mode) => ({ value: mode, label: hvacModeLabel(mode) }))}
+              value={state.fanMode ?? null}
+              onValueChange={(key) => {
                 if (typeof key === "string") void setFanMode(key);
               }}
-              portalContainer={portalContainer}
             />
           )}
           {showPresetControl && state.presetModes.length > 0 && (
             <Select
               label="Preset"
-              options={state.presetModes.map((mode) => ({ id: mode, label: hvacModeLabel(mode) }))}
-              selectedKey={state.presetMode ?? null}
-              onSelectionChange={(key) => {
+              options={state.presetModes.map((mode) => ({
+                value: mode,
+                label: hvacModeLabel(mode),
+              }))}
+              value={state.presetMode ?? null}
+              onValueChange={(key) => {
                 if (typeof key === "string") void setPresetMode(key);
               }}
-              portalContainer={portalContainer}
             />
           )}
           {showSwingControl && state.swingModes.length > 0 && (
             <Select
               label="Swing"
-              options={state.swingModes.map((mode) => ({ id: mode, label: hvacModeLabel(mode) }))}
-              selectedKey={state.swingMode ?? null}
-              onSelectionChange={(key) => {
+              options={state.swingModes.map((mode) => ({
+                value: mode,
+                label: hvacModeLabel(mode),
+              }))}
+              value={state.swingMode ?? null}
+              onValueChange={(key) => {
                 if (typeof key === "string") void setSwingMode(key);
               }}
-              portalContainer={portalContainer}
             />
           )}
         </div>
@@ -383,7 +383,6 @@ export function ThermostatWidgetSettings({
   widget,
   onConfigChange,
 }: WidgetProps<ThermostatConfig>) {
-  const portalContainer = useOverlayPortalContainer();
   const {
     entityId = "",
     showControls = true,
@@ -418,17 +417,16 @@ export function ThermostatWidgetSettings({
               label="Thermostat"
               placeholder="Select a thermostat…"
               options={entities.map((entity) => ({
-                id: entity.entityId,
+                value: entity.entityId,
                 label: `${entity.name} (${entity.entityId})`,
               }))}
-              selectedKey={entityId || null}
-              onSelectionChange={(key) => {
+              value={entityId || null}
+              onValueChange={(key) => {
                 if (typeof key === "string") onConfigChange({ entityId: key });
               }}
-              portalContainer={portalContainer}
             />
           </div>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Refresh
           </Button>
@@ -445,48 +443,48 @@ export function ThermostatWidgetSettings({
         <Text size="sm">Show controls</Text>
         <Switch
           aria-label="Show controls"
-          isSelected={showControls}
-          onChange={(value) => onConfigChange({ showControls: value })}
+          checked={showControls}
+          onCheckedChange={(value) => onConfigChange({ showControls: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Show fan control</Text>
         <Switch
           aria-label="Show fan control"
-          isSelected={showFanControl}
-          onChange={(value) => onConfigChange({ showFanControl: value })}
+          checked={showFanControl}
+          onCheckedChange={(value) => onConfigChange({ showFanControl: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Show preset control</Text>
         <Switch
           aria-label="Show preset control"
-          isSelected={showPresetControl}
-          onChange={(value) => onConfigChange({ showPresetControl: value })}
+          checked={showPresetControl}
+          onCheckedChange={(value) => onConfigChange({ showPresetControl: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Show swing control</Text>
         <Switch
           aria-label="Show swing control"
-          isSelected={showSwingControl}
-          onChange={(value) => onConfigChange({ showSwingControl: value })}
+          checked={showSwingControl}
+          onCheckedChange={(value) => onConfigChange({ showSwingControl: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Show humidity</Text>
         <Switch
           aria-label="Show humidity"
-          isSelected={showHumidity}
-          onChange={(value) => onConfigChange({ showHumidity: value })}
+          checked={showHumidity}
+          onCheckedChange={(value) => onConfigChange({ showHumidity: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

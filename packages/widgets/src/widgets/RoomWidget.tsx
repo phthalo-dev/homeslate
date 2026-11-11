@@ -176,14 +176,14 @@ export function RoomWidget({ widget, isEditing }: WidgetProps<RoomConfig>) {
       </div>
 
       <div className={classes.actions}>
-        <Button appearance="subtle" size="sm" onPress={allOff} isDisabled={busy || summary.allOff}>
+        <Button appearance="subtle" size="sm" onClick={allOff} disabled={busy || summary.allOff}>
           All off
         </Button>
         <Button
           appearance="subtle"
           size="sm"
-          onPress={allOn}
-          isDisabled={
+          onClick={allOn}
+          disabled={
             busy || summary.rows.every((row) => row.control === "position" || row.isOn === true)
           }
         >
@@ -192,8 +192,8 @@ export function RoomWidget({ widget, isEditing }: WidgetProps<RoomConfig>) {
         <Button
           appearance="subtle"
           size="sm"
-          onPress={closeCovers}
-          isDisabled={busy || summary.open === 0}
+          onClick={closeCovers}
+          disabled={busy || summary.open === 0}
         >
           Close covers
         </Button>
@@ -202,7 +202,7 @@ export function RoomWidget({ widget, isEditing }: WidgetProps<RoomConfig>) {
       {(error || controlError) && (
         <div className={classes.errorBox}>
           <ErrorText size="sm">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -246,8 +246,8 @@ export function RoomWidget({ widget, isEditing }: WidgetProps<RoomConfig>) {
                         appearance="subtle"
                         size="sm"
                         aria-label={`Open ${row.name}`}
-                        onPress={() => void run(row.entityId, "open_cover", {}, { state: "open" })}
-                        isDisabled={busy || !row.available}
+                        onClick={() => void run(row.entityId, "open_cover", {}, { state: "open" })}
+                        disabled={busy || !row.available}
                       >
                         <IconChevronUp size={14} />
                       </Button>
@@ -255,7 +255,7 @@ export function RoomWidget({ widget, isEditing }: WidgetProps<RoomConfig>) {
                         appearance="subtle"
                         size="sm"
                         aria-label={`Close ${row.name}`}
-                        onPress={() =>
+                        onClick={() =>
                           void run(
                             row.entityId,
                             "close_cover",
@@ -263,7 +263,7 @@ export function RoomWidget({ widget, isEditing }: WidgetProps<RoomConfig>) {
                             { state: "closed", position: 0 },
                           )
                         }
-                        isDisabled={busy || !row.available}
+                        disabled={busy || !row.available}
                       >
                         <IconChevronDown size={14} />
                       </Button>
@@ -273,7 +273,7 @@ export function RoomWidget({ widget, isEditing }: WidgetProps<RoomConfig>) {
                       appearance="subtle"
                       size="sm"
                       aria-label={`Toggle ${row.name}`}
-                      onPress={() =>
+                      onClick={() =>
                         void run(
                           row.entityId,
                           row.isOn ? "turn_off" : "turn_on",
@@ -281,7 +281,7 @@ export function RoomWidget({ widget, isEditing }: WidgetProps<RoomConfig>) {
                           { isOn: !row.isOn },
                         )
                       }
-                      isDisabled={busy || !row.available}
+                      disabled={busy || !row.available}
                     >
                       <IconPower size={14} />
                       {row.isOn ? "Off" : "On"}
@@ -316,7 +316,7 @@ export function RoomWidgetSettings({ widget, onConfigChange }: WidgetProps<RoomC
         label="Room name"
         placeholder="Living room"
         value={name}
-        onChange={(value) => onConfigChange({ name: value })}
+        onValueChange={(value) => onConfigChange({ name: value })}
       />
       <Text size="xs" tone="secondary">
         Manual room grouping for now. Pick the lights, switches, and covers in this room.
@@ -341,8 +341,8 @@ export function RoomWidgetSettings({ widget, onConfigChange }: WidgetProps<RoomC
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

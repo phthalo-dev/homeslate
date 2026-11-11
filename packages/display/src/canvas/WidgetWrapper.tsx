@@ -6,7 +6,7 @@ import {
   Divider,
   HStack,
   IconButton,
-  SimpleTooltip,
+  Tooltip,
   Spinner,
   Stack,
   Surface,
@@ -50,7 +50,6 @@ interface WidgetWrapperProps {
   onConfigChange: (config: Partial<WidgetConfig>) => void;
   onRemove?: () => void;
   widgetRegistry?: WidgetRegistryApi;
-  portalContainer?: Element;
 }
 
 export function WidgetWrapper({
@@ -59,7 +58,6 @@ export function WidgetWrapper({
   onConfigChange,
   onRemove,
   widgetRegistry,
-  portalContainer,
 }: WidgetWrapperProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [healthStatus, setHealthStatus] = useState<WidgetHealthStatus>("idle");
@@ -137,38 +135,34 @@ export function WidgetWrapper({
                   <IconCircleFilled size={8} />
                 </div>
                 {SettingsComponent && (
-                  <SimpleTooltip
-                    content="Settings"
-                    placement="bottom"
-                    portalContainer={portalContainer}
-                  >
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <IconButton
+                        icon={<IconSettings size={16} />}
+                        appearance="ghost"
+                        size="sm"
+                        aria-label={`${widgetEntry.name} settings`}
+                        onClick={() => setSettingsOpen(true)}
+                        className={classes.toolbarButton}
+                      />
+                    </Tooltip.Trigger>
+                    <Tooltip.Popup placement="bottom">Settings</Tooltip.Popup>
+                  </Tooltip.Root>
+                )}
+                <Tooltip.Root>
+                  <Tooltip.Trigger>
                     <IconButton
-                      name="wrench"
-                      icon={<IconSettings size={16} />}
+                      icon={<IconTrash size={16} />}
                       appearance="ghost"
+                      tone="danger"
                       size="sm"
-                      aria-label={`${widgetEntry.name} settings`}
-                      onPress={() => setSettingsOpen(true)}
+                      aria-label={`Remove ${widgetEntry.name}`}
+                      onClick={() => onRemove?.()}
                       className={classes.toolbarButton}
                     />
-                  </SimpleTooltip>
-                )}
-                <SimpleTooltip
-                  content="Remove widget"
-                  placement="bottom"
-                  portalContainer={portalContainer}
-                >
-                  <IconButton
-                    name="close"
-                    icon={<IconTrash size={16} />}
-                    appearance="ghost"
-                    tone="danger"
-                    size="sm"
-                    aria-label={`Remove ${widgetEntry.name}`}
-                    onPress={() => onRemove?.()}
-                    className={classes.toolbarButton}
-                  />
-                </SimpleTooltip>
+                  </Tooltip.Trigger>
+                  <Tooltip.Popup placement="bottom">Remove widget</Tooltip.Popup>
+                </Tooltip.Root>
               </HStack>
             </div>
             <div className={classes.resizeHint}>Drag edges to resize</div>
@@ -195,67 +189,66 @@ export function WidgetWrapper({
 
       {SettingsComponent && (
         <Dialog.Root
-          isOpen={settingsOpen}
+          open={settingsOpen}
           onOpenChange={(isOpen) => {
             if (!isOpen) setSettingsOpen(false);
           }}
-          portalContainer={portalContainer}
         >
-          <Dialog.Backdrop>
-            <Dialog.Popup>
-              <Dialog.Title>{widgetEntry.name} Settings</Dialog.Title>
-              <div
-                onMouseDown={(e) => e.stopPropagation()}
-                onMouseMove={(e) => e.stopPropagation()}
-                onMouseUp={(e) => e.stopPropagation()}
-                onPointerDown={(e) => e.stopPropagation()}
-                onPointerMove={(e) => e.stopPropagation()}
-                onPointerUp={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-                onTouchMove={(e) => e.stopPropagation()}
-                onTouchEnd={(e) => e.stopPropagation()}
-              >
-                <Stack gap="md">
-                  <HStack gap="sm" align="center">
-                    <Text size="xs" weight="semibold" tone="secondary">
-                      Display
-                    </Text>
-                    <Divider />
-                  </HStack>
-                  <HStack justify="between">
-                    <Text size="sm">Transparent Background</Text>
-                    <Switch
-                      aria-label="Transparent Background"
-                      isSelected={widget.config.transparentBackground === true}
-                      onChange={(selected) => onConfigChange({ transparentBackground: selected })}
+          <Dialog.Popup>
+            <Dialog.Title>{widgetEntry.name} Settings</Dialog.Title>
+            <div
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseMove={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerMove={(e) => e.stopPropagation()}
+              onPointerUp={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+            >
+              <Stack gap="md">
+                <HStack gap="sm" align="center">
+                  <Text size="xs" weight="semibold" tone="secondary">
+                    Display
+                  </Text>
+                  <Divider />
+                </HStack>
+                <HStack justify="between">
+                  <Text size="sm">Transparent Background</Text>
+                  <Switch
+                    aria-label="Transparent Background"
+                    checked={widget.config.transparentBackground === true}
+                    onCheckedChange={(selected) =>
+                      onConfigChange({ transparentBackground: selected })
+                    }
+                  />
+                </HStack>
+                <HStack gap="sm" align="center">
+                  <Text size="xs" weight="semibold" tone="secondary">
+                    Settings
+                  </Text>
+                  <Divider />
+                </HStack>
+                <Suspense fallback={<WidgetLoader />}>
+                  <WidgetErrorBoundary
+                    widgetId={widget.id}
+                    name={widgetEntry.name}
+                    icon={widgetEntry.icon}
+                    isEditing={isEditing}
+                    onRemove={onRemove}
+                  >
+                    <SettingsComponent
+                      widget={widgetDef}
+                      isEditing={true}
+                      onConfigChange={onConfigChange}
                     />
-                  </HStack>
-                  <HStack gap="sm" align="center">
-                    <Text size="xs" weight="semibold" tone="secondary">
-                      Settings
-                    </Text>
-                    <Divider />
-                  </HStack>
-                  <Suspense fallback={<WidgetLoader />}>
-                    <WidgetErrorBoundary
-                      widgetId={widget.id}
-                      name={widgetEntry.name}
-                      icon={widgetEntry.icon}
-                      isEditing={isEditing}
-                      onRemove={onRemove}
-                    >
-                      <SettingsComponent
-                        widget={widgetDef}
-                        isEditing={true}
-                        onConfigChange={onConfigChange}
-                      />
-                    </WidgetErrorBoundary>
-                  </Suspense>
-                  <Button onPress={() => setSettingsOpen(false)}>Done</Button>
-                </Stack>
-              </div>
-            </Dialog.Popup>
-          </Dialog.Backdrop>
+                  </WidgetErrorBoundary>
+                </Suspense>
+                <Button onClick={() => setSettingsOpen(false)}>Done</Button>
+              </Stack>
+            </div>
+          </Dialog.Popup>
         </Dialog.Root>
       )}
     </>

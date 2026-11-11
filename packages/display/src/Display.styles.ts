@@ -135,10 +135,6 @@ export const root = styles.class("display-root", {
   display: "flex",
   flexDirection: "column",
   touchAction: "pan-y",
-  [`& > :not(.${dots})`]: {
-    flex: "1",
-    minHeight: "0",
-  },
   [`&:hover .${colorModeToggle}`]: {
     opacity: "1",
   },

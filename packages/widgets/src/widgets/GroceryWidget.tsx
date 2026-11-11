@@ -15,7 +15,6 @@ import { v4 as uuidv4 } from "uuid";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { HoldToConfirm } from "../household/HoldToConfirm";
 import { useHomeAssistantTodo, useTodoEntities } from "../hooks/useHomeAssistantTodo";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { clearCheckedGroceryItems, visibleGroceryItems, type GroceryItem } from "./grocery";
 import * as classes from "./listWidget.styles";
 import { ErrorText } from "../ErrorText";
@@ -99,8 +98,8 @@ function LocalGroceryList({ widget, isEditing, onConfigChange }: WidgetProps<Gro
                   className={`${classes.row} ${item.checked ? classes.rowDone : ""}`}
                 >
                   <Checkbox
-                    isSelected={item.checked}
-                    onChange={() => toggle(item.id)}
+                    checked={item.checked}
+                    onCheckedChange={() => toggle(item.id)}
                     aria-label={item.text}
                   >
                     <Text size="sm" className={classes.label}>
@@ -108,12 +107,11 @@ function LocalGroceryList({ widget, isEditing, onConfigChange }: WidgetProps<Gro
                     </Text>
                   </Checkbox>
                   <IconButton
-                    name="close"
                     icon={<IconTrash size={14} />}
                     appearance="ghost"
                     tone="danger"
                     aria-label={`Delete ${item.text}`}
-                    onPress={() => {
+                    onClick={() => {
                       if (isEditing || window.confirm(`Delete ${item.text}?`)) {
                         remove(item.id);
                       }
@@ -131,22 +129,21 @@ function LocalGroceryList({ widget, isEditing, onConfigChange }: WidgetProps<Gro
           aria-label="Add item"
           placeholder="Add item..."
           value={draft}
-          onChange={setDraft}
+          onValueChange={setDraft}
           onKeyDown={(event) => event.key === "Enter" && add()}
           style={{ flex: 1 }}
         />
         <IconButton
-          name="check"
           icon={<IconPlus size={14} />}
           appearance="subtle"
-          onPress={add}
-          isDisabled={!draft.trim()}
+          onClick={add}
+          disabled={!draft.trim()}
           aria-label="Add item"
         />
       </div>
       {items.some((item) => item.checked) &&
         (isEditing ? (
-          <Button size="sm" appearance="ghost" onPress={clearChecked}>
+          <Button size="sm" appearance="ghost" onClick={clearChecked}>
             Clear checked
           </Button>
         ) : (
@@ -225,7 +222,7 @@ function HomeAssistantGroceryList({
       {(error || controlError) && (
         <HStack justify="between" align="center" gap="sm">
           <ErrorText size="sm">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -249,8 +246,8 @@ function HomeAssistantGroceryList({
                 className={`${classes.row} ${checked ? classes.rowDone : ""}`}
               >
                 <Checkbox
-                  isSelected={checked}
-                  onChange={() => void setCompleted(item.uid, !checked)}
+                  checked={checked}
+                  onCheckedChange={() => void setCompleted(item.uid, !checked)}
                   aria-label={item.summary}
                 >
                   <Text size="sm" className={classes.label}>
@@ -258,12 +255,11 @@ function HomeAssistantGroceryList({
                   </Text>
                 </Checkbox>
                 <IconButton
-                  name="close"
                   icon={<IconTrash size={14} />}
                   appearance="ghost"
                   tone="danger"
                   aria-label={`Delete ${item.summary}`}
-                  onPress={() => {
+                  onClick={() => {
                     if (isEditing || window.confirm(`Delete ${item.summary}?`)) {
                       void removeItem(item.uid);
                     }
@@ -280,22 +276,21 @@ function HomeAssistantGroceryList({
           aria-label="Add item"
           placeholder="Add item..."
           value={draft}
-          onChange={setDraft}
+          onValueChange={setDraft}
           onKeyDown={(event) => event.key === "Enter" && add()}
           style={{ flex: 1 }}
         />
         <IconButton
-          name="check"
           icon={<IconPlus size={14} />}
           appearance="subtle"
-          onPress={add}
-          isDisabled={!draft.trim()}
+          onClick={add}
+          disabled={!draft.trim()}
           aria-label="Add item"
         />
       </div>
       {hasChecked &&
         (isEditing ? (
-          <Button size="sm" appearance="ghost" onPress={clearChecked}>
+          <Button size="sm" appearance="ghost" onClick={clearChecked}>
             Clear checked
           </Button>
         ) : (
@@ -319,7 +314,6 @@ export function GroceryWidgetSettings({ widget, onConfigChange }: WidgetProps<Gr
     source = "local",
     entityId = "",
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const {
     entities: todoEntities,
     status: entitiesStatus,
@@ -331,14 +325,13 @@ export function GroceryWidgetSettings({ widget, onConfigChange }: WidgetProps<Gr
       <Select
         label="Source"
         options={[
-          { id: "local", label: "Local list" },
-          { id: "homeAssistant", label: "Home Assistant" },
+          { value: "local", label: "Local list" },
+          { value: "homeAssistant", label: "Home Assistant" },
         ]}
-        selectedKey={source}
-        onSelectionChange={(value) => {
+        value={source}
+        onValueChange={(value) => {
           if (value === "local" || value === "homeAssistant") onConfigChange({ source: value });
         }}
-        portalContainer={portalContainer}
       />
 
       {source === "homeAssistant" ? (
@@ -347,14 +340,13 @@ export function GroceryWidgetSettings({ widget, onConfigChange }: WidgetProps<Gr
             label="To-Do List"
             placeholder="Select a list…"
             options={todoEntities.map((entity) => ({
-              id: entity.entityId,
+              value: entity.entityId,
               label: `${entity.name} (${entity.entityId})`,
             }))}
-            selectedKey={entityId || null}
-            onSelectionChange={(value) => {
+            value={entityId || null}
+            onValueChange={(value) => {
               if (typeof value === "string") onConfigChange({ entityId: value });
             }}
-            portalContainer={portalContainer}
           />
           {entitiesStatus === 501 && (
             <Text size="xs" tone="secondary">
@@ -369,7 +361,7 @@ export function GroceryWidgetSettings({ widget, onConfigChange }: WidgetProps<Gr
               <TextField
                 size="sm"
                 value={item.text}
-                onChange={(value) =>
+                onValueChange={(value) =>
                   onConfigChange({
                     items: items.map((row) => (row.id === item.id ? { ...row, text: value } : row)),
                   })
@@ -381,7 +373,7 @@ export function GroceryWidgetSettings({ widget, onConfigChange }: WidgetProps<Gr
                 size="sm"
                 placeholder="Aisle"
                 value={item.aisle ?? ""}
-                onChange={(value) =>
+                onValueChange={(value) =>
                   onConfigChange({
                     items: items.map((row) =>
                       row.id === item.id ? { ...row, aisle: value } : row,
@@ -400,8 +392,8 @@ export function GroceryWidgetSettings({ widget, onConfigChange }: WidgetProps<Gr
         <Text size="sm">Hide checked</Text>
         <Switch
           aria-label="Hide checked"
-          isSelected={hideChecked}
-          onChange={(value) => onConfigChange({ hideChecked: value })}
+          checked={hideChecked}
+          onCheckedChange={(value) => onConfigChange({ hideChecked: value })}
         />
       </HStack>
       {source !== "homeAssistant" && (
@@ -409,8 +401,8 @@ export function GroceryWidgetSettings({ widget, onConfigChange }: WidgetProps<Gr
           <Text size="sm">Group by aisle</Text>
           <Switch
             aria-label="Group by aisle"
-            isSelected={groupByAisle}
-            onChange={(value) => onConfigChange({ groupByAisle: value })}
+            checked={groupByAisle}
+            onCheckedChange={(value) => onConfigChange({ groupByAisle: value })}
           />
         </HStack>
       )}
@@ -418,8 +410,8 @@ export function GroceryWidgetSettings({ widget, onConfigChange }: WidgetProps<Gr
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

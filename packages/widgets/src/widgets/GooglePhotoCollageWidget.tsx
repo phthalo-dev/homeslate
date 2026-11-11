@@ -13,8 +13,8 @@ import {
   Tabs,
   TextField,
   IconButton,
-  SimpleGrid,
-  SimpleTooltip,
+  Grid,
+  Tooltip,
 } from "@var-ui/react";
 import { IconLayoutGrid, IconExternalLink, IconX } from "@tabler/icons-react";
 import type { WidgetProps, WidgetConfig } from "../types";
@@ -22,7 +22,6 @@ import { useGooglePhotoCollage } from "../hooks/useGooglePhotoCollage";
 import { useGooglePhotos } from "../hooks/useGooglePhotos";
 import { useGoogleRuntime } from "../googleRuntime";
 import { loadStoredImage } from "../services/googlePhotos";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import type { StoredImage } from "../services/googlePhotos";
 import type { Photo, StoredPhoto } from "./PhotoWidget";
 import * as classes from "./GooglePhotoCollageWidget.styles";
@@ -249,7 +248,7 @@ export function GooglePhotoCollageWidget({ widget }: WidgetProps<GooglePhotoColl
   if (error) {
     return (
       <div ref={containerRef} className={containerClass}>
-        <Alert variant="danger" appearance="subtle">
+        <Alert tone="danger" appearance="subtle">
           <Text size="sm">{error}</Text>
         </Alert>
       </div>
@@ -317,7 +316,6 @@ interface PhotoThumbGridProps {
 }
 
 function PhotoThumbGrid({ photos, onRemove }: PhotoThumbGridProps) {
-  const portalContainer = useOverlayPortalContainer();
   const [thumbUrls, setThumbUrls] = useState<Map<string, string>>(new Map());
   const blobUrlsRef = useRef<Map<string, string>>(new Map());
 
@@ -366,7 +364,7 @@ function PhotoThumbGrid({ photos, onRemove }: PhotoThumbGridProps) {
   if (photos.length === 0) return null;
 
   return (
-    <SimpleGrid cols={3} spacing="xs">
+    <Grid columns={3} gap="xs">
       {photos.map((photo, index) => {
         const id = photo.type === "url" ? photo.url : photo.key;
         const src = thumbUrls.get(id);
@@ -379,22 +377,24 @@ function PhotoThumbGrid({ photos, onRemove }: PhotoThumbGridProps) {
                 <Spinner size="sm" />
               </div>
             )}
-            <SimpleTooltip content="Remove photo" placement="top" portalContainer={portalContainer}>
-              <IconButton
-                name="close"
-                icon={<IconX size={10} />}
-                size="sm"
-                tone="danger"
-                appearance="filled"
-                className={classes.thumbRemove}
-                aria-label="Remove photo"
-                onPress={() => onRemove(index)}
-              />
-            </SimpleTooltip>
+            <Tooltip.Root>
+              <Tooltip.Trigger>
+                <IconButton
+                  icon={<IconX size={10} />}
+                  size="sm"
+                  tone="danger"
+                  appearance="filled"
+                  className={classes.thumbRemove}
+                  aria-label="Remove photo"
+                  onClick={() => onRemove(index)}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Popup placement="top">Remove photo</Tooltip.Popup>
+            </Tooltip.Root>
           </div>
         );
       })}
-    </SimpleGrid>
+    </Grid>
   );
 }
 
@@ -541,17 +541,17 @@ export function GooglePhotoCollageWidgetSettings({
       </Text>
 
       <Tabs
-        defaultSelectedKey="url"
+        defaultValue="url"
         tabs={[
           {
-            id: "url",
+            value: "url",
             label: "URL",
             content: (
               <Stack gap="xs">
                 <TextField
                   placeholder="https://example.com/photo.jpg"
                   value={newUrl}
-                  onChange={(value) => {
+                  onValueChange={(value) => {
                     setNewUrl(value);
                     setUrlError(null);
                   }}
@@ -561,14 +561,14 @@ export function GooglePhotoCollageWidgetSettings({
                   size="sm"
                 />
                 {urlError && (
-                  <Alert variant="danger" appearance="subtle">
+                  <Alert tone="danger" appearance="subtle">
                     <Text size="sm">{urlError}</Text>
                   </Alert>
                 )}
                 <Button
-                  onPress={() => void addUrlPhoto()}
-                  isDisabled={!newUrl.trim()}
-                  isPending={urlUploading}
+                  onClick={() => void addUrlPhoto()}
+                  disabled={!newUrl.trim()}
+                  loading={urlUploading}
                   size="sm"
                 >
                   Add Photo
@@ -577,7 +577,7 @@ export function GooglePhotoCollageWidgetSettings({
             ),
           },
           {
-            id: "upload",
+            value: "upload",
             label: "Device",
             content: (
               <Stack gap="xs">
@@ -588,14 +588,14 @@ export function GooglePhotoCollageWidgetSettings({
                   multiple
                   maxSize={20 * 1024 * 1024}
                   value={null}
-                  isDisabled={uploading}
-                  onChange={(files) => {
+                  disabled={uploading}
+                  onValueChange={(files) => {
                     if (!files) return;
                     void handleFileUpload(Array.isArray(files) ? files : [files]);
                   }}
                 />
                 {uploadError && (
-                  <Alert variant="danger" appearance="subtle">
+                  <Alert tone="danger" appearance="subtle">
                     <Text size="sm">{uploadError}</Text>
                   </Alert>
                 )}
@@ -603,7 +603,7 @@ export function GooglePhotoCollageWidgetSettings({
             ),
           },
           {
-            id: "google",
+            value: "google",
             label: "Google",
             content: (
               <Stack gap="xs">
@@ -612,7 +612,7 @@ export function GooglePhotoCollageWidgetSettings({
                     <Text size="sm" tone="secondary">
                       Sign in to pick photos from Google Photos
                     </Text>
-                    <Button onPress={signIn} isPending={authLoading} size="sm">
+                    <Button onClick={signIn} loading={authLoading} size="sm">
                       Sign in with Google
                     </Button>
                   </Stack>
@@ -643,7 +643,7 @@ export function GooglePhotoCollageWidgetSettings({
                     )}
 
                     {googleError && (
-                      <Alert variant="danger" appearance="subtle">
+                      <Alert tone="danger" appearance="subtle">
                         <Text size="sm">{googleError}</Text>
                       </Alert>
                     )}
@@ -651,11 +651,11 @@ export function GooglePhotoCollageWidgetSettings({
                     <HStack gap="xs">
                       <Button
                         size="sm"
-                        onPress={() => {
+                        onClick={() => {
                           void startPicker();
                         }}
-                        isPending={pickerStatus === "pending" || pickerStatus === "uploading"}
-                        isDisabled={pickerStatus === "pending" || pickerStatus === "uploading"}
+                        loading={pickerStatus === "pending" || pickerStatus === "uploading"}
+                        disabled={pickerStatus === "pending" || pickerStatus === "uploading"}
                       >
                         Pick Photos
                       </Button>
@@ -664,7 +664,7 @@ export function GooglePhotoCollageWidgetSettings({
                           size="sm"
                           appearance="ghost"
                           tone="danger"
-                          onPress={clearGoogleSelection}
+                          onClick={clearGoogleSelection}
                         >
                           Cancel
                         </Button>
@@ -692,7 +692,7 @@ export function GooglePhotoCollageWidgetSettings({
               key={value}
               size="sm"
               appearance={rotationInterval === value ? "filled" : "outline"}
-              onPress={() => onConfigChange({ rotationInterval: value })}
+              onClick={() => onConfigChange({ rotationInterval: value })}
             >
               {label}
             </Button>
@@ -700,7 +700,7 @@ export function GooglePhotoCollageWidgetSettings({
           <Button
             size="sm"
             appearance={!ROTATION_PRESET_VALUES.includes(rotationInterval) ? "filled" : "outline"}
-            onPress={() => {
+            onClick={() => {
               if (ROTATION_PRESET_VALUES.includes(rotationInterval)) {
                 onConfigChange({ rotationInterval: 20 });
               }
@@ -713,12 +713,12 @@ export function GooglePhotoCollageWidgetSettings({
           <NumberInput
             placeholder="Seconds"
             value={rotationInterval}
-            onChange={(val) => {
+            onValueChange={(val) => {
               const num = typeof val === "number" ? val : parseInt(String(val), 10);
               if (!isNaN(num) && num >= 5) onConfigChange({ rotationInterval: num });
             }}
-            minValue={5}
-            maxValue={86400}
+            min={5}
+            max={86400}
           />
         )}
       </Stack>
@@ -729,7 +729,7 @@ export function GooglePhotoCollageWidgetSettings({
           tone="danger"
           appearance="ghost"
           size="sm"
-          onPress={() => onConfigChange({ photos: [] })}
+          onClick={() => onConfigChange({ photos: [] })}
         >
           Remove All Photos
         </Button>

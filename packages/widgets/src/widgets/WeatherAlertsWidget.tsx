@@ -9,8 +9,8 @@ import {
   Switch,
   Text,
   TextField,
+  useDebouncedValue,
 } from "@var-ui/react";
-import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { IconAlertTriangle, IconMapPin, IconRefresh } from "@tabler/icons-react";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useWeatherAlerts } from "../hooks/useWeatherAlerts";
@@ -100,7 +100,7 @@ export function WeatherAlertsWidget({ widget }: WidgetProps<WeatherAlertsConfig>
           <Text size="sm" style={{ color: "var(--var-ui-color-tone-danger-foreground)" }}>
             {error}
           </Text>
-          <Button appearance="subtle" size="sm" onPress={refresh}>
+          <Button appearance="subtle" size="sm" onClick={refresh}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -120,7 +120,7 @@ export function WeatherAlertsWidget({ widget }: WidgetProps<WeatherAlertsConfig>
           <Spinner size="sm" />
         ) : (
           error && (
-            <Button appearance="ghost" size="sm" onPress={refresh}>
+            <Button appearance="ghost" size="sm" onClick={refresh}>
               <IconRefresh size={14} />
               Retry
             </Button>
@@ -226,7 +226,7 @@ export function WeatherAlertsWidgetSettings({
             label="Search Location"
             placeholder="Enter city name..."
             value={searchQuery}
-            onChange={setSearchQuery}
+            onValueChange={setSearchQuery}
             style={{ flex: 1 }}
           />
           {isSearching && <Spinner size="sm" />}
@@ -240,7 +240,7 @@ export function WeatherAlertsWidgetSettings({
                   key={result.id}
                   appearance="ghost"
                   size="sm"
-                  onPress={() => selectLocation(result)}
+                  onClick={() => selectLocation(result)}
                   className={classes.searchResult}
                 >
                   <IconMapPin size={14} style={{ marginRight: 8 }} />
@@ -272,10 +272,10 @@ export function WeatherAlertsWidgetSettings({
 
       <NumberInput
         label="Max alerts"
-        minValue={1}
-        maxValue={15}
+        min={1}
+        max={15}
         value={clampMaxAlerts(maxAlerts)}
-        onChange={(value) =>
+        onValueChange={(value) =>
           onConfigChange({
             maxAlerts: typeof value === "number" ? clampMaxAlerts(value) : 5,
           })
@@ -286,8 +286,8 @@ export function WeatherAlertsWidgetSettings({
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

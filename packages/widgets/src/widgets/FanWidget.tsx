@@ -14,7 +14,6 @@ import { useState } from "react";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntities, useEntity } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import {
   FAN_EMPTY_COPY,
   FAN_FEATURE_OSCILLATE,
@@ -59,7 +58,6 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
     fetchFailureCopy: FAN_MISSING_CONFIG_COPY,
     callFailureCopy: FAN_MISSING_CONFIG_COPY,
   });
-  const portalContainer = useOverlayPortalContainer();
   const [draft, setDraft] = useState<number | null>(null);
   const containerClass = `${classes.container} ${transparentBackground ? classes.transparent : ""}`;
 
@@ -102,7 +100,7 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
       <div className={containerClass}>
         <div className={classes.empty}>
           <ErrorText size="sm">{error ?? "Failed to fetch fan"}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -161,10 +159,10 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
       <div className={classes.powerRow}>
         <ToggleButton
           className={`${classes.powerButton} ${fan.isOn ? classes.powerButtonOn : ""}`}
-          isSelected={fan.isOn}
-          isDisabled={pending}
+          selected={fan.isOn}
+          disabled={pending}
           aria-label={fan.isOn ? "Turn off" : "Turn on"}
-          onChange={() =>
+          onSelectedChange={() =>
             void call(fan.isOn ? "turn_off" : "turn_on", {}, (current) => ({
               ...current,
               isOn: !current.isOn,
@@ -190,14 +188,16 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
           <Slider
             className={classes.range}
             aria-label="Fan speed"
-            minValue={1}
-            maxValue={100}
+            min={1}
+            max={100}
             step={1}
             value={speed}
             showOutput={false}
-            isDisabled={pending}
-            onChange={(value) => setDraft(typeof value === "number" ? value : (value[0] ?? speed))}
-            onChangeEnd={(value) =>
+            disabled={pending}
+            onValueChange={(value) =>
+              setDraft(typeof value === "number" ? value : (value[0] ?? speed))
+            }
+            onValueCommit={(value) =>
               void commitSpeed(typeof value === "number" ? value : (value[0] ?? speed))
             }
           />
@@ -210,9 +210,9 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
       {showPresetControl && (
         <Select
           label="Preset"
-          options={fan.presetModes.map((mode) => ({ id: mode, label: mode }))}
-          selectedKey={fan.presetMode}
-          onSelectionChange={(key) => {
+          options={fan.presetModes.map((mode) => ({ value: mode, label: mode }))}
+          value={fan.presetMode}
+          onValueChange={(key) => {
             if (typeof key === "string" && key !== fan.presetMode) {
               void call("set_preset_mode", { preset_mode: key }, (current) => ({
                 ...current,
@@ -220,7 +220,6 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
               }));
             }
           }}
-          portalContainer={portalContainer}
         />
       )}
 
@@ -229,8 +228,8 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
           <Text size="sm">Oscillate</Text>
           <Switch
             aria-label="Oscillate"
-            isSelected={fan.oscillating === true}
-            onChange={(value) =>
+            checked={fan.oscillating === true}
+            onCheckedChange={(value) =>
               void call("oscillate", { oscillating: value }, (current) => ({
                 ...current,
                 oscillating: value,
@@ -243,7 +242,7 @@ export function FanWidget({ widget, isEditing }: WidgetProps<FanConfig>) {
       {(controlError || error) && (
         <div className={classes.errorBox}>
           <ErrorText size="xs">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -270,7 +269,6 @@ export function FanWidgetSettings({ widget, onConfigChange }: WidgetProps<FanCon
     showOscillate = true,
     transparentBackground = false,
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntities(
     "fan",
     FAN_MISSING_CONFIG_COPY,
@@ -287,17 +285,16 @@ export function FanWidgetSettings({ widget, onConfigChange }: WidgetProps<FanCon
               label="Fan"
               placeholder="Select a fan…"
               options={entities.map((entity) => ({
-                id: entity.entityId,
+                value: entity.entityId,
                 label: `${entity.name} (${entity.entityId})`,
               }))}
-              selectedKey={entityId || null}
-              onSelectionChange={(key) => {
+              value={entityId || null}
+              onValueChange={(key) => {
                 if (typeof key === "string") onConfigChange({ entityId: key });
               }}
-              portalContainer={portalContainer}
             />
           </div>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -309,24 +306,24 @@ export function FanWidgetSettings({ widget, onConfigChange }: WidgetProps<FanCon
         <Text size="sm">Show preset picker</Text>
         <Switch
           aria-label="Show preset picker"
-          isSelected={showPreset}
-          onChange={(value) => onConfigChange({ showPreset: value })}
+          checked={showPreset}
+          onCheckedChange={(value) => onConfigChange({ showPreset: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Show oscillate control</Text>
         <Switch
           aria-label="Show oscillate control"
-          isSelected={showOscillate}
-          onChange={(value) => onConfigChange({ showOscillate: value })}
+          checked={showOscillate}
+          onCheckedChange={(value) => onConfigChange({ showOscillate: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

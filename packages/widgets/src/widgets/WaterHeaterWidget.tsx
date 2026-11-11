@@ -3,7 +3,6 @@ import { IconFlame, IconMinus, IconPlus, IconPower, IconRefresh } from "@tabler/
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntities, useEntity } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import {
   WATER_HEATER_EMPTY_COPY,
   WATER_HEATER_MISSING_CONFIG_COPY,
@@ -41,7 +40,6 @@ export function WaterHeaterWidget({ widget, isEditing }: WidgetProps<WaterHeater
     fetchFailureCopy: WATER_HEATER_MISSING_CONFIG_COPY,
     callFailureCopy: WATER_HEATER_MISSING_CONFIG_COPY,
   });
-  const portalContainer = useOverlayPortalContainer();
   const containerClass = `${classes.container} ${transparentBackground ? classes.transparent : ""}`;
 
   if (!entityId) {
@@ -83,7 +81,7 @@ export function WaterHeaterWidget({ widget, isEditing }: WidgetProps<WaterHeater
       <div className={containerClass}>
         <div className={classes.empty}>
           <ErrorText size="sm">{error ?? "Failed to fetch water heater"}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -139,13 +137,13 @@ export function WaterHeaterWidget({ widget, isEditing }: WidgetProps<WaterHeater
           appearance="subtle"
           size="sm"
           aria-label={waterHeater.isOn ? "Turn off" : "Turn on"}
-          onPress={() =>
+          onClick={() =>
             void call(waterHeater.isOn ? "turn_off" : "turn_on", {}, (current) => ({
               ...current,
               isOn: !current.isOn,
             }))
           }
-          isDisabled={pending}
+          disabled={pending}
         >
           <IconPower size={16} />
           {waterHeater.isOn ? "On" : "Off"}
@@ -170,8 +168,8 @@ export function WaterHeaterWidget({ widget, isEditing }: WidgetProps<WaterHeater
             appearance="subtle"
             size="sm"
             aria-label="Lower temperature"
-            onPress={() => adjust(-waterHeater.step)}
-            isDisabled={pending}
+            onClick={() => adjust(-waterHeater.step)}
+            disabled={pending}
           >
             <IconMinus size={16} />
           </Button>
@@ -180,8 +178,8 @@ export function WaterHeaterWidget({ widget, isEditing }: WidgetProps<WaterHeater
             appearance="subtle"
             size="sm"
             aria-label="Raise temperature"
-            onPress={() => adjust(waterHeater.step)}
-            isDisabled={pending}
+            onClick={() => adjust(waterHeater.step)}
+            disabled={pending}
           >
             <IconPlus size={16} />
           </Button>
@@ -193,11 +191,11 @@ export function WaterHeaterWidget({ widget, isEditing }: WidgetProps<WaterHeater
           <Select
             label="Operation mode"
             options={waterHeater.operationModes.map((mode) => ({
-              id: mode,
+              value: mode,
               label: waterHeaterModeLabel(mode),
             }))}
-            selectedKey={waterHeater.operationMode}
-            onSelectionChange={(key) => {
+            value={waterHeater.operationMode}
+            onValueChange={(key) => {
               if (typeof key === "string" && key !== waterHeater.operationMode) {
                 void call("set_operation_mode", { operation_mode: key }, (current) => ({
                   ...current,
@@ -205,7 +203,6 @@ export function WaterHeaterWidget({ widget, isEditing }: WidgetProps<WaterHeater
                 }));
               }
             }}
-            portalContainer={portalContainer}
           />
         </div>
       )}
@@ -213,7 +210,7 @@ export function WaterHeaterWidget({ widget, isEditing }: WidgetProps<WaterHeater
       {(controlError || error) && (
         <div className={classes.errorBox}>
           <ErrorText size="xs">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -238,7 +235,6 @@ export function WaterHeaterWidgetSettings({
   onConfigChange,
 }: WidgetProps<WaterHeaterConfig>) {
   const { entityId = "", showMode = true, transparentBackground = false } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntities(
     "water_heater",
     WATER_HEATER_MISSING_CONFIG_COPY,
@@ -255,17 +251,16 @@ export function WaterHeaterWidgetSettings({
               label="Water heater"
               placeholder="Select a water heater…"
               options={entities.map((entity) => ({
-                id: entity.entityId,
+                value: entity.entityId,
                 label: `${entity.name} (${entity.entityId})`,
               }))}
-              selectedKey={entityId || null}
-              onSelectionChange={(key) => {
+              value={entityId || null}
+              onValueChange={(key) => {
                 if (typeof key === "string") onConfigChange({ entityId: key });
               }}
-              portalContainer={portalContainer}
             />
           </div>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -277,16 +272,16 @@ export function WaterHeaterWidgetSettings({
         <Text size="sm">Show operation mode picker</Text>
         <Switch
           aria-label="Show operation mode picker"
-          isSelected={showMode}
-          onChange={(value) => onConfigChange({ showMode: value })}
+          checked={showMode}
+          onCheckedChange={(value) => onConfigChange({ showMode: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

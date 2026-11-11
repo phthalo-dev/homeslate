@@ -20,7 +20,7 @@ import {
   toggleChoreCompletion,
   type ChoreCompletion,
 } from "./chores";
-import { useOverlayPortalContainer } from "../overlayPortal";
+
 import * as classes from "./listWidget.styles";
 
 const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
@@ -98,8 +98,8 @@ export function ChoresWidget({ widget, onConfigChange }: WidgetProps<ChoresConfi
                   {member?.name.trim().charAt(0).toUpperCase() ?? "?"}
                 </span>
                 <Checkbox
-                  isSelected={complete}
-                  onChange={() => toggle(chore.id)}
+                  checked={complete}
+                  onCheckedChange={() => toggle(chore.id)}
                   aria-label={chore.title}
                 >
                   <Text size="sm" className={classes.label}>
@@ -123,7 +123,6 @@ export function ChoresWidgetSettings({ widget, onConfigChange }: WidgetProps<Cho
     transparentBackground,
   } = widget.config;
   const { members } = useHousehold();
-  const portalContainer = useOverlayPortalContainer();
 
   const update = (id: string, patch: Partial<Chore>) => {
     onConfigChange({
@@ -142,17 +141,16 @@ export function ChoresWidgetSettings({ widget, onConfigChange }: WidgetProps<Cho
             <TextField
               size="sm"
               value={chore.title}
-              onChange={(value) => update(chore.id, { title: value })}
+              onValueChange={(value) => update(chore.id, { title: value })}
               style={{ flex: 1 }}
               aria-label="Chore title"
             />
             <IconButton
-              name="close"
               icon={<IconTrash size={14} />}
               appearance="ghost"
               tone="danger"
               aria-label="Remove chore"
-              onPress={() =>
+              onClick={() =>
                 onConfigChange({ chores: chores.filter((item) => item.id !== chore.id) })
               }
             />
@@ -160,16 +158,15 @@ export function ChoresWidgetSettings({ widget, onConfigChange }: WidgetProps<Cho
           <Select
             label="Assignee"
             options={[
-              { id: "unassigned", label: "Unassigned" },
-              ...members.map((member) => ({ id: member.id, label: member.name })),
+              { value: "unassigned", label: "Unassigned" },
+              ...members.map((member) => ({ value: member.id, label: member.name })),
             ]}
-            selectedKey={chore.assigneeId ?? "unassigned"}
-            onSelectionChange={(key) =>
+            value={chore.assigneeId ?? "unassigned"}
+            onValueChange={(key) =>
               update(chore.id, {
                 assigneeId: !key || key === "unassigned" ? undefined : String(key),
               })
             }
-            portalContainer={portalContainer}
           />
           <HStack gap="xs">
             {DAY_LABELS.map((label, day) => {
@@ -179,7 +176,7 @@ export function ChoresWidgetSettings({ widget, onConfigChange }: WidgetProps<Cho
                   key={`${chore.id}-${day}`}
                   size="sm"
                   appearance={active ? "filled" : "outline"}
-                  onPress={() => {
+                  onClick={() => {
                     const days = active
                       ? chore.days.filter((item) => item !== day)
                       : [...chore.days, day].sort((a, b) => a - b);
@@ -196,7 +193,7 @@ export function ChoresWidgetSettings({ widget, onConfigChange }: WidgetProps<Cho
       <Button
         appearance="subtle"
         size="sm"
-        onPress={() =>
+        onClick={() =>
           onConfigChange({
             chores: [...chores, { id: uuidv4(), title: "New chore", days: [] }],
           })
@@ -209,24 +206,24 @@ export function ChoresWidgetSettings({ widget, onConfigChange }: WidgetProps<Cho
         <Text size="sm">Show completed</Text>
         <Switch
           aria-label="Show completed"
-          isSelected={showCompleted}
-          onChange={(value) => onConfigChange({ showCompleted: value })}
+          checked={showCompleted}
+          onCheckedChange={(value) => onConfigChange({ showCompleted: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Only today</Text>
         <Switch
           aria-label="Only today"
-          isSelected={onlyToday}
-          onChange={(value) => onConfigChange({ onlyToday: value })}
+          checked={onlyToday}
+          onCheckedChange={(value) => onConfigChange({ onlyToday: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

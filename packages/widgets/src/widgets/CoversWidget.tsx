@@ -154,7 +154,7 @@ export function CoversWidget({ widget, isEditing }: WidgetProps<CoversConfig>) {
       {(error || controlError) && (
         <div className={classes.errorBox}>
           <ErrorText size="sm">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -206,8 +206,8 @@ export function CoversWidget({ widget, isEditing }: WidgetProps<CoversConfig>) {
                 <Button
                   appearance="subtle"
                   size="sm"
-                  onPress={() => open(cover)}
-                  isDisabled={!cover.available || pending}
+                  onClick={() => open(cover)}
+                  disabled={!cover.available || pending}
                 >
                   <IconChevronUp size={14} />
                   Open
@@ -215,8 +215,8 @@ export function CoversWidget({ widget, isEditing }: WidgetProps<CoversConfig>) {
                 <Button
                   appearance="subtle"
                   size="sm"
-                  onPress={() => close(cover)}
-                  isDisabled={!cover.available || pending}
+                  onClick={() => close(cover)}
+                  disabled={!cover.available || pending}
                 >
                   <IconChevronDown size={14} />
                   Close
@@ -225,8 +225,8 @@ export function CoversWidget({ widget, isEditing }: WidgetProps<CoversConfig>) {
                   <Button
                     appearance="subtle"
                     size="sm"
-                    onPress={() => stop(cover)}
-                    isDisabled={!cover.available || pending}
+                    onClick={() => stop(cover)}
+                    disabled={!cover.available || pending}
                     aria-label={`Stop ${cover.name}`}
                   >
                     <IconPlayerStop size={14} />
@@ -240,17 +240,17 @@ export function CoversWidget({ widget, isEditing }: WidgetProps<CoversConfig>) {
                   <Slider
                     className={classes.range}
                     aria-label={`Position for ${cover.name}`}
-                    minValue={0}
-                    maxValue={100}
+                    min={0}
+                    max={100}
                     step={1}
                     value={sliderValue}
                     showOutput={false}
-                    isDisabled={pending}
-                    onChange={(value) => {
+                    disabled={pending}
+                    onValueChange={(value) => {
                       const next = typeof value === "number" ? value : (value[0] ?? sliderValue);
                       setDrafts((prev) => ({ ...prev, [entityId]: next }));
                     }}
-                    onChangeEnd={(value) => {
+                    onValueCommit={(value) => {
                       const next = typeof value === "number" ? value : (value[0] ?? sliderValue);
                       setPosition(cover, next);
                     }}
@@ -309,24 +309,24 @@ export function CoversWidgetSettings({ widget, onConfigChange }: WidgetProps<Cov
         <Text size="sm">Show position slider (when large)</Text>
         <Switch
           aria-label="Show position slider"
-          isSelected={showPositionSlider}
-          onChange={(value) => onConfigChange({ showPositionSlider: value })}
+          checked={showPositionSlider}
+          onCheckedChange={(value) => onConfigChange({ showPositionSlider: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Ask before opening garage doors</Text>
         <Switch
           aria-label="Ask before opening garage doors"
-          isSelected={confirmGarage}
-          onChange={(value) => onConfigChange({ confirmGarage: value })}
+          checked={confirmGarage}
+          onCheckedChange={(value) => onConfigChange({ confirmGarage: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

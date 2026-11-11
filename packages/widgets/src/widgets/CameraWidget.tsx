@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntities, useEntity } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import {
   CAMERA_EMPTY_COPY,
   CAMERA_MISSING_CONFIG_COPY,
@@ -100,7 +99,7 @@ export function CameraWidget({ widget, isEditing }: WidgetProps<CameraConfig>) {
       <div className={containerClass}>
         <div className={classes.empty}>
           <ErrorText size="sm">{error ?? "Failed to fetch camera"}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -124,8 +123,8 @@ export function CameraWidget({ widget, isEditing }: WidgetProps<CameraConfig>) {
             appearance="subtle"
             size="sm"
             aria-label="Refresh snapshot"
-            onPress={() => setNonce(Date.now())}
-            isDisabled={isPrivate}
+            onClick={() => setNonce(Date.now())}
+            disabled={isPrivate}
           >
             <IconRefresh size={14} />
           </Button>
@@ -134,7 +133,7 @@ export function CameraWidget({ widget, isEditing }: WidgetProps<CameraConfig>) {
               appearance="subtle"
               size="sm"
               aria-label={privacy ? "Show camera" : "Hide camera"}
-              onPress={() => setPrivacy((value) => !value)}
+              onClick={() => setPrivacy((value) => !value)}
             >
               {privacy ? <IconEye size={14} /> : <IconEyeOff size={14} />}
             </Button>
@@ -156,7 +155,7 @@ export function CameraWidget({ widget, isEditing }: WidgetProps<CameraConfig>) {
           <div className={classes.privacyOverlay}>
             <IconCameraOff size={32} />
             <Text size="sm">Snapshot unavailable.</Text>
-            <Button appearance="subtle" size="sm" onPress={() => setNonce(Date.now())}>
+            <Button appearance="subtle" size="sm" onClick={() => setNonce(Date.now())}>
               <IconRefresh size={14} />
               Try again
             </Button>
@@ -178,7 +177,7 @@ export function CameraWidget({ widget, isEditing }: WidgetProps<CameraConfig>) {
       {(controlError || error) && (
         <div className={classes.errorBox}>
           <ErrorText size="xs">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -205,7 +204,6 @@ export function CameraWidgetSettings({ widget, onConfigChange }: WidgetProps<Cam
     showPrivacyToggle = true,
     transparentBackground = false,
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntities(
     "camera",
     CAMERA_MISSING_CONFIG_COPY,
@@ -222,17 +220,16 @@ export function CameraWidgetSettings({ widget, onConfigChange }: WidgetProps<Cam
               label="Camera"
               placeholder="Select a camera…"
               options={entities.map((entity) => ({
-                id: entity.entityId,
+                value: entity.entityId,
                 label: `${entity.name} (${entity.entityId})`,
               }))}
-              selectedKey={entityId || null}
-              onSelectionChange={(key) => {
+              value={entityId || null}
+              onValueChange={(key) => {
                 if (typeof key === "string") onConfigChange({ entityId: key });
               }}
-              portalContainer={portalContainer}
             />
           </div>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -242,10 +239,10 @@ export function CameraWidgetSettings({ widget, onConfigChange }: WidgetProps<Cam
 
       <NumberInput
         label="Refresh seconds (0 = manual)"
-        minValue={0}
-        maxValue={3600}
+        min={0}
+        max={3600}
         value={refreshSeconds}
-        onChange={(value) => {
+        onValueChange={(value) => {
           const next = Number(value);
           onConfigChange({
             refreshSeconds: Number.isFinite(next) ? Math.min(3600, Math.max(0, next)) : 60,
@@ -256,16 +253,16 @@ export function CameraWidgetSettings({ widget, onConfigChange }: WidgetProps<Cam
         <Text size="sm">Show privacy toggle</Text>
         <Switch
           aria-label="Show privacy toggle"
-          isSelected={showPrivacyToggle}
-          onChange={(value) => onConfigChange({ showPrivacyToggle: value })}
+          checked={showPrivacyToggle}
+          onCheckedChange={(value) => onConfigChange({ showPrivacyToggle: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

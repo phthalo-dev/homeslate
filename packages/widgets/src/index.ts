@@ -1,7 +1,7 @@
 import "./builtins"; // side-effect: register built-ins
 export const WIDGETS_PACKAGE_NAME = "@homeslate/widgets";
 export { ErrorText } from "./ErrorText";
-export { useDebouncedValue } from "./hooks/useDebouncedValue";
+export { useDebouncedValue } from "@var-ui/react";
 export { useElementSize } from "./hooks/useElementSize";
 export { registerWidget, getWidgetByType, getWidgetTypes, clearWidgetRegistry } from "./registry";
 export type {
@@ -95,4 +95,3 @@ export { useCachedResource } from "./hooks/useCachedResource";
 export { readWidgetCache, writeWidgetCache, clearWidgetCache } from "./services/widgetCache";
 export type { CacheStore, WidgetCacheHit, WidgetCachePolicy } from "./services/widgetCache";
 export { UnknownWidget } from "./UnknownWidget";
-export { OverlayPortalContext, useOverlayPortalContainer } from "./overlayPortal";

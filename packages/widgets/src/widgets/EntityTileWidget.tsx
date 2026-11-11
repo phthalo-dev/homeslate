@@ -38,7 +38,6 @@ import { useState, type ComponentType } from "react";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntitiesAcross, useEntity } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { HOME_ASSISTANT_DOMAINS } from "./homeAssistantDomains";
 import {
   ENTITY_TILE_EMPTY_COPY,
@@ -167,7 +166,7 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
       <div className={containerClass}>
         <div className={classes.empty}>
           <ErrorText size="sm">{error ?? "Failed to fetch entity"}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -263,7 +262,7 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
       {(controlError || error) && (
         <div className={classes.errorBox}>
           <ErrorText size="xs">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -277,8 +276,8 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
               <Button
                 appearance="subtle"
                 size="sm"
-                onPress={toggle}
-                isDisabled={!canControl || pending}
+                onClick={toggle}
+                disabled={!canControl || pending}
               >
                 <IconPower size={16} />
                 {descriptor.isOn ? "Turn off" : "Turn on"}
@@ -292,8 +291,8 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
                 <Button
                   appearance="subtle"
                   size="sm"
-                  onPress={toggle}
-                  isDisabled={!canControl || pending}
+                  onClick={toggle}
+                  disabled={!canControl || pending}
                 >
                   <IconBulb size={16} />
                   {descriptor.isOn ? "Turn off" : "Turn on"}
@@ -304,18 +303,18 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
                   <Slider
                     className={classes.range}
                     aria-label={`Brightness for ${displayName}`}
-                    minValue={1}
-                    maxValue={100}
+                    min={1}
+                    max={100}
                     step={1}
                     value={brightness}
                     showOutput={false}
-                    isDisabled={!canControl || pending}
-                    onChange={(value) =>
+                    disabled={!canControl || pending}
+                    onValueChange={(value) =>
                       setBrightnessDraft(
                         typeof value === "number" ? value : (value[0] ?? brightness),
                       )
                     }
-                    onChangeEnd={(value) =>
+                    onValueCommit={(value) =>
                       void commitBrightness(
                         typeof value === "number" ? value : (value[0] ?? brightness),
                       )
@@ -335,8 +334,8 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
                 <Button
                   appearance="subtle"
                   size="sm"
-                  onPress={openCover}
-                  isDisabled={!canControl || pending}
+                  onClick={openCover}
+                  disabled={!canControl || pending}
                 >
                   <IconChevronUp size={16} />
                   Open
@@ -344,8 +343,8 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
                 <Button
                   appearance="subtle"
                   size="sm"
-                  onPress={closeCover}
-                  isDisabled={!canControl || pending}
+                  onClick={closeCover}
+                  disabled={!canControl || pending}
                 >
                   <IconChevronDown size={16} />
                   Close
@@ -356,16 +355,16 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
                   <Slider
                     className={classes.range}
                     aria-label={`Position for ${displayName}`}
-                    minValue={0}
-                    maxValue={100}
+                    min={0}
+                    max={100}
                     step={1}
                     value={position}
                     showOutput={false}
-                    isDisabled={!canControl || pending}
-                    onChange={(value) =>
+                    disabled={!canControl || pending}
+                    onValueChange={(value) =>
                       setPositionDraft(typeof value === "number" ? value : (value[0] ?? position))
                     }
-                    onChangeEnd={(value) =>
+                    onValueCommit={(value) =>
                       void commitPosition(
                         typeof value === "number" ? value : (value[0] ?? position),
                       )
@@ -384,8 +383,8 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
               <Button
                 appearance="subtle"
                 size="sm"
-                onPress={playPause}
-                isDisabled={!canControl || pending}
+                onClick={playPause}
+                disabled={!canControl || pending}
               >
                 {descriptor.isOn ? <IconPlayerPause size={16} /> : <IconPlayerPlay size={16} />}
                 {descriptor.isOn ? "Pause" : "Play"}
@@ -403,8 +402,8 @@ export function EntityTileWidget({ widget, isEditing }: WidgetProps<EntityTileCo
               <Button
                 appearance="subtle"
                 size="sm"
-                onPress={toggleLock}
-                isDisabled={!canControl || pending || unlockLocked}
+                onClick={toggleLock}
+                disabled={!canControl || pending || unlockLocked}
               >
                 {descriptor.isLocked ? <IconLockOpen size={16} /> : <IconLock size={16} />}
                 {descriptor.isLocked ? "Unlock" : "Lock"}
@@ -437,7 +436,6 @@ export function EntityTileWidgetSettings({
     showControls = true,
     transparentBackground = false,
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntitiesAcross(
     [...HOME_ASSISTANT_DOMAINS],
     ENTITY_TILE_MISSING_CONFIG_COPY,
@@ -454,17 +452,16 @@ export function EntityTileWidgetSettings({
               label="Entity"
               placeholder="Select any entity…"
               options={entities.map((entity) => ({
-                id: entity.entityId,
+                value: entity.entityId,
                 label: `${entity.name} (${entity.entityId})`,
               }))}
-              selectedKey={entityId || null}
-              onSelectionChange={(key) => {
+              value={entityId || null}
+              onValueChange={(key) => {
                 if (typeof key === "string") onConfigChange({ entityId: key });
               }}
-              portalContainer={portalContainer}
             />
           </div>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -476,23 +473,23 @@ export function EntityTileWidgetSettings({
         label="Label override"
         placeholder="Defaults to the entity name"
         value={label}
-        onChange={(value) => onConfigChange({ label: value })}
+        onValueChange={(value) => onConfigChange({ label: value })}
       />
 
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Show controls</Text>
         <Switch
           aria-label="Show controls"
-          isSelected={showControls}
-          onChange={(value) => onConfigChange({ showControls: value })}
+          checked={showControls}
+          onCheckedChange={(value) => onConfigChange({ showControls: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

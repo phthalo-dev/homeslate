@@ -2,7 +2,6 @@ import { Button, HStack, IconButton, Select, Stack, Text } from "@var-ui/react";
 import { IconRefresh, IconX } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { useEntitiesAcross } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { ErrorText } from "../ErrorText";
 
 export interface AddEntitySelectProps {
@@ -27,7 +26,6 @@ export function AddEntitySelect({
   failureCopy,
   label = "Add entity",
 }: AddEntitySelectProps) {
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntitiesAcross(domains, failureCopy);
   const available = entities.filter((entity) => !value.includes(entity.entityId));
 
@@ -39,22 +37,21 @@ export function AddEntitySelect({
             label={label}
             placeholder={isLoading ? "Loading…" : "Select an entity…"}
             options={available.map((entity) => ({
-              id: entity.entityId,
+              value: entity.entityId,
               label: `${entity.name} (${entity.entityId})`,
             }))}
-            selectedKey={null}
-            onSelectionChange={(key) => {
+            value={null}
+            onValueChange={(key) => {
               if (typeof key === "string") onAdd(key);
             }}
-            portalContainer={portalContainer}
           />
         </div>
         <Button
           appearance="subtle"
           size="sm"
           aria-label="Refresh entities"
-          onPress={refresh}
-          isDisabled={isLoading}
+          onClick={refresh}
+          disabled={isLoading}
         >
           <IconRefresh size={14} />
         </Button>
@@ -86,11 +83,10 @@ export function SelectedEntityRow({
           {entityId}
         </Text>
         <IconButton
-          name="close"
           icon={<IconX size={14} />}
           aria-label={`Remove ${entityId}`}
           size="sm"
-          onPress={onRemove}
+          onClick={onRemove}
         />
       </HStack>
       {children}

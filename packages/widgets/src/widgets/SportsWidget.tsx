@@ -14,7 +14,6 @@ import {
 } from "@var-ui/react";
 import { IconTrophy, IconRefresh } from "@tabler/icons-react";
 import type { WidgetProps, WidgetConfig } from "../types";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { useScores } from "../hooks/useScores";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { LEAGUES, fetchLeagueTeams, type SportsTeam } from "../services/sports";
@@ -249,7 +248,7 @@ export function SportsWidget({ widget }: WidgetProps<SportsConfig>) {
           <Text size="sm" style={{ color: "var(--var-ui-color-tone-danger-foreground)" }}>
             {error}
           </Text>
-          <Button size="sm" appearance="ghost" onPress={refresh}>
+          <Button size="sm" appearance="ghost" onClick={refresh}>
             Retry
           </Button>
         </div>
@@ -271,7 +270,7 @@ export function SportsWidget({ widget }: WidgetProps<SportsConfig>) {
         </Text>
         <HStack gap="xs">
           {isLoading && <Spinner size="sm" tone="success" />}
-          <Button appearance="ghost" size="sm" onPress={refresh} className={classes.refreshBtn}>
+          <Button appearance="ghost" size="sm" onClick={refresh} className={classes.refreshBtn}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -334,7 +333,6 @@ export function SportsWidget({ widget }: WidgetProps<SportsConfig>) {
 // ---------------------------------------------------------------------------
 
 export function SportsWidgetSettings({ widget, onConfigChange }: WidgetProps<SportsConfig>) {
-  const portalContainer = useOverlayPortalContainer();
   const { leagueId, favoriteTeamIds, showAllGames, showCurrentGames } = widget.config;
 
   const [availableTeams, setAvailableTeams] = useState<SportsTeam[]>([]);
@@ -353,12 +351,12 @@ export function SportsWidgetSettings({ widget, onConfigChange }: WidgetProps<Spo
   }, [leagueId]);
 
   const leagueOptions = LEAGUES.map((l) => ({
-    id: l.id,
+    value: l.id,
     label: l.name,
   }));
 
   const teamOptions = availableTeams.map((t) => ({
-    id: t.id,
+    value: t.id,
     label: t.displayName,
   }));
 
@@ -376,9 +374,8 @@ export function SportsWidgetSettings({ widget, onConfigChange }: WidgetProps<Spo
         label="League"
         placeholder="Select a league"
         options={leagueOptions}
-        selectedKey={leagueId || null}
-        onSelectionChange={handleLeagueChange}
-        portalContainer={portalContainer}
+        value={leagueId || null}
+        onValueChange={handleLeagueChange}
       />
 
       {leagueId && (
@@ -388,8 +385,8 @@ export function SportsWidgetSettings({ widget, onConfigChange }: WidgetProps<Spo
           placeholder={loadingTeams ? "Loading teams..." : "Search for teams…"}
           options={teamOptions}
           value={favoriteTeamIds}
-          onChange={handleTeamsChange}
-          isDisabled={loadingTeams}
+          onValueChange={handleTeamsChange}
+          disabled={loadingTeams}
         />
       )}
 
@@ -402,8 +399,8 @@ export function SportsWidgetSettings({ widget, onConfigChange }: WidgetProps<Spo
         </Stack>
         <Switch
           aria-label="Show all games"
-          isSelected={showAllGames}
-          onChange={(value) => onConfigChange({ showAllGames: value })}
+          checked={showAllGames}
+          onCheckedChange={(value) => onConfigChange({ showAllGames: value })}
         />
       </HStack>
 
@@ -416,8 +413,8 @@ export function SportsWidgetSettings({ widget, onConfigChange }: WidgetProps<Spo
         </Stack>
         <Switch
           aria-label="Show current games"
-          isSelected={showCurrentGames ?? true}
-          onChange={(value) => onConfigChange({ showCurrentGames: value })}
+          checked={showCurrentGames ?? true}
+          onCheckedChange={(value) => onConfigChange({ showCurrentGames: value })}
         />
       </HStack>
     </Stack>
