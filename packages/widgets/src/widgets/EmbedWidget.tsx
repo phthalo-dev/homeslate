@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { NumberInput, Select, Stack, Switch, Text, TextField } from "@var-ui/react";
 import { IconAppWindow } from "@tabler/icons-react";
 import type { WidgetConfig, WidgetProps } from "../types";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import {
   EMBED_EMPTY_COPY,
   EMBED_INVALID_COPY,
@@ -15,11 +14,11 @@ import * as classes from "./EmbedWidget.styles";
 const REFRESH_PRESETS = new Set([0, 60, 300, 900]);
 
 const REFRESH_OPTIONS = [
-  { id: "0", label: "Off" },
-  { id: "60", label: "1 minute" },
-  { id: "300", label: "5 minutes" },
-  { id: "900", label: "15 minutes" },
-  { id: "custom", label: "Custom" },
+  { value: "0", label: "Off" },
+  { value: "60", label: "1 minute" },
+  { value: "300", label: "5 minutes" },
+  { value: "900", label: "15 minutes" },
+  { value: "custom", label: "Custom" },
 ];
 
 export interface EmbedConfig extends WidgetConfig {
@@ -129,7 +128,6 @@ export function EmbedWidgetSettings({ widget, onConfigChange }: WidgetProps<Embe
     allowInteraction = false,
     transparentBackground,
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const clampedRefresh = clampRefreshSeconds(refreshSeconds);
   const [customMode, setCustomMode] = useState(
     clampedRefresh > 0 && !REFRESH_PRESETS.has(clampedRefresh),
@@ -143,14 +141,14 @@ export function EmbedWidgetSettings({ widget, onConfigChange }: WidgetProps<Embe
         label="URL"
         placeholder="https://"
         value={url}
-        onChange={(value) => onConfigChange({ url: value })}
+        onValueChange={(value) => onConfigChange({ url: value })}
       />
 
       <Select
         label="Refresh"
         options={REFRESH_OPTIONS}
-        selectedKey={selectValue}
-        onSelectionChange={(key) => {
+        value={selectValue}
+        onValueChange={(key) => {
           const value = key == null ? "0" : String(key);
           if (value === "custom") {
             setCustomMode(true);
@@ -162,16 +160,15 @@ export function EmbedWidgetSettings({ widget, onConfigChange }: WidgetProps<Embe
             onConfigChange({ refreshSeconds: Number(value) });
           }
         }}
-        portalContainer={portalContainer}
       />
 
       {selectValue === "custom" && (
         <NumberInput
           label="Refresh seconds"
-          minValue={1}
-          maxValue={3600}
+          min={1}
+          max={3600}
           value={Math.min(3600, Math.max(1, clampedRefresh || 1))}
-          onChange={(value) =>
+          onValueChange={(value) =>
             onConfigChange({
               refreshSeconds:
                 typeof value === "number" && Number.isFinite(value)
@@ -183,8 +180,8 @@ export function EmbedWidgetSettings({ widget, onConfigChange }: WidgetProps<Embe
       )}
 
       <Switch
-        isSelected={allowInteraction}
-        onChange={(value) => onConfigChange({ allowInteraction: value })}
+        checked={allowInteraction}
+        onCheckedChange={(value) => onConfigChange({ allowInteraction: value })}
       >
         Allow interaction
       </Switch>
@@ -193,8 +190,8 @@ export function EmbedWidgetSettings({ widget, onConfigChange }: WidgetProps<Embe
       </Text>
 
       <Switch
-        isSelected={transparentBackground}
-        onChange={(value) => onConfigChange({ transparentBackground: value })}
+        checked={transparentBackground}
+        onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
       >
         Transparent background
       </Switch>

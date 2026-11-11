@@ -31,7 +31,6 @@ import type { ComponentType } from "react";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { HoldToConfirm } from "../household/HoldToConfirm";
 import { effectiveCompletedStepIds, routineDayKey, toggleRoutineStep } from "./dailyRoutine";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import * as classes from "./listWidget.styles";
 
 export const ROUTINE_ICON_IDS = [
@@ -78,8 +77,8 @@ const ICONS: Record<RoutineIconId, ComponentType<{ size?: number }>> = {
 };
 
 const ICON_OPTIONS = [
-  { id: "none", label: "No icon" },
-  ...ROUTINE_ICON_IDS.map((id) => ({ id, label: id })),
+  { value: "none", label: "No icon" },
+  ...ROUTINE_ICON_IDS.map((id) => ({ value: id, label: id })),
 ];
 
 function iconOf(id: RoutineIconId | undefined) {
@@ -134,12 +133,11 @@ export function DailyRoutineWidget({
             {showReset &&
               (isEditing ? (
                 <IconButton
-                  name="close"
                   icon={<IconTrash size={14} />}
                   appearance="ghost"
                   size="sm"
                   aria-label="Reset day"
-                  onPress={persistReset}
+                  onClick={persistReset}
                 />
               ) : (
                 <HoldToConfirm label="Reset day" onConfirm={persistReset} />
@@ -163,8 +161,8 @@ export function DailyRoutineWidget({
                   <span className={classes.number}>{index + 1}</span>
                   {Icon ? <Icon size={22} /> : null}
                   <Checkbox
-                    isSelected={done}
-                    onChange={() => persistToggle(step.id)}
+                    checked={done}
+                    onCheckedChange={() => persistToggle(step.id)}
                     aria-label={step.label}
                   >
                     <Text size="sm" className={classes.label}>
@@ -186,7 +184,6 @@ export function DailyRoutineWidgetSettings({
   onConfigChange,
 }: WidgetProps<DailyRoutineConfig>) {
   const { steps = [], resetHour = 4, showReset = true, transparentBackground } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
 
   const updateStep = (id: string, patch: Partial<RoutineStep>) => {
     onConfigChange({
@@ -210,44 +207,40 @@ export function DailyRoutineWidgetSettings({
           <TextField
             size="sm"
             value={step.label}
-            onChange={(value) => updateStep(step.id, { label: value })}
+            onValueChange={(value) => updateStep(step.id, { label: value })}
             aria-label={`Step ${index + 1} label`}
           />
           <HStack gap="xs">
             <Select
               aria-label={`Step ${index + 1} icon`}
               options={ICON_OPTIONS}
-              selectedKey={step.icon ?? "none"}
-              onSelectionChange={(key) =>
+              value={step.icon ?? "none"}
+              onValueChange={(key) =>
                 updateStep(step.id, {
                   icon:
                     !key || key === "none" ? undefined : (String(key) as RoutineIconId | undefined),
                 })
               }
               style={{ flex: 1 }}
-              portalContainer={portalContainer}
             />
             <IconButton
-              name="arrowUp"
               icon={<IconArrowUp size={14} />}
               appearance="ghost"
               aria-label="Move up"
-              onPress={() => move(index, -1)}
+              onClick={() => move(index, -1)}
             />
             <IconButton
-              name="arrowDown"
               icon={<IconArrowDown size={14} />}
               appearance="ghost"
               aria-label="Move down"
-              onPress={() => move(index, 1)}
+              onClick={() => move(index, 1)}
             />
             <IconButton
-              name="close"
               icon={<IconTrash size={14} />}
               appearance="ghost"
               tone="danger"
               aria-label="Remove step"
-              onPress={() => onConfigChange({ steps: steps.filter((item) => item.id !== step.id) })}
+              onClick={() => onConfigChange({ steps: steps.filter((item) => item.id !== step.id) })}
             />
           </HStack>
         </Stack>
@@ -256,7 +249,7 @@ export function DailyRoutineWidgetSettings({
         appearance="subtle"
         size="sm"
         aria-label="Add step"
-        onPress={() =>
+        onClick={() =>
           onConfigChange({
             steps: [...steps, { id: uuidv4(), label: "New step", icon: "star" }],
           })
@@ -267,10 +260,10 @@ export function DailyRoutineWidgetSettings({
       </Button>
       <NumberInput
         label="Reset hour"
-        minValue={0}
-        maxValue={23}
+        min={0}
+        max={23}
         value={resetHour}
-        onChange={(value) => {
+        onValueChange={(value) => {
           if (typeof value === "number") onConfigChange({ resetHour: value });
         }}
       />
@@ -278,16 +271,16 @@ export function DailyRoutineWidgetSettings({
         <Text size="sm">Show reset control</Text>
         <Switch
           aria-label="Show reset control"
-          isSelected={showReset}
-          onChange={(value) => onConfigChange({ showReset: value })}
+          checked={showReset}
+          onCheckedChange={(value) => onConfigChange({ showReset: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

@@ -15,7 +15,6 @@ import { useState } from "react";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntities, useEntity } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import {
   MEDIA_PLAYER_EMPTY_COPY,
   MEDIA_PLAYER_FEATURE,
@@ -64,7 +63,6 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
     fetchFailureCopy: MEDIA_PLAYER_MISSING_CONFIG_COPY,
     callFailureCopy: MEDIA_PLAYER_MISSING_CONFIG_COPY,
   });
-  const portalContainer = useOverlayPortalContainer();
   const [volumeDraft, setVolumeDraft] = useState<number | null>(null);
   const containerClass = `${classes.container} ${transparentBackground ? classes.transparent : ""}`;
 
@@ -107,7 +105,7 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
       <div className={containerClass}>
         <div className={classes.empty}>
           <ErrorText size="sm">{error ?? "Failed to fetch media player"}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -222,8 +220,8 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
             appearance="subtle"
             size="sm"
             aria-label="Previous track"
-            onPress={() => void call("media_previous_track", {}, undefined)}
-            isDisabled={pending}
+            onClick={() => void call("media_previous_track", {}, undefined)}
+            disabled={pending}
           >
             <IconPlayerSkipBack size={18} />
           </Button>
@@ -232,8 +230,8 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
           appearance="subtle"
           size="sm"
           aria-label={poweredOff ? "Turn on" : mediaPlayerIsPlaying(mediaPlayer) ? "Pause" : "Play"}
-          onPress={playPause}
-          isDisabled={pending}
+          onClick={playPause}
+          disabled={pending}
         >
           {poweredOff ? (
             <IconPower size={18} />
@@ -248,8 +246,8 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
             appearance="subtle"
             size="sm"
             aria-label="Next track"
-            onPress={() => void call("media_next_track", {}, undefined)}
-            isDisabled={pending}
+            onClick={() => void call("media_next_track", {}, undefined)}
+            disabled={pending}
           >
             <IconPlayerSkipForward size={18} />
           </Button>
@@ -261,8 +259,8 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
               appearance="subtle"
               size="sm"
               aria-label="Turn off"
-              onPress={() => void call("turn_off", {}, (current) => ({ ...current, state: "off" }))}
-              isDisabled={pending}
+              onClick={() => void call("turn_off", {}, (current) => ({ ...current, state: "off" }))}
+              disabled={pending}
             >
               <IconPower size={16} />
             </Button>
@@ -276,13 +274,13 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
               appearance="subtle"
               size="sm"
               aria-label={mediaPlayer.isMuted ? "Unmute" : "Mute"}
-              onPress={() =>
+              onClick={() =>
                 void call("volume_mute", { is_volume_muted: !mediaPlayer.isMuted }, (current) => ({
                   ...current,
                   isMuted: !current.isMuted,
                 }))
               }
-              isDisabled={pending}
+              disabled={pending}
             >
               {mediaPlayer.isMuted ? <IconVolumeOff size={16} /> : <IconVolume size={16} />}
             </Button>
@@ -290,16 +288,16 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
           <Slider
             className={classes.range}
             aria-label="Volume"
-            minValue={0}
-            maxValue={100}
+            min={0}
+            max={100}
             step={1}
             value={volumePct}
             showOutput={false}
-            isDisabled={pending}
-            onChange={(value) =>
+            disabled={pending}
+            onValueChange={(value) =>
               setVolumeDraft(typeof value === "number" ? value : (value[0] ?? volumePct))
             }
-            onChangeEnd={(value) =>
+            onValueCommit={(value) =>
               void commitVolume(typeof value === "number" ? value : (value[0] ?? volumePct))
             }
           />
@@ -312,9 +310,9 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
       {showSourceControl && (
         <Select
           label="Source"
-          options={mediaPlayer.sourceList.map((source) => ({ id: source, label: source }))}
-          selectedKey={mediaPlayer.source}
-          onSelectionChange={(key) => {
+          options={mediaPlayer.sourceList.map((source) => ({ value: source, label: source }))}
+          value={mediaPlayer.source}
+          onValueChange={(key) => {
             if (typeof key === "string" && key !== mediaPlayer.source) {
               void call("select_source", { source: key }, (current) => ({
                 ...current,
@@ -322,7 +320,6 @@ export function MediaPlayerWidget({ widget, isEditing }: WidgetProps<MediaPlayer
               }));
             }
           }}
-          portalContainer={portalContainer}
         />
       )}
 
@@ -351,7 +348,6 @@ export function MediaPlayerWidgetSettings({
     showSource = true,
     transparentBackground = false,
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntities(
     "media_player",
     MEDIA_PLAYER_MISSING_CONFIG_COPY,
@@ -368,17 +364,16 @@ export function MediaPlayerWidgetSettings({
               label="Media player"
               placeholder="Select a player…"
               options={entities.map((entity) => ({
-                id: entity.entityId,
+                value: entity.entityId,
                 label: `${entity.name} (${entity.entityId})`,
               }))}
-              selectedKey={entityId || null}
-              onSelectionChange={(key) => {
+              value={entityId || null}
+              onValueChange={(key) => {
                 if (typeof key === "string") onConfigChange({ entityId: key });
               }}
-              portalContainer={portalContainer}
             />
           </div>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -390,24 +385,24 @@ export function MediaPlayerWidgetSettings({
         <Text size="sm">Show volume</Text>
         <Switch
           aria-label="Show volume"
-          isSelected={showVolume}
-          onChange={(value) => onConfigChange({ showVolume: value })}
+          checked={showVolume}
+          onCheckedChange={(value) => onConfigChange({ showVolume: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Show source picker</Text>
         <Switch
           aria-label="Show source picker"
-          isSelected={showSource}
-          onChange={(value) => onConfigChange({ showSource: value })}
+          checked={showSource}
+          onCheckedChange={(value) => onConfigChange({ showSource: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

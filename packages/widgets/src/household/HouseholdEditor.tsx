@@ -2,7 +2,6 @@ import { Button, ColorInput, HStack, IconButton, Stack, Text, TextField } from "
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { v4 as uuidv4 } from "uuid";
 import type { HouseholdMember } from "@homeslate/schema";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import * as classes from "./HouseholdEditor.styles";
 
 export const HOUSEHOLD_MEMBER_COLORS = [
@@ -39,7 +38,6 @@ export function HouseholdEditor({
   onChange: (members: HouseholdMember[]) => void;
   readOnly?: boolean;
 }) {
-  const portalContainer = useOverlayPortalContainer();
   const update = (id: string, patch: Partial<HouseholdMember>) => {
     onChange(members.map((member) => (member.id === id ? { ...member, ...patch } : member)));
   };
@@ -59,8 +57,8 @@ export function HouseholdEditor({
           <TextField
             size="sm"
             value={member.name}
-            onChange={(value) => update(member.id, { name: value })}
-            isDisabled={readOnly}
+            onValueChange={(value) => update(member.id, { name: value })}
+            disabled={readOnly}
             style={{ flex: 1 }}
             aria-label="Member name"
           />
@@ -69,19 +67,17 @@ export function HouseholdEditor({
               <ColorInput
                 label={`Color for ${member.name}`}
                 value={member.color}
-                onChange={(value) => update(member.id, { color: value })}
+                onValueChange={(value) => update(member.id, { color: value })}
                 swatches={[...HOUSEHOLD_MEMBER_COLORS]}
                 size="sm"
-                portalContainer={portalContainer}
                 className={classes.colorField}
               />
               <IconButton
-                name="close"
                 icon={<IconTrash size={16} />}
                 appearance="ghost"
                 tone="danger"
                 aria-label={`Remove ${member.name}`}
-                onPress={() => onChange(members.filter((item) => item.id !== member.id))}
+                onClick={() => onChange(members.filter((item) => item.id !== member.id))}
               />
             </>
           )}
@@ -91,7 +87,7 @@ export function HouseholdEditor({
         <Button
           appearance="subtle"
           size="sm"
-          onPress={() => onChange([...members, createMember(members.length)])}
+          onClick={() => onChange([...members, createMember(members.length)])}
         >
           <IconPlus size={14} />
           Add person

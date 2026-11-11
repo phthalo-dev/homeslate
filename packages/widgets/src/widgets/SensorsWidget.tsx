@@ -92,7 +92,7 @@ export function SensorsWidget({ widget, isEditing }: WidgetProps<SensorsConfig>)
       {error && !lastUpdated && (
         <div className={classes.errorBox}>
           <ErrorText size="sm">{error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -196,14 +196,14 @@ export function SensorsSettings({ widget, onConfigChange }: WidgetProps<SensorsC
             aria-label={`Label for ${item.entityId}`}
             placeholder="Label (optional)"
             value={item.label ?? ""}
-            onChange={(value) => updateItem(index, { label: value })}
+            onValueChange={(value) => updateItem(index, { label: value })}
           />
           {!isBinary(item.entityId) && (
             <HStack gap="sm">
               <NumberInput
                 label="Min"
                 value={item.min}
-                onChange={(value) => {
+                onValueChange={(value) => {
                   const next = Number(value);
                   updateItem(index, { min: Number.isFinite(next) ? next : undefined });
                 }}
@@ -211,7 +211,7 @@ export function SensorsSettings({ widget, onConfigChange }: WidgetProps<SensorsC
               <NumberInput
                 label="Max"
                 value={item.max}
-                onChange={(value) => {
+                onValueChange={(value) => {
                   const next = Number(value);
                   updateItem(index, { max: Number.isFinite(next) ? next : undefined });
                 }}
@@ -226,12 +226,11 @@ export function SensorsSettings({ widget, onConfigChange }: WidgetProps<SensorsC
           size="sm"
           aria-label="Sensor layout"
           options={[
-            { id: "list", label: "List" },
-            { id: "grid", label: "Grid" },
+            { value: "list", label: "List" },
+            { value: "grid", label: "Grid" },
           ]}
-          selectedKeys={[layout]}
-          onSelectionChange={(keys) => {
-            const next = [...keys][0];
+          value={layout}
+          onValueChange={(next) => {
             if (next === "list" || next === "grid") onConfigChange({ layout: next });
           }}
         />
@@ -240,16 +239,16 @@ export function SensorsSettings({ widget, onConfigChange }: WidgetProps<SensorsC
         <Text size="sm">Show gauge when min/max are set</Text>
         <Switch
           aria-label="Show gauge"
-          isSelected={showGauge}
-          onChange={(value) => onConfigChange({ showGauge: value })}
+          checked={showGauge}
+          onCheckedChange={(value) => onConfigChange({ showGauge: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

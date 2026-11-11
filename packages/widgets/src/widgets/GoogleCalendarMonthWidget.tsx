@@ -23,7 +23,6 @@ import { IconCalendarEvent, IconRefresh, IconMapPin, IconPlus } from "@tabler/ic
 import { GoogleCalendarEmptyState } from "../chrome/GoogleCalendarEmptyState";
 import { displayCalendarEmptyDetail } from "./googleCalendarError";
 import type { WidgetProps, WidgetConfig } from "../types";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { useGoogleCalendar } from "../hooks/useGoogleCalendar";
 import { useDisplayCalendar } from "../hooks/useDisplayCalendar";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
@@ -100,7 +99,6 @@ function formatTimeRange(event: ParsedCalendarEvent): string {
 // ── Main widget ──
 
 export function GoogleCalendarMonthWidget({ widget }: WidgetProps<GoogleCalendarMonthConfig>) {
-  const portalContainer = useOverlayPortalContainer();
   const { selectedCalendarIds, daysAhead, transparentBackground } = widget.config;
   const { displayId, isPreview, isAuthenticated } = useGoogleRuntime();
   const isDisplayMode = !!displayId && !isPreview;
@@ -157,7 +155,7 @@ export function GoogleCalendarMonthWidget({ widget }: WidgetProps<GoogleCalendar
 
   const handleFormSubmit = useCallback(async () => {
     if (!formData.title.trim()) {
-      setFormError("Title is isRequired");
+      setFormError("Title is required");
       return;
     }
     if (!formData.calendarId) {
@@ -248,21 +246,19 @@ export function GoogleCalendarMonthWidget({ widget }: WidgetProps<GoogleCalendar
         <HStack gap="xs">
           {isLoading && <Spinner size="sm" />}
           <IconButton
-            name="check"
             icon={<IconPlus size={13} />}
             appearance="ghost"
             size="sm"
-            onPress={() => openCreateModal(selectedDate)}
+            onClick={() => openCreateModal(selectedDate)}
             className={classes.addBtn}
             aria-label="Add event"
           />
           <IconButton
-            name="arrowUp"
             icon={<IconRefresh size={13} />}
             appearance="ghost"
             size="sm"
             aria-label="Refresh"
-            onPress={refresh}
+            onClick={refresh}
             className={classes.refreshBtn}
           />
         </HStack>
@@ -280,7 +276,7 @@ export function GoogleCalendarMonthWidget({ widget }: WidgetProps<GoogleCalendar
           aria-label="Month calendar"
           className={classes.calendar}
           value={calendarDateFromIso(dayjs(selectedDate).format("YYYY-MM-DD"))}
-          onChange={(d) => {
+          onValueChange={(d) => {
             const iso = isoFromCalendarDate(d);
             if (iso) setSelectedDate(dayjs(iso).toDate());
           }}
@@ -294,11 +290,10 @@ export function GoogleCalendarMonthWidget({ widget }: WidgetProps<GoogleCalendar
             <span className={classes.eventCount}>{selectedDateEvents.length}</span>
           )}
           <IconButton
-            name="check"
             icon={<IconPlus size={12} />}
             appearance="ghost"
             size="sm"
-            onPress={() => openCreateModal(selectedDate)}
+            onClick={() => openCreateModal(selectedDate)}
             className={classes.addBtn}
             aria-label="Add event"
             style={{ marginLeft: "auto" }}
@@ -331,142 +326,139 @@ export function GoogleCalendarMonthWidget({ widget }: WidgetProps<GoogleCalendar
 
       {/* ── Create event modal ── */}
       <Dialog.Root
-        isOpen={formOpen}
+        open={formOpen}
         onOpenChange={(isOpen) => {
           if (!isOpen) setFormOpen(false);
         }}
-        portalContainer={portalContainer}
       >
-        <Dialog.Backdrop>
-          <Dialog.Popup>
-            <Dialog.Title>New Event</Dialog.Title>
-            <Stack gap="sm">
-              <TextField
-                label="Title"
-                placeholder="Event title"
-                isRequired
-                value={formData.title}
-                onChange={(value) => setFormData((d) => ({ ...d, title: value }))}
-                autoFocus
+        <Dialog.Popup>
+          <Dialog.Title>New Event</Dialog.Title>
+          <Stack gap="sm">
+            <TextField
+              label="Title"
+              placeholder="Event title"
+              required
+              value={formData.title}
+              onValueChange={(value) => setFormData((d) => ({ ...d, title: value }))}
+              autoFocus
+            />
+
+            <Select.Root
+              value={formData.calendarId || null}
+              onValueChange={(v) =>
+                setFormData((d) => ({ ...d, calendarId: v == null ? "" : String(v) }))
+              }
+              required
+            >
+              <Select.Label>Calendar</Select.Label>
+              <Select.Trigger placeholder="Select a calendar">
+                <Select.Value>
+                  {({ defaultChildren, isPlaceholder }) => {
+                    if (isPlaceholder) return "Select a calendar";
+                    const selected = calendarOptions.find((c) => c.id === formData.calendarId);
+                    return (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <span
+                          aria-hidden
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: 999,
+                            background: selected?.color ?? "#4285f4",
+                            flexShrink: 0,
+                          }}
+                        />
+                        {selected?.label ?? defaultChildren}
+                      </span>
+                    );
+                  }}
+                </Select.Value>
+              </Select.Trigger>
+              <Select.Popover>
+                <Select.ListBox>
+                  {calendarOptions.map((cal) => (
+                    <Select.Item key={cal.id} value={cal.id} textValue={cal.label}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <span
+                          aria-hidden
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: 999,
+                            background: cal.color,
+                            flexShrink: 0,
+                          }}
+                        />
+                        {cal.label}
+                      </span>
+                    </Select.Item>
+                  ))}
+                </Select.ListBox>
+              </Select.Popover>
+            </Select.Root>
+
+            <TextField
+              label="Date"
+              type="date"
+              value={formData.date}
+              onValueChange={(value) => setFormData((d) => ({ ...d, date: value }))}
+            />
+
+            <HStack justify="between">
+              <Text size="sm">All day</Text>
+              <Switch
+                checked={formData.allDay}
+                onCheckedChange={(value) => setFormData((d) => ({ ...d, allDay: value }))}
               />
+            </HStack>
 
-              <Select.Root
-                selectedKey={formData.calendarId || null}
-                onSelectionChange={(v) =>
-                  setFormData((d) => ({ ...d, calendarId: v == null ? "" : String(v) }))
-                }
-                isRequired
-              >
-                <Select.Label>Calendar</Select.Label>
-                <Select.Trigger placeholder="Select a calendar">
-                  <Select.Value>
-                    {({ defaultChildren, isPlaceholder }) => {
-                      if (isPlaceholder) return "Select a calendar";
-                      const selected = calendarOptions.find((c) => c.id === formData.calendarId);
-                      return (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                          <span
-                            aria-hidden
-                            style={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: 999,
-                              background: selected?.color ?? "#4285f4",
-                              flexShrink: 0,
-                            }}
-                          />
-                          {selected?.label ?? defaultChildren}
-                        </span>
-                      );
-                    }}
-                  </Select.Value>
-                </Select.Trigger>
-                <Select.Popover portalContainer={portalContainer}>
-                  <Select.ListBox items={calendarOptions}>
-                    {(cal) => (
-                      <Select.Item id={cal.id} textValue={cal.label}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                          <span
-                            aria-hidden
-                            style={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: 999,
-                              background: cal.color,
-                              flexShrink: 0,
-                            }}
-                          />
-                          {cal.label}
-                        </span>
-                      </Select.Item>
-                    )}
-                  </Select.ListBox>
-                </Select.Popover>
-              </Select.Root>
-
-              <TextField
-                label="Date"
-                type="date"
-                value={formData.date}
-                onChange={(value) => setFormData((d) => ({ ...d, date: value }))}
-              />
-
-              <HStack justify="between">
-                <Text size="sm">All day</Text>
-                <Switch
-                  isSelected={formData.allDay}
-                  onChange={(value) => setFormData((d) => ({ ...d, allDay: value }))}
+            {!formData.allDay && (
+              <div className={classes.timeGrid}>
+                <TextField
+                  label="Start time"
+                  type="time"
+                  value={formData.startTime}
+                  onValueChange={(value) => setFormData((d) => ({ ...d, startTime: value }))}
                 />
-              </HStack>
+                <TextField
+                  label="End time"
+                  type="time"
+                  value={formData.endTime}
+                  onValueChange={(value) => setFormData((d) => ({ ...d, endTime: value }))}
+                />
+              </div>
+            )}
 
-              {!formData.allDay && (
-                <div className={classes.timeGrid}>
-                  <TextField
-                    label="Start time"
-                    type="time"
-                    value={formData.startTime}
-                    onChange={(value) => setFormData((d) => ({ ...d, startTime: value }))}
-                  />
-                  <TextField
-                    label="End time"
-                    type="time"
-                    value={formData.endTime}
-                    onChange={(value) => setFormData((d) => ({ ...d, endTime: value }))}
-                  />
-                </div>
-              )}
+            <TextField
+              label="Location"
+              placeholder="Optional"
+              value={formData.location}
+              onValueChange={(value) => setFormData((d) => ({ ...d, location: value }))}
+            />
 
-              <TextField
-                label="Location"
-                placeholder="Optional"
-                value={formData.location}
-                onChange={(value) => setFormData((d) => ({ ...d, location: value }))}
-              />
+            <TextAreaField
+              label="Description"
+              placeholder="Optional"
+              value={formData.description}
+              onValueChange={(value) => setFormData((d) => ({ ...d, description: value }))}
+            />
 
-              <TextAreaField
-                label="Description"
-                placeholder="Optional"
-                value={formData.description}
-                onChange={(value) => setFormData((d) => ({ ...d, description: value }))}
-              />
+            {formError && (
+              <Alert tone="danger" appearance="subtle">
+                <Text size="sm">{formError}</Text>
+              </Alert>
+            )}
 
-              {formError && (
-                <Alert variant="danger" appearance="subtle">
-                  <Text size="sm">{formError}</Text>
-                </Alert>
-              )}
-
-              <HStack justify="end" gap="xs">
-                <Button appearance="ghost" size="sm" onPress={() => setFormOpen(false)}>
-                  Cancel
-                </Button>
-                <Button size="sm" isPending={formLoading} onPress={handleFormSubmit}>
-                  Create Event
-                </Button>
-              </HStack>
-            </Stack>
-          </Dialog.Popup>
-        </Dialog.Backdrop>
+            <HStack justify="end" gap="xs">
+              <Button appearance="ghost" size="sm" onClick={() => setFormOpen(false)}>
+                Cancel
+              </Button>
+              <Button size="sm" loading={formLoading} onClick={handleFormSubmit}>
+                Create Event
+              </Button>
+            </HStack>
+          </Stack>
+        </Dialog.Popup>
       </Dialog.Root>
     </div>
   );
@@ -498,9 +490,9 @@ export function GoogleCalendarMonthWidgetSettings({
             <MultiSelector
               label="Select Calendars"
               placeholder="Choose calendars to display..."
-              options={calendarOptions}
+              options={calendarOptions.map((cal) => ({ value: cal.id, label: cal.label }))}
               value={selectedCalendarIds}
-              onChange={(value) => onConfigChange({ selectedCalendarIds: value })}
+              onValueChange={(value) => onConfigChange({ selectedCalendarIds: value })}
             />
           </>
         ) : (
@@ -508,7 +500,7 @@ export function GoogleCalendarMonthWidgetSettings({
             <Text size="sm" tone="secondary">
               Sign in to select your calendars
             </Text>
-            <Button onPress={signIn} isPending={authLoading} size="sm">
+            <Button onClick={signIn} loading={authLoading} size="sm">
               Sign in with Google
             </Button>
           </Stack>
@@ -518,10 +510,10 @@ export function GoogleCalendarMonthWidgetSettings({
       <NumberInput
         label="Days Ahead"
         description="How many days ahead to fetch events"
-        minValue={1}
-        maxValue={90}
+        min={1}
+        max={90}
         value={daysAhead}
-        onChange={(value) => onConfigChange({ daysAhead: Number(value) || 30 })}
+        onValueChange={(value) => onConfigChange({ daysAhead: Number(value) || 30 })}
       />
     </Stack>
   );

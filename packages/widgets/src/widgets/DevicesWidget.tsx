@@ -5,7 +5,7 @@ import {
   EmptyState,
   HStack,
   NumberInput,
-  SimpleGrid,
+  Grid,
   Slider,
   Spinner,
   Stack,
@@ -177,7 +177,7 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
       {(error || controlError) && (
         <HStack justify="between" align="center" gap="sm">
           <ErrorText size="sm">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -201,7 +201,7 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
         </HStack>
       )}
 
-      <SimpleGrid cols={columnCount} spacing="sm" className={classes.grid}>
+      <Grid columns={columnCount} gap="sm" className={classes.grid}>
         {ids.map((entityId) => {
           const device = merged(entityId);
           if (!device) {
@@ -230,9 +230,9 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
                   <Stack gap="none" className={classes.toggleRow}>
                     <Switch
                       aria-label={`Toggle ${device.name}`}
-                      isSelected={device.isOn}
-                      isDisabled={!device.available || pending}
-                      onChange={(nextOn) => void toggle(device, nextOn)}
+                      checked={device.isOn}
+                      disabled={!device.available || pending}
+                      onCheckedChange={(nextOn) => void toggle(device, nextOn)}
                     >
                       <Stack gap="none">
                         <Text as="span" weight="semibold" lineClamp={1}>
@@ -258,19 +258,21 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
                       <Slider
                         className={classes.brightness}
                         aria-label={`Brightness for ${device.name}`}
-                        minValue={1}
-                        maxValue={100}
+                        min={1}
+                        max={100}
                         step={1}
                         value={brightnessValue}
                         showOutput={false}
-                        isDisabled={pending}
-                        onChange={(value) =>
+                        disabled={pending}
+                        onValueChange={(value) =>
                           setDrafts((prev) => ({
                             ...prev,
                             [entityId]: sliderNumber(value),
                           }))
                         }
-                        onChangeEnd={(value) => void commitBrightness(device, sliderNumber(value))}
+                        onValueCommit={(value) =>
+                          void commitBrightness(device, sliderNumber(value))
+                        }
                       />
                       <Text size="xs" tone="secondary">
                         {Math.round(brightnessValue)}%
@@ -281,7 +283,7 @@ export function DevicesWidget({ widget, isEditing }: WidgetProps<DevicesConfig>)
             </Card>
           );
         })}
-      </SimpleGrid>
+      </Grid>
 
       {tier === "compact" && !isEditing && (
         <WidgetDataStatus
@@ -320,8 +322,8 @@ export function DevicesWidgetSettings({ widget, onConfigChange }: WidgetProps<De
           <Text size="sm">{DOMAIN_LABELS[domain]}</Text>
           <Switch
             aria-label={DOMAIN_LABELS[domain]}
-            isSelected={domains.includes(domain)}
-            onChange={() => toggleDomain(domain)}
+            checked={domains.includes(domain)}
+            onCheckedChange={() => toggleDomain(domain)}
           />
         </HStack>
       ))}
@@ -345,10 +347,10 @@ export function DevicesWidgetSettings({ widget, onConfigChange }: WidgetProps<De
 
       <NumberInput
         label="Columns"
-        minValue={1}
-        maxValue={4}
+        min={1}
+        max={4}
         value={columns}
-        onChange={(value) => {
+        onValueChange={(value) => {
           const next = Number(value);
           onConfigChange({ columns: Number.isFinite(next) ? Math.min(4, Math.max(1, next)) : 2 });
         }}
@@ -357,16 +359,16 @@ export function DevicesWidgetSettings({ widget, onConfigChange }: WidgetProps<De
         <Text size="sm">Show brightness slider (when large)</Text>
         <Switch
           aria-label="Show brightness slider"
-          isSelected={showBrightness}
-          onChange={(value) => onConfigChange({ showBrightness: value })}
+          checked={showBrightness}
+          onCheckedChange={(value) => onConfigChange({ showBrightness: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

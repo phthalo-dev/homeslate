@@ -31,10 +31,10 @@ function choiceIcon(name: string | undefined) {
 
 /** The selectable layouts. Rendered inside the dialog and by tests. */
 export function TemplatePickerChoices(props: {
-  isPending: boolean;
+  loading: boolean;
   onCreate: (document: DisplayDocument) => void;
 }) {
-  const { isPending, onCreate } = props;
+  const { loading, onCreate } = props;
   return (
     <Stack gap="sm">
       {CHOICES.map((choice) => {
@@ -55,9 +55,9 @@ export function TemplatePickerChoices(props: {
                 size="sm"
                 tone={choice.id === "blank" ? "accent" : undefined}
                 appearance={choice.id === "blank" ? "filled" : undefined}
-                isDisabled={isPending}
+                disabled={loading}
                 aria-label={`Create ${choice.name} display`}
-                onPress={() => onCreate(documentForNewDisplay(choice.id))}
+                onClick={() => onCreate(documentForNewDisplay(choice.id))}
               >
                 Use
               </Button>
@@ -71,27 +71,25 @@ export function TemplatePickerChoices(props: {
 
 /** Dialog for “New display”. Every choice creates a display; none overwrite one. */
 export function TemplatePicker(props: {
-  isOpen: boolean;
-  isPending?: boolean;
+  open: boolean;
+  loading?: boolean;
   error?: string | null;
-  onOpenChange: (isOpen: boolean) => void;
+  onOpenChange: (open: boolean) => void;
   onCreate: (document: DisplayDocument) => void;
 }) {
-  const { isOpen, isPending = false, error, onOpenChange, onCreate } = props;
+  const { open, loading = false, error, onOpenChange, onCreate } = props;
   return (
-    <Dialog.Root isOpen={isOpen} onOpenChange={onOpenChange}>
-      <Dialog.Backdrop>
-        <Dialog.Popup>
-          <Dialog.Title>New display</Dialog.Title>
-          <Stack gap="md">
-            <Text size="sm" tone="secondary">
-              Start from a blank board or a starter layout. This always creates a new display.
-            </Text>
-            {error ? <Text role="alert">{error}</Text> : null}
-            <TemplatePickerChoices isPending={isPending} onCreate={onCreate} />
-          </Stack>
-        </Dialog.Popup>
-      </Dialog.Backdrop>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Popup>
+        <Dialog.Title>New display</Dialog.Title>
+        <Stack gap="md">
+          <Text size="sm" tone="secondary">
+            Start from a blank board or a starter layout. This always creates a new display.
+          </Text>
+          {error ? <Text role="alert">{error}</Text> : null}
+          <TemplatePickerChoices loading={loading} onCreate={onCreate} />
+        </Stack>
+      </Dialog.Popup>
     </Dialog.Root>
   );
 }

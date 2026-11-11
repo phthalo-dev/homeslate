@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
 import { Button, DesignSystemProvider, Dialog, HStack, Stack } from "@var-ui/react";
 import { IconPalette, IconSettings, IconUsers } from "@tabler/icons-react";
 import type { DisplayDocument, StickyNote, ThemeDocument, ViewBackground } from "@homeslate/schema";
@@ -6,7 +6,6 @@ import {
   AlarmsProvider,
   HouseholdEditor,
   HouseholdProvider,
-  OverlayPortalContext,
   TimersProvider,
   getWidgetByType,
   getWidgetTypes,
@@ -68,11 +67,6 @@ export function Editor(props: EditorProps): JSX.Element {
   const editorColorMode = document.colorMode === "light" ? "light" : "dark";
   const canvasBackground = getCanvasBackgroundStyle(themeDocument, editorColorMode);
   const rootRef = useRef<HTMLDivElement>(null);
-  const [portalContainer, setPortalContainer] = useState<Element | undefined>(undefined);
-
-  useEffect(() => {
-    setPortalContainer(rootRef.current ?? undefined);
-  }, []);
 
   const emit = useCallback(
     (next: DisplayDocument) => {
@@ -158,133 +152,124 @@ export function Editor(props: EditorProps): JSX.Element {
 
   return (
     <DesignSystemProvider customTheme={theme} colorMode={editorColorMode}>
-      <OverlayPortalContext.Provider value={portalContainer}>
-        <div ref={rootRef} className={classes.root}>
-          <div className={classes.pageActions}>
-            <HStack gap="sm">
-              {themesOpen ? (
-                <Button appearance="subtle" size="sm" onPress={() => setThemesOpen(false)}>
-                  Done
+      <div ref={rootRef} className={classes.root}>
+        <div className={classes.pageActions}>
+          <HStack gap="sm">
+            {themesOpen ? (
+              <Button appearance="subtle" size="sm" onClick={() => setThemesOpen(false)}>
+                Done
+              </Button>
+            ) : (
+              <>
+                <Button appearance="subtle" size="sm" onClick={() => setBgSettingsOpen(true)}>
+                  <IconSettings size={16} />
+                  Background Settings
                 </Button>
-              ) : (
-                <>
-                  <Button appearance="subtle" size="sm" onPress={() => setBgSettingsOpen(true)}>
-                    <IconSettings size={16} />
-                    Background Settings
-                  </Button>
-                  <Button appearance="subtle" size="sm" onPress={() => setHouseholdOpen(true)}>
-                    <IconUsers size={16} />
-                    Household
-                  </Button>
-                  <Button appearance="subtle" size="sm" onPress={() => setThemesOpen(true)}>
-                    <IconPalette size={16} />
-                    Themes
-                  </Button>
-                  {actions}
-                </>
-              )}
-            </HStack>
-          </div>
-
-          {themesOpen ? (
-            <div className={classes.body}>
-              <ThemeEditor
-                documents={document.themes as ThemeDocument[]}
-                activeThemeDocumentId={document.activeThemeId}
-                previewViews={document.views}
-                initialPreviewViewId={viewId}
-                onChange={(themes, activeThemeId) =>
-                  emit({ ...documentRef.current, themes, activeThemeId })
-                }
-              />
-            </div>
-          ) : (
-            <div className={classes.body}>
-              <WidgetPanel
-                document={document}
-                viewId={viewId}
-                onChange={emit}
-                widgetRegistry={widgetRegistry}
-              />
-              <main className={classes.main} style={canvasBackground}>
-                {view && <BackgroundSlideshow view={view} />}
-                <TimersProvider>
-                  <HouseholdProvider
-                    members={document.household?.members ?? []}
-                    onMembersChange={(members) =>
-                      emit({ ...documentRef.current, household: { members } })
-                    }
-                  >
-                    <AlarmsProvider
-                      alarms={document.alarms ?? []}
-                      onAlarmsChange={(next) => emit({ ...documentRef.current, alarms: next })}
-                    >
-                      {view && (
-                        <DocumentCanvas
-                          view={view}
-                          isEditing
-                          stickyNotesEnabled={document.settings.stickyNotesEnabled ?? false}
-                          widgetRegistry={widgetRegistry}
-                          portalContainer={portalContainer}
-                          onLayoutChange={handleLayoutChange}
-                          onWidgetConfigChange={handleWidgetConfigChange}
-                          onRemoveWidget={handleRemoveWidget}
-                          onAddNote={handleAddNote}
-                          onRemoveNote={handleRemoveNote}
-                          onUpdateNote={handleUpdateNote}
-                        />
-                      )}
-                    </AlarmsProvider>
-                  </HouseholdProvider>
-                </TimersProvider>
-              </main>
-            </div>
-          )}
-          <Dialog.Root
-            isOpen={householdOpen}
-            onOpenChange={(isOpen) => {
-              if (!isOpen) setHouseholdOpen(false);
-            }}
-            portalContainer={portalContainer}
-          >
-            <Dialog.Backdrop>
-              <Dialog.Popup>
-                <Dialog.Title>Household</Dialog.Title>
-                <Stack gap="md">
-                  <HouseholdEditor
-                    members={document.household?.members ?? []}
-                    onChange={(members) => emit({ ...documentRef.current, household: { members } })}
-                  />
-                  <Button onPress={() => setHouseholdOpen(false)}>Done</Button>
-                </Stack>
-              </Dialog.Popup>
-            </Dialog.Backdrop>
-          </Dialog.Root>
-          <Dialog.Root
-            isOpen={bgSettingsOpen}
-            onOpenChange={(isOpen) => {
-              if (!isOpen) setBgSettingsOpen(false);
-            }}
-            portalContainer={portalContainer}
-          >
-            <Dialog.Backdrop>
-              <Dialog.Popup>
-                <Dialog.Title>View Background</Dialog.Title>
-                <Stack gap="md">
-                  {view && (
-                    <BgSettings
-                      view={view}
-                      updateBg={updateBg}
-                      onUploadBackgroundPhoto={onUploadBackgroundPhoto}
-                    />
-                  )}
-                  <Button onPress={() => setBgSettingsOpen(false)}>Done</Button>
-                </Stack>
-              </Dialog.Popup>
-            </Dialog.Backdrop>
-          </Dialog.Root>
+                <Button appearance="subtle" size="sm" onClick={() => setHouseholdOpen(true)}>
+                  <IconUsers size={16} />
+                  Household
+                </Button>
+                <Button appearance="subtle" size="sm" onClick={() => setThemesOpen(true)}>
+                  <IconPalette size={16} />
+                  Themes
+                </Button>
+                {actions}
+              </>
+            )}
+          </HStack>
         </div>
-      </OverlayPortalContext.Provider>
+
+        {themesOpen ? (
+          <div className={classes.body}>
+            <ThemeEditor
+              documents={document.themes as ThemeDocument[]}
+              activeThemeDocumentId={document.activeThemeId}
+              previewViews={document.views}
+              initialPreviewViewId={viewId}
+              onChange={(themes, activeThemeId) =>
+                emit({ ...documentRef.current, themes, activeThemeId })
+              }
+            />
+          </div>
+        ) : (
+          <div className={classes.body}>
+            <WidgetPanel
+              document={document}
+              viewId={viewId}
+              onChange={emit}
+              widgetRegistry={widgetRegistry}
+            />
+            <main className={classes.main} style={canvasBackground}>
+              {view && <BackgroundSlideshow view={view} />}
+              <TimersProvider>
+                <HouseholdProvider
+                  members={document.household?.members ?? []}
+                  onMembersChange={(members) =>
+                    emit({ ...documentRef.current, household: { members } })
+                  }
+                >
+                  <AlarmsProvider
+                    alarms={document.alarms ?? []}
+                    onAlarmsChange={(next) => emit({ ...documentRef.current, alarms: next })}
+                  >
+                    {view && (
+                      <DocumentCanvas
+                        view={view}
+                        isEditing
+                        stickyNotesEnabled={document.settings.stickyNotesEnabled ?? false}
+                        widgetRegistry={widgetRegistry}
+                        onLayoutChange={handleLayoutChange}
+                        onWidgetConfigChange={handleWidgetConfigChange}
+                        onRemoveWidget={handleRemoveWidget}
+                        onAddNote={handleAddNote}
+                        onRemoveNote={handleRemoveNote}
+                        onUpdateNote={handleUpdateNote}
+                      />
+                    )}
+                  </AlarmsProvider>
+                </HouseholdProvider>
+              </TimersProvider>
+            </main>
+          </div>
+        )}
+        <Dialog.Root
+          open={householdOpen}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setHouseholdOpen(false);
+          }}
+        >
+          <Dialog.Popup>
+            <Dialog.Title>Household</Dialog.Title>
+            <Stack gap="md">
+              <HouseholdEditor
+                members={document.household?.members ?? []}
+                onChange={(members) => emit({ ...documentRef.current, household: { members } })}
+              />
+              <Button onClick={() => setHouseholdOpen(false)}>Done</Button>
+            </Stack>
+          </Dialog.Popup>
+        </Dialog.Root>
+        <Dialog.Root
+          open={bgSettingsOpen}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setBgSettingsOpen(false);
+          }}
+        >
+          <Dialog.Popup>
+            <Dialog.Title>View Background</Dialog.Title>
+            <Stack gap="md">
+              {view && (
+                <BgSettings
+                  view={view}
+                  updateBg={updateBg}
+                  onUploadBackgroundPhoto={onUploadBackgroundPhoto}
+                />
+              )}
+              <Button onClick={() => setBgSettingsOpen(false)}>Done</Button>
+            </Stack>
+          </Dialog.Popup>
+        </Dialog.Root>
+      </div>
     </DesignSystemProvider>
   );
 }

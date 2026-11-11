@@ -17,7 +17,7 @@ import {
   isoFromCalendarDate,
   localInputFromDateTime,
 } from "../dateValue";
-import { useOverlayPortalContainer } from "../overlayPortal";
+
 import { countdownRemaining, formatCountdownParts } from "./countdown";
 import * as classes from "./listWidget.styles";
 
@@ -31,9 +31,9 @@ export interface CountdownConfig extends WidgetConfig {
 }
 
 const ALIGN_OPTIONS = [
-  { id: "left", label: "Left" },
-  { id: "center", label: "Center" },
-  { id: "right", label: "Right" },
+  { value: "left", label: "Left" },
+  { value: "center", label: "Center" },
+  { value: "right", label: "Right" },
 ];
 
 export function CountdownWidget({ widget }: WidgetProps<CountdownConfig>) {
@@ -101,20 +101,19 @@ export function CountdownWidgetSettings({ widget, onConfigChange }: WidgetProps<
     transparentBackground,
     textAlign = "center",
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
 
   return (
     <Stack gap="md">
       <TextField
         label="Label"
         value={label}
-        onChange={(value) => onConfigChange({ label: value })}
+        onValueChange={(value) => onConfigChange({ label: value })}
       />
       {allDay ? (
         <DateInput
           label="Date"
           value={calendarDateFromIso(target)}
-          onChange={(value) =>
+          onValueChange={(value) =>
             onConfigChange({ target: isoFromCalendarDate(value as CalendarDate | null) })
           }
         />
@@ -122,7 +121,7 @@ export function CountdownWidgetSettings({ widget, onConfigChange }: WidgetProps<
         <DateTimeInput
           label="Date and time"
           value={dateTimeFromLocalInput(target)}
-          onChange={(value) =>
+          onValueChange={(value) =>
             onConfigChange({
               target: localInputFromDateTime(value as CalendarDateTime | null) ?? "",
             })
@@ -133,35 +132,34 @@ export function CountdownWidgetSettings({ widget, onConfigChange }: WidgetProps<
         <Text size="sm">All-day</Text>
         <Switch
           aria-label="All-day"
-          isSelected={allDay}
-          onChange={(value) => onConfigChange({ allDay: value })}
+          checked={allDay}
+          onCheckedChange={(value) => onConfigChange({ allDay: value })}
         />
       </HStack>
       <HStack justify="between">
         <Text size="sm">Show seconds</Text>
         <Switch
           aria-label="Show seconds"
-          isSelected={showSeconds}
-          onChange={(value) => onConfigChange({ showSeconds: value })}
+          checked={showSeconds}
+          onCheckedChange={(value) => onConfigChange({ showSeconds: value })}
         />
       </HStack>
       <Select
         label="Text align"
         options={ALIGN_OPTIONS}
-        selectedKey={textAlign}
-        onSelectionChange={(key) => {
+        value={textAlign}
+        onValueChange={(key) => {
           if (key === "left" || key === "center" || key === "right") {
             onConfigChange({ textAlign: key });
           }
         }}
-        portalContainer={portalContainer}
       />
       <HStack justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

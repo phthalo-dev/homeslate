@@ -3,7 +3,6 @@ import { IconBolt, IconCurrencyDollar, IconRefresh, IconTrendingUp } from "@tabl
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntities, useEntityList } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import type { HomeAssistantSensor } from "./homeAssistantSensor";
 import {
   ENERGY_EMPTY_COPY,
@@ -116,7 +115,7 @@ export function EnergyWidget({ widget, isEditing }: WidgetProps<EnergyConfig>) {
       {error && (
         <div className={classes.errorBox}>
           <ErrorText size="xs">{error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -144,14 +143,13 @@ export function EnergyWidgetSettings({ widget, onConfigChange }: WidgetProps<Ene
     showCost = true,
     transparentBackground = false,
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntities(
     "sensor",
     ENERGY_MISSING_CONFIG_COPY,
   );
 
   const options = entities.map((entity) => ({
-    id: entity.entityId,
+    value: entity.entityId,
     label: `${entity.name} (${entity.entityId})`,
   }));
 
@@ -167,14 +165,13 @@ export function EnergyWidgetSettings({ widget, onConfigChange }: WidgetProps<Ene
                 label="Power sensor (W or kW)"
                 placeholder="Select a power sensor…"
                 options={options}
-                selectedKey={powerEntityId || null}
-                onSelectionChange={(key) => {
+                value={powerEntityId || null}
+                onValueChange={(key) => {
                   if (typeof key === "string") onConfigChange({ powerEntityId: key });
                 }}
-                portalContainer={portalContainer}
               />
             </div>
-            <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+            <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
               <IconRefresh size={14} />
             </Button>
           </HStack>
@@ -182,11 +179,10 @@ export function EnergyWidgetSettings({ widget, onConfigChange }: WidgetProps<Ene
             label="Energy sensor (Wh or kWh)"
             placeholder="Select an energy sensor…"
             options={options}
-            selectedKey={energyEntityId || null}
-            onSelectionChange={(key) => {
+            value={energyEntityId || null}
+            onValueChange={(key) => {
               if (typeof key === "string") onConfigChange({ energyEntityId: key });
             }}
-            portalContainer={portalContainer}
           />
         </>
       )}
@@ -195,9 +191,9 @@ export function EnergyWidgetSettings({ widget, onConfigChange }: WidgetProps<Ene
 
       <NumberInput
         label="Cost rate ($ per kWh)"
-        minValue={0}
+        min={0}
         value={costRate}
-        onChange={(value) => {
+        onValueChange={(value) => {
           const next = Number(value);
           onConfigChange({ costRate: Number.isFinite(next) ? Math.max(0, next) : 0 });
         }}
@@ -206,16 +202,16 @@ export function EnergyWidgetSettings({ widget, onConfigChange }: WidgetProps<Ene
         <Text size="sm">Show estimated cost</Text>
         <Switch
           aria-label="Show estimated cost"
-          isSelected={showCost}
-          onChange={(value) => onConfigChange({ showCost: value })}
+          checked={showCost}
+          onCheckedChange={(value) => onConfigChange({ showCost: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

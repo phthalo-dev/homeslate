@@ -1,0 +1,5 @@
+public/docs/
+public/llms.txt
+.astro
+.netlify
+dist

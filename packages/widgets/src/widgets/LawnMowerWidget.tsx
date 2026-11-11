@@ -10,7 +10,6 @@ import {
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntities, useEntity } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import {
   LAWN_MOWER_EMPTY_COPY,
   LAWN_MOWER_MISSING_CONFIG_COPY,
@@ -92,7 +91,7 @@ export function LawnMowerWidget({ widget, isEditing }: WidgetProps<LawnMowerConf
       <div className={containerClass}>
         <div className={classes.empty}>
           <ErrorText size="sm">{error ?? "Failed to fetch lawn mower"}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -127,13 +126,13 @@ export function LawnMowerWidget({ widget, isEditing }: WidgetProps<LawnMowerConf
         <Button
           appearance="subtle"
           size="sm"
-          onPress={() =>
+          onClick={() =>
             void call("start_pause", {}, (current) => ({
               ...current,
               state: current.state === "mowing" ? "paused" : "mowing",
             }))
           }
-          isDisabled={!mower.available || pending}
+          disabled={!mower.available || pending}
         >
           {mowing ? <IconPlayerPause size={16} /> : <IconPlayerPlay size={16} />}
           {mowing ? "Pause" : "Start"}
@@ -141,8 +140,8 @@ export function LawnMowerWidget({ widget, isEditing }: WidgetProps<LawnMowerConf
         <Button
           appearance="subtle"
           size="sm"
-          onPress={() => void call("dock", {}, (current) => ({ ...current, state: "returning" }))}
-          isDisabled={!mower.available || pending}
+          onClick={() => void call("dock", {}, (current) => ({ ...current, state: "returning" }))}
+          disabled={!mower.available || pending}
         >
           <IconHome size={16} />
           Dock
@@ -150,8 +149,8 @@ export function LawnMowerWidget({ widget, isEditing }: WidgetProps<LawnMowerConf
         <Button
           appearance="subtle"
           size="sm"
-          onPress={() => void call("stop", {}, (current) => ({ ...current, state: "paused" }))}
-          isDisabled={!mower.available || pending}
+          onClick={() => void call("stop", {}, (current) => ({ ...current, state: "paused" }))}
+          disabled={!mower.available || pending}
         >
           <IconPlayerStop size={16} />
           Stop
@@ -161,7 +160,7 @@ export function LawnMowerWidget({ widget, isEditing }: WidgetProps<LawnMowerConf
       {(controlError || error) && (
         <div className={classes.errorBox}>
           <ErrorText size="xs">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -183,7 +182,6 @@ export function LawnMowerWidget({ widget, isEditing }: WidgetProps<LawnMowerConf
 
 export function LawnMowerWidgetSettings({ widget, onConfigChange }: WidgetProps<LawnMowerConfig>) {
   const { entityId = "", transparentBackground = false } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntities(
     "lawn_mower",
     LAWN_MOWER_MISSING_CONFIG_COPY,
@@ -200,17 +198,16 @@ export function LawnMowerWidgetSettings({ widget, onConfigChange }: WidgetProps<
               label="Lawn mower"
               placeholder="Select a lawn mower…"
               options={entities.map((entity) => ({
-                id: entity.entityId,
+                value: entity.entityId,
                 label: `${entity.name} (${entity.entityId})`,
               }))}
-              selectedKey={entityId || null}
-              onSelectionChange={(key) => {
+              value={entityId || null}
+              onValueChange={(key) => {
                 if (typeof key === "string") onConfigChange({ entityId: key });
               }}
-              portalContainer={portalContainer}
             />
           </div>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -222,8 +219,8 @@ export function LawnMowerWidgetSettings({ widget, onConfigChange }: WidgetProps<
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

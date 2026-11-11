@@ -10,8 +10,8 @@ import {
   Spinner,
   Button,
   Surface,
+  useDebouncedValue,
 } from "@var-ui/react";
-import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import {
   IconSun,
   IconCloud,
@@ -24,7 +24,6 @@ import {
   IconMapPin,
 } from "@tabler/icons-react";
 import type { WidgetProps, WidgetConfig, TextAlign } from "../types";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { useWeather } from "../hooks/useWeather";
 import { useEntities } from "../hooks/useHomeAssistant";
 import { useHomeAssistantWeather } from "../hooks/useHomeAssistantWeather";
@@ -238,7 +237,7 @@ export function WeatherWidget({ widget }: WidgetProps<WeatherConfig>) {
           <Text size="sm" style={{ color: "var(--var-ui-color-tone-danger-foreground)" }}>
             {error}
           </Text>
-          <Button appearance="subtle" size="sm" onPress={refresh}>
+          <Button appearance="subtle" size="sm" onClick={refresh}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -408,7 +407,6 @@ export function WeatherWidget({ widget }: WidgetProps<WeatherConfig>) {
 }
 
 export function WeatherWidgetSettings({ widget, onConfigChange }: WidgetProps<WeatherConfig>) {
-  const portalContainer = useOverlayPortalContainer();
   const {
     location,
     units,
@@ -485,14 +483,13 @@ export function WeatherWidgetSettings({ widget, onConfigChange }: WidgetProps<We
       <Select
         label="Source"
         options={[
-          { id: "local", label: "Open-Meteo" },
-          { id: "homeAssistant", label: "Home Assistant" },
+          { value: "local", label: "Open-Meteo" },
+          { value: "homeAssistant", label: "Home Assistant" },
         ]}
-        selectedKey={source}
-        onSelectionChange={(value) => {
+        value={source}
+        onValueChange={(value) => {
           if (value === "local" || value === "homeAssistant") onConfigChange({ source: value });
         }}
-        portalContainer={portalContainer}
       />
 
       {source === "homeAssistant" ? (
@@ -501,14 +498,13 @@ export function WeatherWidgetSettings({ widget, onConfigChange }: WidgetProps<We
             label="Weather Entity"
             placeholder="Select a weather entity…"
             options={weatherEntities.map((entity: HomeAssistantEntitySummary) => ({
-              id: entity.entityId,
+              value: entity.entityId,
               label: `${entity.name} (${entity.entityId})`,
             }))}
-            selectedKey={entityId || null}
-            onSelectionChange={(value) => {
+            value={entityId || null}
+            onValueChange={(value) => {
               if (typeof value === "string") onConfigChange({ entityId: value });
             }}
-            portalContainer={portalContainer}
           />
           {entitiesStatus === 501 && (
             <Text size="xs" tone="secondary">
@@ -523,7 +519,7 @@ export function WeatherWidgetSettings({ widget, onConfigChange }: WidgetProps<We
               label="Search Location"
               placeholder="Enter city name..."
               value={searchQuery}
-              onChange={(value) => handleQueryChange(value)}
+              onValueChange={(value) => handleQueryChange(value)}
             />
             {isSearching && <Spinner size="sm" />}
 
@@ -535,7 +531,7 @@ export function WeatherWidgetSettings({ widget, onConfigChange }: WidgetProps<We
                       key={result.id}
                       appearance="ghost"
                       size="sm"
-                      onPress={() => selectLocation(result)}
+                      onClick={() => selectLocation(result)}
                       className={classes.searchResult}
                     >
                       <IconMapPin size={14} style={{ marginRight: 8 }} />
@@ -568,14 +564,13 @@ export function WeatherWidgetSettings({ widget, onConfigChange }: WidgetProps<We
           <Select
             label="Temperature Units"
             options={[
-              { id: "imperial", label: "Fahrenheit (°F)" },
-              { id: "metric", label: "Celsius (°C)" },
+              { value: "imperial", label: "Fahrenheit (°F)" },
+              { value: "metric", label: "Celsius (°C)" },
             ]}
-            selectedKey={units}
-            onSelectionChange={(value) =>
+            value={units}
+            onValueChange={(value) =>
               onConfigChange({ units: (value as "imperial" | "metric") || "imperial" })
             }
-            portalContainer={portalContainer}
           />
         </>
       )}
@@ -583,18 +578,18 @@ export function WeatherWidgetSettings({ widget, onConfigChange }: WidgetProps<We
       <HStack justify="between">
         <Text size="sm">Show Forecast</Text>
         <Switch
-          isSelected={showForecast}
-          onChange={(value) => onConfigChange({ showForecast: value })}
+          checked={showForecast}
+          onCheckedChange={(value) => onConfigChange({ showForecast: value })}
         />
       </HStack>
 
       {showForecast && (
         <NumberInput
           label="Forecast Days"
-          minValue={1}
-          maxValue={6}
+          min={1}
+          max={6}
           value={forecastDays}
-          onChange={(value) => onConfigChange({ forecastDays: Number(value) || 5 })}
+          onValueChange={(value) => onConfigChange({ forecastDays: Number(value) || 5 })}
         />
       )}
 
@@ -602,21 +597,20 @@ export function WeatherWidgetSettings({ widget, onConfigChange }: WidgetProps<We
         <HStack justify="between">
           <Text size="sm">Show Air Quality (US AQI)</Text>
           <Switch
-            isSelected={showAirQuality ?? false}
-            onChange={(value) => onConfigChange({ showAirQuality: value })}
+            checked={showAirQuality ?? false}
+            onCheckedChange={(value) => onConfigChange({ showAirQuality: value })}
           />
         </HStack>
       )}
       <Select
         label="Text Alignment"
         options={[
-          { id: "left", label: "Left" },
-          { id: "center", label: "Center" },
-          { id: "right", label: "Right" },
+          { value: "left", label: "Left" },
+          { value: "center", label: "Center" },
+          { value: "right", label: "Right" },
         ]}
-        selectedKey={textAlign}
-        onSelectionChange={(value) => onConfigChange({ textAlign: (value as TextAlign) || "left" })}
-        portalContainer={portalContainer}
+        value={textAlign}
+        onValueChange={(value) => onConfigChange({ textAlign: (value as TextAlign) || "left" })}
       />
     </Stack>
   );

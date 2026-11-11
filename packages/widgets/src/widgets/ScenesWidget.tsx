@@ -3,7 +3,7 @@ import {
   HStack,
   NumberInput,
   Select,
-  SimpleGrid,
+  Grid,
   Stack,
   Switch,
   Text,
@@ -22,7 +22,6 @@ import { useState, type ComponentType } from "react";
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntityList, useHomeAssistantService } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import type { HomeAssistantEntitySummary } from "./homeAssistant";
 import { AddEntitySelect, SelectedEntityRow } from "./AddEntitySelect";
 import {
@@ -53,12 +52,12 @@ const SCENE_ICONS: Record<string, ComponentType<{ size?: number | string }>> = {
 };
 
 const ICON_OPTIONS = [
-  { id: "play", label: "Play" },
-  { id: "light", label: "Light" },
-  { id: "night", label: "Night" },
-  { id: "day", label: "Day" },
-  { id: "movie", label: "Movie" },
-  { id: "music", label: "Music" },
+  { value: "play", label: "Play" },
+  { value: "light", label: "Light" },
+  { value: "night", label: "Night" },
+  { value: "day", label: "Day" },
+  { value: "movie", label: "Movie" },
+  { value: "music", label: "Music" },
 ];
 
 function SceneGlyph({ name }: { name?: string }) {
@@ -131,15 +130,15 @@ export function ScenesWidget({ widget, isEditing }: WidgetProps<ScenesConfig>) {
       {(error || controlError) && (
         <div className={classes.errorBox}>
           <ErrorText size="sm">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
         </div>
       )}
-      <SimpleGrid
-        cols={columnCount === 1 || columnCount === 3 || columnCount === 4 ? columnCount : 2}
-        spacing="sm"
+      <Grid
+        columns={columnCount === 1 || columnCount === 3 || columnCount === 4 ? columnCount : 2}
+        gap="sm"
         className={classes.grid}
       >
         {items.map((item) => {
@@ -149,8 +148,8 @@ export function ScenesWidget({ widget, isEditing }: WidgetProps<ScenesConfig>) {
             <Button
               key={item.entityId}
               className={`${classes.card} ${pending ? classes.cardPressed : ""}`}
-              onPress={() => void fire(item)}
-              isDisabled={pending}
+              onClick={() => void fire(item)}
+              disabled={pending}
             >
               <span className={classes.cardIcon}>
                 <SceneGlyph name={item.icon} />
@@ -160,7 +159,7 @@ export function ScenesWidget({ widget, isEditing }: WidgetProps<ScenesConfig>) {
             </Button>
           );
         })}
-      </SimpleGrid>
+      </Grid>
       {!isEditing && (
         <WidgetDataStatus
           widgetId={widget.id}
@@ -176,7 +175,6 @@ export function ScenesWidget({ widget, isEditing }: WidgetProps<ScenesConfig>) {
 
 export function ScenesSettings({ widget, onConfigChange }: WidgetProps<ScenesConfig>) {
   const { items = [], confirm = false, columns = 2, transparentBackground = false } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
 
   const updateItem = (index: number, patch: Partial<SceneItem>) => {
     onConfigChange({
@@ -203,26 +201,25 @@ export function ScenesSettings({ widget, onConfigChange }: WidgetProps<ScenesCon
             aria-label={`Label for ${item.entityId}`}
             placeholder="Label (optional)"
             value={item.label ?? ""}
-            onChange={(value) => updateItem(index, { label: value })}
+            onValueChange={(value) => updateItem(index, { label: value })}
           />
           <Select
             label="Icon"
             placeholder="Default"
             options={ICON_OPTIONS}
-            selectedKey={item.icon ?? null}
-            onSelectionChange={(key) => {
+            value={item.icon ?? null}
+            onValueChange={(key) => {
               if (typeof key === "string") updateItem(index, { icon: key });
             }}
-            portalContainer={portalContainer}
           />
         </SelectedEntityRow>
       ))}
       <NumberInput
         label="Columns"
-        minValue={1}
-        maxValue={4}
+        min={1}
+        max={4}
         value={columns}
-        onChange={(value) => {
+        onValueChange={(value) => {
           const next = Number(value);
           onConfigChange({ columns: Number.isFinite(next) ? Math.min(4, Math.max(1, next)) : 2 });
         }}
@@ -231,16 +228,16 @@ export function ScenesSettings({ widget, onConfigChange }: WidgetProps<ScenesCon
         <Text size="sm">Ask before running</Text>
         <Switch
           aria-label="Ask before running"
-          isSelected={confirm}
-          onChange={(value) => onConfigChange({ confirm: value })}
+          checked={confirm}
+          onCheckedChange={(value) => onConfigChange({ confirm: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

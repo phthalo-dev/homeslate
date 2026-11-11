@@ -7,8 +7,8 @@ import {
   Link,
   ProgressBar,
   Select,
-  SimpleGrid,
-  SimpleTooltip,
+  Grid,
+  Tooltip,
   Slider,
   Spinner,
   Stack,
@@ -33,7 +33,6 @@ import {
   useGooglePhotos,
   loadStoredImage,
   useGoogleRuntime,
-  useOverlayPortalContainer,
 } from "@homeslate/widgets";
 import type { Photo, StoredPhoto } from "@homeslate/widgets";
 import type { DisplayDocument, View, ViewBackground, WidgetInstance } from "@homeslate/schema";
@@ -60,9 +59,9 @@ const INTERVAL_PRESETS = [
 const INTERVAL_PRESET_VALUES = INTERVAL_PRESETS.map((p) => p.value);
 
 const IMAGE_SIZE_OPTIONS = [
-  { id: "cover", label: "Cover (fill screen)" },
-  { id: "contain", label: "Contain (fit inside)" },
-  { id: "tile", label: "Tile (repeat)" },
+  { value: "cover", label: "Cover (fill screen)" },
+  { value: "contain", label: "Contain (fit inside)" },
+  { value: "tile", label: "Tile (repeat)" },
 ];
 
 function asPhotos(value: unknown[] | undefined): Photo[] {
@@ -128,7 +127,7 @@ function BgThumbGrid({ photos, onRemove }: BgThumbGridProps) {
   if (photos.length === 0) return null;
 
   return (
-    <SimpleGrid cols={3} spacing="xs">
+    <Grid columns={3} gap="xs">
       {photos.map((photo, index) => {
         const id = photo.type === "url" ? photo.url : photo.key;
         const src = thumbUrls.get(id);
@@ -153,19 +152,18 @@ function BgThumbGrid({ photos, onRemove }: BgThumbGridProps) {
               </div>
             )}
             <IconButton
-              name="close"
               icon={<IconX size={8} />}
               aria-label="Remove photo"
               size="sm"
               tone="danger"
               appearance="filled"
-              onPress={() => onRemove(index)}
+              onClick={() => onRemove(index)}
               style={{ position: "absolute", top: 2, right: 2, opacity: 0.85 }}
             />
           </div>
         );
       })}
-    </SimpleGrid>
+    </Grid>
   );
 }
 
@@ -175,7 +173,6 @@ export function BgSettings(props: {
   onUploadBackgroundPhoto?: UploadBackgroundPhoto;
 }): JSX.Element {
   const { view, updateBg, onUploadBackgroundPhoto } = props;
-  const portalContainer = useOverlayPortalContainer();
   const photos: Photo[] = useMemo(
     () => asPhotos(view.background?.photos),
     [view.background?.photos],
@@ -280,7 +277,7 @@ export function BgSettings(props: {
 
   const addPhotoTabs = [
     {
-      id: "url",
+      value: "url",
       label: "URL",
       content: (
         <Stack gap="xs">
@@ -291,7 +288,7 @@ export function BgSettings(props: {
               size="sm"
               placeholder="https://example.com/photo.jpg"
               value={newUrl}
-              onChange={setNewUrl}
+              onValueChange={setNewUrl}
               onKeyDown={(e) => {
                 if (e.key === "Enter") void addUrlPhoto();
               }}
@@ -299,16 +296,16 @@ export function BgSettings(props: {
             <Button
               size="sm"
               appearance="outline"
-              isDisabled={!newUrl.trim()}
-              isPending={urlUploading}
-              onPress={() => void addUrlPhoto()}
+              disabled={!newUrl.trim()}
+              loading={urlUploading}
+              onClick={() => void addUrlPhoto()}
             >
               <IconPlus size={12} />
               Add
             </Button>
           </HStack>
           {urlError && (
-            <Alert variant="danger" appearance="subtle">
+            <Alert tone="danger" appearance="subtle">
               <Text size="xs">{urlError}</Text>
             </Alert>
           )}
@@ -318,7 +315,7 @@ export function BgSettings(props: {
     ...(onUploadBackgroundPhoto
       ? [
           {
-            id: "upload",
+            value: "upload",
             label: "Device",
             content: (
               <Stack gap="xs">
@@ -333,15 +330,15 @@ export function BgSettings(props: {
                 <Button
                   size="sm"
                   appearance="outline"
-                  isPending={uploading}
-                  onPress={() => fileInputRef.current?.click()}
+                  loading={uploading}
+                  onClick={() => fileInputRef.current?.click()}
                   style={{ width: "100%" }}
                 >
                   <IconUpload size={12} />
                   {uploading ? "Uploading…" : "Choose from Device"}
                 </Button>
                 {uploadError && (
-                  <Alert variant="danger" appearance="subtle">
+                  <Alert tone="danger" appearance="subtle">
                     <Text size="xs">{uploadError}</Text>
                   </Alert>
                 )}
@@ -354,7 +351,7 @@ export function BgSettings(props: {
         ]
       : []),
     {
-      id: "google",
+      value: "google",
       label: "Google",
       content: (
         <Stack gap="xs">
@@ -363,7 +360,7 @@ export function BgSettings(props: {
               <Text size="xs" tone="secondary">
                 Sign in to pick from Google Photos
               </Text>
-              <Button size="sm" isPending={authLoading} onPress={signIn}>
+              <Button size="sm" loading={authLoading} onClick={signIn}>
                 <IconBrandGoogle size={12} />
                 Sign in with Google
               </Button>
@@ -392,22 +389,22 @@ export function BgSettings(props: {
                 </Stack>
               )}
               {googleError && (
-                <Alert variant="danger" appearance="subtle">
+                <Alert tone="danger" appearance="subtle">
                   <Text size="xs">{googleError}</Text>
                 </Alert>
               )}
               <HStack gap="xs">
                 <Button
                   size="sm"
-                  isPending={pickerStatus === "pending" || pickerStatus === "uploading"}
-                  isDisabled={pickerStatus === "pending" || pickerStatus === "uploading"}
-                  onPress={() => void startPicker()}
+                  loading={pickerStatus === "pending" || pickerStatus === "uploading"}
+                  disabled={pickerStatus === "pending" || pickerStatus === "uploading"}
+                  onClick={() => void startPicker()}
                 >
                   <IconPhoto size={12} />
                   Pick Photos
                 </Button>
                 {storedImages.length > 0 && (
-                  <Button size="sm" appearance="ghost" tone="danger" onPress={clearGoogleSelection}>
+                  <Button size="sm" appearance="ghost" tone="danger" onClick={clearGoogleSelection}>
                     Cancel
                   </Button>
                 )}
@@ -431,19 +428,18 @@ export function BgSettings(props: {
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
           <IconButton
-            name="close"
             icon={<IconX size={12} />}
             aria-label="Remove background image"
             size="sm"
             appearance="filled"
             tone="danger"
-            onPress={() => updateBg({ image: undefined })}
+            onClick={() => updateBg({ image: undefined })}
             style={{ position: "absolute", top: 4, right: 4 }}
           />
         </div>
       )}
 
-      <Tabs defaultSelectedKey="url" tabs={addPhotoTabs} />
+      <Tabs defaultValue="url" tabs={addPhotoTabs} />
 
       {photos.length > 1 && (
         <Stack gap="xs">
@@ -456,7 +452,7 @@ export function BgSettings(props: {
                 key={value}
                 size="sm"
                 appearance={interval === value ? "filled" : "outline"}
-                onPress={() => updateBg({ intervalSeconds: value })}
+                onClick={() => updateBg({ intervalSeconds: value })}
               >
                 {label}
               </Button>
@@ -464,7 +460,7 @@ export function BgSettings(props: {
             <Button
               size="sm"
               appearance={!INTERVAL_PRESET_VALUES.includes(interval) ? "filled" : "outline"}
-              onPress={() => {
+              onClick={() => {
                 if (INTERVAL_PRESET_VALUES.includes(interval)) updateBg({ intervalSeconds: 20 });
               }}
             >
@@ -477,7 +473,7 @@ export function BgSettings(props: {
               aria-label="Custom interval seconds"
               placeholder="Seconds"
               value={String(interval)}
-              onChange={(value) => {
+              onValueChange={(value) => {
                 const num = parseInt(value, 10);
                 if (!isNaN(num) && num >= 3) updateBg({ intervalSeconds: num });
               }}
@@ -492,13 +488,12 @@ export function BgSettings(props: {
           <Select
             aria-label="Image size"
             options={IMAGE_SIZE_OPTIONS}
-            selectedKey={imageSize}
-            onSelectionChange={(key) => {
+            value={imageSize}
+            onValueChange={(key) => {
               if (key === "cover" || key === "contain" || key === "tile") {
                 updateBg({ imageSize: key });
               }
             }}
-            portalContainer={portalContainer}
           />
           <Stack gap="xs">
             <HStack justify="between">
@@ -512,11 +507,11 @@ export function BgSettings(props: {
             <Slider
               aria-label="Overlay darkness"
               value={overlay * 100}
-              onChange={(v) =>
+              onValueChange={(v) =>
                 updateBg({ overlayOpacity: (typeof v === "number" ? v : (v[0] ?? 0)) / 100 })
               }
-              minValue={0}
-              maxValue={90}
+              min={0}
+              max={90}
               step={5}
               showOutput={false}
             />
@@ -525,7 +520,7 @@ export function BgSettings(props: {
       )}
 
       {photos.length > 0 && (
-        <Button size="sm" appearance="ghost" tone="danger" onPress={() => updateBg({ photos: [] })}>
+        <Button size="sm" appearance="ghost" tone="danger" onClick={() => updateBg({ photos: [] })}>
           <IconTrash size={12} />
           Remove All
         </Button>
@@ -541,7 +536,6 @@ export function WidgetPanel(props: {
   widgetRegistry?: WidgetRegistryApi;
 }): JSX.Element {
   const { document, viewId, onChange, widgetRegistry } = props;
-  const portalContainer = useOverlayPortalContainer();
   const [collapsed, setCollapsed] = useState(false);
   const documentRef = useRef(document);
   // eslint-disable-next-line react-hooks/refs -- keeps the ref current for edits that land in the same tick
@@ -583,10 +577,9 @@ export function WidgetPanel(props: {
     <aside className={`${classes.panel} ${collapsed ? classes.collapsed : ""}`}>
       <div className={classes.toggleBar}>
         <IconButton
-          name={collapsed ? "chevronRight" : "chevronLeft"}
           icon={collapsed ? <IconChevronRight size={16} /> : <IconChevronLeft size={16} />}
           appearance="ghost"
-          onPress={() => setCollapsed((c) => !c)}
+          onClick={() => setCollapsed((c) => !c)}
           className={classes.toggleBtn}
           aria-label={collapsed ? "Expand widget panel" : "Collapse widget panel"}
         />
@@ -597,23 +590,21 @@ export function WidgetPanel(props: {
           {widgetTypes.map((widget) => {
             const Icon = widget.icon;
             return (
-              <SimpleTooltip
-                key={widget.type}
-                content={widget.name}
-                placement="right"
-                portalContainer={portalContainer}
-              >
-                <Button
-                  appearance="ghost"
-                  size="sm"
-                  aria-label={widget.name}
-                  className={classes.iconOnly}
-                  style={{ height: 36, minHeight: 36, width: 36, padding: 0 }}
-                  onPress={() => handleAddWidget(widget.type)}
-                >
-                  <Icon size={20} />
-                </Button>
-              </SimpleTooltip>
+              <Tooltip.Root key={widget.type}>
+                <Tooltip.Trigger>
+                  <Button
+                    appearance="ghost"
+                    size="sm"
+                    aria-label={widget.name}
+                    className={classes.iconOnly}
+                    style={{ height: 36, minHeight: 36, width: 36, padding: 0 }}
+                    onClick={() => handleAddWidget(widget.type)}
+                  >
+                    <Icon size={20} />
+                  </Button>
+                </Tooltip.Trigger>
+                <Tooltip.Popup placement="end">{widget.name}</Tooltip.Popup>
+              </Tooltip.Root>
             );
           })}
         </Stack>
@@ -638,7 +629,7 @@ export function WidgetPanel(props: {
                     padding: "8px 6px",
                     gap: 12,
                   }}
-                  onPress={() => handleAddWidget(widget.type)}
+                  onClick={() => handleAddWidget(widget.type)}
                 >
                   <div className={classes.widgetIcon}>
                     <Icon size={20} />

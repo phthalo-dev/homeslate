@@ -2,7 +2,6 @@ import { DateTimeInput, HStack, Select, Stack, Switch, Text, TextAreaField } fro
 import type { CalendarDateTime } from "@internationalized/date";
 import type { TextAlign, WidgetConfig, WidgetProps } from "../types";
 import { dateTimeFromLocalInput, localInputFromDateTime } from "../dateValue";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { isAnnouncementVisible } from "./announcement";
 import * as classes from "./listWidget.styles";
 
@@ -16,15 +15,15 @@ export interface AnnouncementConfig extends WidgetConfig {
 }
 
 const SIZE_OPTIONS = [
-  { id: "md", label: "Medium" },
-  { id: "lg", label: "Large" },
-  { id: "xl", label: "Extra large" },
+  { value: "md", label: "Medium" },
+  { value: "lg", label: "Large" },
+  { value: "xl", label: "Extra large" },
 ];
 
 const ALIGN_OPTIONS = [
-  { id: "left", label: "Left" },
-  { id: "center", label: "Center" },
-  { id: "right", label: "Right" },
+  { value: "left", label: "Left" },
+  { value: "center", label: "Center" },
+  { value: "right", label: "Right" },
 ];
 
 export function AnnouncementWidget({ widget, isEditing }: WidgetProps<AnnouncementConfig>) {
@@ -84,41 +83,38 @@ export function AnnouncementWidgetSettings({
     showUntil = "",
     transparentBackground,
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
 
   return (
     <Stack gap="md">
       <TextAreaField
         label="Announcement"
         value={body}
-        onChange={(value) => onConfigChange({ body: value })}
+        onValueChange={(value) => onConfigChange({ body: value })}
       />
       <Select
         label="Size"
         options={SIZE_OPTIONS}
-        selectedKey={size}
-        onSelectionChange={(key) => {
+        value={size}
+        onValueChange={(key) => {
           if (key === "md" || key === "lg" || key === "xl") {
             onConfigChange({ size: key });
           }
         }}
-        portalContainer={portalContainer}
       />
       <Select
         label="Align"
         options={ALIGN_OPTIONS}
-        selectedKey={textAlign}
-        onSelectionChange={(key) => {
+        value={textAlign}
+        onValueChange={(key) => {
           if (key === "left" || key === "center" || key === "right") {
             onConfigChange({ textAlign: key });
           }
         }}
-        portalContainer={portalContainer}
       />
       <DateTimeInput
         label="Show from"
         value={dateTimeFromLocalInput(showFrom)}
-        onChange={(value) =>
+        onValueChange={(value) =>
           onConfigChange({
             showFrom: localInputFromDateTime(value as CalendarDateTime | null),
           })
@@ -127,7 +123,7 @@ export function AnnouncementWidgetSettings({
       <DateTimeInput
         label="Show until"
         value={dateTimeFromLocalInput(showUntil)}
-        onChange={(value) =>
+        onValueChange={(value) =>
           onConfigChange({
             showUntil: localInputFromDateTime(value as CalendarDateTime | null),
           })
@@ -137,8 +133,8 @@ export function AnnouncementWidgetSettings({
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

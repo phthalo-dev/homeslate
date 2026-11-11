@@ -149,12 +149,7 @@ export function SecurityWidget({ widget, isEditing }: WidgetProps<SecurityConfig
           <Text size="sm" tone="secondary">
             Refresh to unlock or disarm
           </Text>
-          <Button
-            appearance="subtle"
-            size="sm"
-            onPress={() => void refresh()}
-            isDisabled={isLoading}
-          >
+          <Button appearance="subtle" size="sm" onClick={() => void refresh()} disabled={isLoading}>
             <IconRefresh size={14} />
             Refresh
           </Button>
@@ -163,7 +158,7 @@ export function SecurityWidget({ widget, isEditing }: WidgetProps<SecurityConfig
       {(error || controlError) && (
         <div className={classes.errorBox}>
           <ErrorText size="sm">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -221,8 +216,8 @@ export function SecurityWidget({ widget, isEditing }: WidgetProps<SecurityConfig
                     <Button
                       appearance="subtle"
                       size="sm"
-                      onPress={() => unlock(entity)}
-                      isDisabled={!entity.available || pending || highRiskLocked}
+                      onClick={() => unlock(entity)}
+                      disabled={!entity.available || pending || highRiskLocked}
                     >
                       Unlock
                     </Button>
@@ -230,8 +225,8 @@ export function SecurityWidget({ widget, isEditing }: WidgetProps<SecurityConfig
                     <Button
                       appearance="subtle"
                       size="sm"
-                      onPress={() => void run(entity, "lock", "locking")}
-                      isDisabled={!entity.available || pending}
+                      onClick={() => void run(entity, "lock", "locking")}
+                      disabled={!entity.available || pending}
                     >
                       Lock
                     </Button>
@@ -240,8 +235,8 @@ export function SecurityWidget({ widget, isEditing }: WidgetProps<SecurityConfig
                     <Button
                       appearance="subtle"
                       size="sm"
-                      onPress={() => open(entity)}
-                      isDisabled={!entity.available || pending || highRiskLocked}
+                      onClick={() => open(entity)}
+                      disabled={!entity.available || pending || highRiskLocked}
                     >
                       Open
                     </Button>
@@ -256,8 +251,8 @@ export function SecurityWidget({ widget, isEditing }: WidgetProps<SecurityConfig
                         key={option.mode}
                         appearance="subtle"
                         size="sm"
-                        onPress={() => void run(entity, option.service, "arming")}
-                        isDisabled={!entity.available || pending || current}
+                        onClick={() => void run(entity, option.service, "arming")}
+                        disabled={!entity.available || pending || current}
                       >
                         {option.label}
                       </Button>
@@ -266,8 +261,8 @@ export function SecurityWidget({ widget, isEditing }: WidgetProps<SecurityConfig
                   <Button
                     appearance="subtle"
                     size="sm"
-                    onPress={() => disarm(entity)}
-                    isDisabled={
+                    onClick={() => disarm(entity)}
+                    disabled={
                       !entity.available || pending || entity.state === "disarmed" || highRiskLocked
                     }
                   >
@@ -318,8 +313,8 @@ export function SecurityWidgetSettings({ widget, onConfigChange }: WidgetProps<S
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

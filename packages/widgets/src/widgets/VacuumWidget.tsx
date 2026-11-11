@@ -13,7 +13,6 @@ import {
 import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntities, useEntity } from "../hooks/useHomeAssistant";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import {
   VACUUM_EMPTY_COPY,
   VACUUM_FEATURE,
@@ -51,7 +50,6 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
     fetchFailureCopy: VACUUM_MISSING_CONFIG_COPY,
     callFailureCopy: VACUUM_MISSING_CONFIG_COPY,
   });
-  const portalContainer = useOverlayPortalContainer();
   const containerClass = `${classes.container} ${transparentBackground ? classes.transparent : ""}`;
 
   if (!entityId) {
@@ -93,7 +91,7 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
       <div className={containerClass}>
         <div className={classes.empty}>
           <ErrorText size="sm">{error ?? "Failed to fetch vacuum"}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -156,8 +154,8 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
         <Button
           appearance="subtle"
           size="sm"
-          onPress={() => void call("start", {}, (current) => ({ ...current, state: "cleaning" }))}
-          isDisabled={pending}
+          onClick={() => void call("start", {}, (current) => ({ ...current, state: "cleaning" }))}
+          disabled={pending}
         >
           <IconPlayerPlay size={16} />
           {vacuum.state === "paused" ? "Resume" : "Start"}
@@ -166,8 +164,8 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
           <Button
             appearance="subtle"
             size="sm"
-            onPress={() => void call("pause", {}, (current) => ({ ...current, state: "paused" }))}
-            isDisabled={pending}
+            onClick={() => void call("pause", {}, (current) => ({ ...current, state: "paused" }))}
+            disabled={pending}
           >
             <IconPlayerPause size={16} />
             Pause
@@ -177,8 +175,8 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
           <Button
             appearance="subtle"
             size="sm"
-            onPress={() => void call("stop", {}, (current) => ({ ...current, state: "idle" }))}
-            isDisabled={pending}
+            onClick={() => void call("stop", {}, (current) => ({ ...current, state: "idle" }))}
+            disabled={pending}
           >
             <IconPlayerStop size={16} />
             Stop
@@ -188,13 +186,13 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
           <Button
             appearance="subtle"
             size="sm"
-            onPress={() =>
+            onClick={() =>
               void call("return_to_base", {}, (current) => ({
                 ...current,
                 state: "returning",
               }))
             }
-            isDisabled={pending}
+            disabled={pending}
           >
             <IconHome size={16} />
             Dock
@@ -204,8 +202,8 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
           <Button
             appearance="subtle"
             size="sm"
-            onPress={() => void call("locate", {}, undefined)}
-            isDisabled={pending}
+            onClick={() => void call("locate", {}, undefined)}
+            disabled={pending}
           >
             <IconMapPin size={16} />
             Locate
@@ -215,10 +213,10 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
           <Button
             appearance="subtle"
             size="sm"
-            onPress={() =>
+            onClick={() =>
               void call("clean_spot", {}, (current) => ({ ...current, state: "cleaning" }))
             }
-            isDisabled={pending}
+            disabled={pending}
           >
             <IconSparkles size={16} />
             Spot
@@ -229,9 +227,9 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
       {canFanSpeed && (
         <Select
           label="Fan speed"
-          options={vacuum.fanSpeedList.map((speed) => ({ id: speed, label: speed }))}
-          selectedKey={vacuum.fanSpeed}
-          onSelectionChange={(key) => {
+          options={vacuum.fanSpeedList.map((speed) => ({ value: speed, label: speed }))}
+          value={vacuum.fanSpeed}
+          onValueChange={(key) => {
             if (typeof key === "string" && key !== vacuum.fanSpeed) {
               void call("set_fan_speed", { fan_speed: key }, (current) => ({
                 ...current,
@@ -239,14 +237,13 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
               }));
             }
           }}
-          portalContainer={portalContainer}
         />
       )}
 
       {(controlError || error) && (
         <div className={classes.errorBox}>
           <ErrorText size="xs">{controlError ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -268,7 +265,6 @@ export function VacuumWidget({ widget, isEditing }: WidgetProps<VacuumConfig>) {
 
 export function VacuumWidgetSettings({ widget, onConfigChange }: WidgetProps<VacuumConfig>) {
   const { entityId = "", showFanSpeed = true, transparentBackground = false } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntities(
     "vacuum",
     VACUUM_MISSING_CONFIG_COPY,
@@ -285,17 +281,16 @@ export function VacuumWidgetSettings({ widget, onConfigChange }: WidgetProps<Vac
               label="Vacuum"
               placeholder="Select a vacuum…"
               options={entities.map((entity) => ({
-                id: entity.entityId,
+                value: entity.entityId,
                 label: `${entity.name} (${entity.entityId})`,
               }))}
-              selectedKey={entityId || null}
-              onSelectionChange={(key) => {
+              value={entityId || null}
+              onValueChange={(key) => {
                 if (typeof key === "string") onConfigChange({ entityId: key });
               }}
-              portalContainer={portalContainer}
             />
           </div>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -307,16 +302,16 @@ export function VacuumWidgetSettings({ widget, onConfigChange }: WidgetProps<Vac
         <Text size="sm">Show fan speed</Text>
         <Switch
           aria-label="Show fan speed"
-          isSelected={showFanSpeed}
-          onChange={(value) => onConfigChange({ showFanSpeed: value })}
+          checked={showFanSpeed}
+          onCheckedChange={(value) => onConfigChange({ showFanSpeed: value })}
         />
       </HStack>
       <HStack gap="sm" align="center" justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

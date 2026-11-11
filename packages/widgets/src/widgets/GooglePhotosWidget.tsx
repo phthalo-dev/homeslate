@@ -98,7 +98,7 @@ export function GooglePhotosWidget({ widget }: WidgetProps<GooglePhotosConfig>) 
   if (error) {
     return (
       <div className={`${classes.container} ${transparentBackground ? classes.transparent : ""}`}>
-        <Alert variant="danger" appearance="subtle">
+        <Alert tone="danger" appearance="subtle">
           <Text size="sm">{error}</Text>
         </Alert>
       </div>
@@ -175,7 +175,7 @@ export function GooglePhotosWidgetSettings({
             <Text size="sm" tone="secondary">
               Sign in to select your photos
             </Text>
-            <Button onPress={signIn} isPending={isLoading} size="sm">
+            <Button onClick={signIn} loading={isLoading} size="sm">
               Sign in with Google
             </Button>
           </Stack>
@@ -216,7 +216,7 @@ export function GooglePhotosWidgetSettings({
             )}
 
             {error && (
-              <Alert variant="danger" appearance="subtle">
+              <Alert tone="danger" appearance="subtle">
                 <Text size="sm">{error}</Text>
               </Alert>
             )}
@@ -224,11 +224,11 @@ export function GooglePhotosWidgetSettings({
             <HStack gap="xs">
               <Button
                 size="sm"
-                onPress={() => {
+                onClick={() => {
                   void startPicker();
                 }}
-                isPending={pickerStatus === "pending" || pickerStatus === "uploading"}
-                isDisabled={pickerStatus === "pending" || pickerStatus === "uploading"}
+                loading={pickerStatus === "pending" || pickerStatus === "uploading"}
+                disabled={pickerStatus === "pending" || pickerStatus === "uploading"}
               >
                 {hasSelection ? "Change Photos" : "Pick Photos"}
               </Button>
@@ -238,7 +238,7 @@ export function GooglePhotosWidgetSettings({
                   size="sm"
                   appearance="ghost"
                   tone="danger"
-                  onPress={() => {
+                  onClick={() => {
                     clearSelection();
                     onConfigChange({ savedImages: [] });
                   }}
@@ -252,8 +252,8 @@ export function GooglePhotosWidgetSettings({
           <HStack justify="between">
             <Text size="sm">Show Caption</Text>
             <Switch
-              isSelected={showCaption}
-              onChange={(value) => onConfigChange({ showCaption: value })}
+              checked={showCaption}
+              onCheckedChange={(value) => onConfigChange({ showCaption: value })}
             />
           </HStack>
 
@@ -274,7 +274,7 @@ export function GooglePhotosWidgetSettings({
                   key={value}
                   size="sm"
                   appearance={refreshInterval === value ? "filled" : "outline"}
-                  onPress={() => onConfigChange({ refreshInterval: value })}
+                  onClick={() => onConfigChange({ refreshInterval: value })}
                 >
                   {label}
                 </Button>

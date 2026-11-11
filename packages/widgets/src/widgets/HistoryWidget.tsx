@@ -4,7 +4,6 @@ import type { WidgetConfig, WidgetProps } from "../types";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useEntitiesAcross, useEntity } from "../hooks/useHomeAssistant";
 import { useHomeAssistantHistory } from "../hooks/useHomeAssistantHistory";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import type { HomeAssistantSensor } from "./homeAssistantSensor";
 import {
   HISTORY_EMPTY_COPY,
@@ -87,7 +86,7 @@ export function HistoryWidget({ widget, isEditing }: WidgetProps<HistoryConfig>)
       <div className={containerClass}>
         <div className={classes.empty}>
           <ErrorText size="sm">{error ?? "Failed to fetch sensor"}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -142,7 +141,7 @@ export function HistoryWidget({ widget, isEditing }: WidgetProps<HistoryConfig>)
       {(history.error || error) && (
         <div className={classes.errorBox}>
           <ErrorText size="xs">{history.error ?? error}</ErrorText>
-          <Button appearance="subtle" size="sm" onPress={retry} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={retry} disabled={isLoading}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -168,7 +167,6 @@ export function HistoryWidgetSettings({ widget, onConfigChange }: WidgetProps<Hi
     hours = HISTORY_HOURS_DEFAULT,
     transparentBackground = false,
   } = widget.config;
-  const portalContainer = useOverlayPortalContainer();
   const { entities, isLoading, error, status, refresh } = useEntitiesAcross(
     ["sensor", "number", "input_number"],
     HISTORY_MISSING_CONFIG_COPY,
@@ -185,17 +183,16 @@ export function HistoryWidgetSettings({ widget, onConfigChange }: WidgetProps<Hi
               label="Numeric sensor"
               placeholder="Select a sensor…"
               options={entities.map((entity) => ({
-                id: entity.entityId,
+                value: entity.entityId,
                 label: `${entity.name} (${entity.entityId})`,
               }))}
-              selectedKey={entityId || null}
-              onSelectionChange={(key) => {
+              value={entityId || null}
+              onValueChange={(key) => {
                 if (typeof key === "string") onConfigChange({ entityId: key });
               }}
-              portalContainer={portalContainer}
             />
           </div>
-          <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+          <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
             <IconRefresh size={14} />
           </Button>
         </HStack>
@@ -205,10 +202,10 @@ export function HistoryWidgetSettings({ widget, onConfigChange }: WidgetProps<Hi
 
       <NumberInput
         label={`Window in hours (max ${HISTORY_HOURS_MAX})`}
-        minValue={1}
-        maxValue={HISTORY_HOURS_MAX}
+        min={1}
+        max={HISTORY_HOURS_MAX}
         value={hours}
-        onChange={(value) => {
+        onValueChange={(value) => {
           const next = Number(value);
           onConfigChange({
             hours: Number.isFinite(next)
@@ -221,8 +218,8 @@ export function HistoryWidgetSettings({ widget, onConfigChange }: WidgetProps<Hi
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

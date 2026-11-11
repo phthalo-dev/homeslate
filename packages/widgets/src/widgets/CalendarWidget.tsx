@@ -19,7 +19,6 @@ import type { WidgetProps, WidgetConfig } from "../types";
 import { useCalendar } from "../hooks/useCalendar";
 import { useEntities } from "../hooks/useHomeAssistant";
 import { useHomeAssistantCalendar } from "../hooks/useHomeAssistantCalendar";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import type { CalendarEvent } from "../services/calendar";
 import { HA_MISSING_CONFIG_COPY, type HomeAssistantEntitySummary } from "./homeAssistant";
@@ -154,7 +153,7 @@ export function CalendarWidget({ widget }: WidgetProps<CalendarConfig>) {
           <Text size="sm" style={{ color: "var(--var-ui-color-tone-danger-foreground)" }}>
             {error}
           </Text>
-          <Button appearance="subtle" size="sm" onPress={refresh}>
+          <Button appearance="subtle" size="sm" onClick={refresh}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -249,7 +248,6 @@ export function CalendarWidgetSettings({ widget, onConfigChange }: WidgetProps<C
     entityId = "",
   } = widget.config;
   const [showHelp, setShowHelp] = useState(false);
-  const portalContainer = useOverlayPortalContainer();
   const {
     entities: calendarEntities,
     status: entitiesStatus,
@@ -261,14 +259,13 @@ export function CalendarWidgetSettings({ widget, onConfigChange }: WidgetProps<C
       <Select
         label="Source"
         options={[
-          { id: "local", label: "iCal feed" },
-          { id: "homeAssistant", label: "Home Assistant" },
+          { value: "local", label: "iCal feed" },
+          { value: "homeAssistant", label: "Home Assistant" },
         ]}
-        selectedKey={source}
-        onSelectionChange={(value) => {
+        value={source}
+        onValueChange={(value) => {
           if (value === "local" || value === "homeAssistant") onConfigChange({ source: value });
         }}
-        portalContainer={portalContainer}
       />
       {source === "homeAssistant" ? (
         <Stack gap="xs">
@@ -276,14 +273,13 @@ export function CalendarWidgetSettings({ widget, onConfigChange }: WidgetProps<C
             label="Calendar Entity"
             placeholder="Select a calendar…"
             options={calendarEntities.map((entity: HomeAssistantEntitySummary) => ({
-              id: entity.entityId,
+              value: entity.entityId,
               label: `${entity.name} (${entity.entityId})`,
             }))}
-            selectedKey={entityId || null}
-            onSelectionChange={(value) => {
+            value={entityId || null}
+            onValueChange={(value) => {
               if (typeof value === "string") onConfigChange({ entityId: value });
             }}
-            portalContainer={portalContainer}
           />
           {entitiesStatus === 501 && (
             <Text size="xs" tone="secondary">
@@ -298,12 +294,12 @@ export function CalendarWidgetSettings({ widget, onConfigChange }: WidgetProps<C
             placeholder="https://calendar.google.com/calendar/ical/..."
             description="Paste your calendar's iCal feed URL"
             value={icalUrl}
-            onChange={(value) => onConfigChange({ icalUrl: value })}
+            onValueChange={(value) => onConfigChange({ icalUrl: value })}
           />
 
           <Collapsible
             title="How to get your calendar URL"
-            isExpanded={showHelp}
+            expanded={showHelp}
             onExpandedChange={setShowHelp}
           >
             <Surface padding="sm" className={classes.helpBox}>
@@ -351,26 +347,26 @@ export function CalendarWidgetSettings({ widget, onConfigChange }: WidgetProps<C
         <Text size="sm">Show Calendar</Text>
         <Switch
           aria-label="Show Calendar"
-          isSelected={showCalendar}
-          onChange={(value) => onConfigChange({ showCalendar: value })}
+          checked={showCalendar}
+          onCheckedChange={(value) => onConfigChange({ showCalendar: value })}
         />
       </HStack>
 
       <NumberInput
         label="Maximum Events to Show"
-        minValue={1}
-        maxValue={20}
+        min={1}
+        max={20}
         value={maxEvents}
-        onChange={(value) => onConfigChange({ maxEvents: Number(value) || 5 })}
+        onValueChange={(value) => onConfigChange({ maxEvents: Number(value) || 5 })}
       />
 
       <NumberInput
         label="Days Ahead"
         description="How many days ahead to fetch events"
-        minValue={1}
-        maxValue={90}
+        min={1}
+        max={90}
         value={daysAhead}
-        onChange={(value) => onConfigChange({ daysAhead: Number(value) || 30 })}
+        onValueChange={(value) => onConfigChange({ daysAhead: Number(value) || 30 })}
       />
     </Stack>
   );

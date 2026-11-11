@@ -16,7 +16,6 @@ import {
 import { IconCheckbox, IconPlus, IconRefresh, IconX } from "@tabler/icons-react";
 import { v4 as uuidv4 } from "uuid";
 import type { WidgetProps, WidgetConfig } from "../types";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import { WidgetDataStatus } from "../chrome/WidgetDataStatus";
 import { useHomeAssistantTodo, useTodoEntities } from "../hooks/useHomeAssistantTodo";
 import { TODO_EMPTY_COPY, TODO_MISSING_CONFIG_COPY } from "./homeAssistantTodo";
@@ -102,9 +101,9 @@ function TodoRows({
           >
             <div className={classes.item}>
               <Checkbox
-                isSelected={row.checked}
-                isDisabled={disabled}
-                onChange={() => onToggle(row.id)}
+                checked={row.checked}
+                disabled={disabled}
+                onCheckedChange={() => onToggle(row.id)}
                 aria-label={row.text}
               >
                 <Text className={classes.itemText} size="sm">
@@ -113,14 +112,13 @@ function TodoRows({
               </Checkbox>
             </div>
             <IconButton
-              name="close"
               icon={<IconX size={14} />}
               appearance="ghost"
               tone="danger"
               size="sm"
               className={classes.deleteBtn}
-              isDisabled={disabled}
-              onPress={() => onRemoveItem(row.id)}
+              disabled={disabled}
+              onClick={() => onRemoveItem(row.id)}
               aria-label="Delete item"
             />
           </div>
@@ -138,17 +136,16 @@ function TodoRows({
             aria-label="Add item"
             placeholder="Add item..."
             value={newItemText}
-            onChange={onNewItemTextChange}
+            onValueChange={onNewItemTextChange}
             onKeyDown={(e) => e.key === "Enter" && onAddItem()}
             style={{ flex: 1 }}
           />
           <IconButton
-            name="check"
             icon={<IconPlus size={14} />}
             appearance="subtle"
             aria-label="Add item"
-            onPress={onAddItem}
-            isDisabled={disabled || !newItemText.trim()}
+            onClick={onAddItem}
+            disabled={disabled || !newItemText.trim()}
           />
         </HStack>
       </Stack>
@@ -227,9 +224,9 @@ function LocalTodoWidget({ widget, isEditing, onConfigChange }: WidgetProps<Todo
   );
 }
 
-function RetryButton({ onPress }: { onPress: () => void }) {
+function RetryButton({ onClick }: { onClick: () => void }) {
   return (
-    <Button appearance="subtle" size="sm" onPress={onPress}>
+    <Button appearance="subtle" size="sm" onClick={onClick}>
       <IconRefresh size={14} />
       Retry
     </Button>
@@ -297,7 +294,7 @@ function HomeAssistantTodoWidget({ widget }: WidgetProps<TodoConfig>) {
           <Text size="sm" style={{ color: "var(--var-ui-color-tone-danger-foreground)" }}>
             {error}
           </Text>
-          <RetryButton onPress={refresh} />
+          <RetryButton onClick={refresh} />
         </div>
       </div>
     );
@@ -363,7 +360,6 @@ function HomeAssistantTodoSettings({
   widget,
   onConfigChange,
 }: Pick<WidgetProps<TodoConfig>, "widget" | "onConfigChange">) {
-  const portalContainer = useOverlayPortalContainer();
   const { entityId = "" } = widget.config;
   const { entities, isLoading, error, status, refresh } = useTodoEntities();
 
@@ -383,17 +379,16 @@ function HomeAssistantTodoSettings({
             label="List"
             placeholder="Select a list…"
             options={entities.map((entity) => ({
-              id: entity.entityId,
+              value: entity.entityId,
               label: `${entity.name} (${entity.entityId})`,
             }))}
-            selectedKey={entityId || null}
-            onSelectionChange={(key) => {
+            value={entityId || null}
+            onValueChange={(key) => {
               if (typeof key === "string") onConfigChange({ entityId: key });
             }}
-            portalContainer={portalContainer}
           />
         </div>
-        <Button appearance="subtle" size="sm" onPress={refresh} isDisabled={isLoading}>
+        <Button appearance="subtle" size="sm" onClick={refresh} disabled={isLoading}>
           <IconRefresh size={14} />
           Refresh
         </Button>
@@ -419,12 +414,11 @@ export function TodoWidgetSettings({ widget, onConfigChange }: WidgetProps<TodoC
           size="sm"
           aria-label="List source"
           options={[
-            { id: "local", label: "Local" },
-            { id: "homeAssistant", label: "Home Assistant" },
+            { value: "local", label: "Local" },
+            { value: "homeAssistant", label: "Home Assistant" },
           ]}
-          selectedKeys={[source]}
-          onSelectionChange={(keys) => {
-            const next = [...keys][0];
+          value={source}
+          onValueChange={(next) => {
             if (next === "local" || next === "homeAssistant") onConfigChange({ source: next });
           }}
         />
@@ -443,8 +437,8 @@ export function TodoWidgetSettings({ widget, onConfigChange }: WidgetProps<TodoC
         <Text size="sm">Hide completed items</Text>
         <Switch
           aria-label="Hide completed items"
-          isSelected={hideCompleted}
-          onChange={(value) => onConfigChange({ hideCompleted: value })}
+          checked={hideCompleted}
+          onCheckedChange={(value) => onConfigChange({ hideCompleted: value })}
         />
       </HStack>
 
@@ -452,8 +446,8 @@ export function TodoWidgetSettings({ widget, onConfigChange }: WidgetProps<TodoC
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

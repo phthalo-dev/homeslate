@@ -27,7 +27,6 @@ export function DocumentCanvas(props: {
   ) => void;
   onRemoveWidget?: (widgetId: string) => void;
   widgetRegistry?: WidgetRegistryApi;
-  portalContainer?: Element;
 }): JSX.Element {
   const {
     view,
@@ -41,7 +40,6 @@ export function DocumentCanvas(props: {
     onLayoutChange,
     onRemoveWidget,
     widgetRegistry = DEFAULT_WIDGET_REGISTRY,
-    portalContainer,
   } = props;
   const { ref, width, height } = useElementSize();
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -144,7 +142,6 @@ export function DocumentCanvas(props: {
                   widget={widget}
                   isEditing={isEditing}
                   widgetRegistry={widgetRegistry}
-                  portalContainer={portalContainer}
                   onConfigChange={(config) => onWidgetConfigChange?.(widget.id, config)}
                   onRemove={() => onRemoveWidget?.(widget.id)}
                 />

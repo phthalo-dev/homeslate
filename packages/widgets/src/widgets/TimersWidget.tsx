@@ -19,7 +19,6 @@ import { useTimers } from "../timers/TimersContext";
 import { formatDurationMs, remainingMs } from "../timers/format";
 import type { TimerPreset, TimersWidgetConfig } from "../timers/types";
 import type { WidgetConfig, WidgetProps } from "../types";
-import { useOverlayPortalContainer } from "../overlayPortal";
 import * as classes from "./TimersWidget.styles";
 
 export interface TimersConfig extends TimersWidgetConfig, WidgetConfig {
@@ -30,7 +29,7 @@ export interface TimersConfig extends TimersWidgetConfig, WidgetConfig {
 const TONE_IDS = new Set<AlarmToneId>(ALARM_TONE_OPTIONS.map((tone) => tone.value));
 
 const TONE_SELECT_OPTIONS = ALARM_TONE_OPTIONS.map((tone) => ({
-  id: tone.value,
+  value: tone.value,
   label: tone.label,
 }));
 
@@ -78,7 +77,6 @@ export function TimersWidget({ widget, onConfigChange }: WidgetProps<TimersConfi
   const [now, setNow] = useState(() => Date.now());
   const presets = useMemo(() => coerceTimerPresets(widget.config.presets), [widget.config.presets]);
   const transparentBackground = widget.config.transparentBackground ?? false;
-  const portalContainer = useOverlayPortalContainer();
 
   useEffect(() => {
     const interval = window.setInterval(() => setNow(Date.now()), 250);
@@ -126,7 +124,7 @@ export function TimersWidget({ widget, onConfigChange }: WidgetProps<TimersConfi
           <Text size="sm" tone="secondary">
             Add a timer to get started
           </Text>
-          <Button onPress={addPreset} className={classes.touchButton}>
+          <Button onClick={addPreset} className={classes.touchButton}>
             <IconPlus size={18} />
             Add timer
           </Button>
@@ -159,7 +157,6 @@ export function TimersWidget({ widget, onConfigChange }: WidgetProps<TimersConfi
                     </Stack>
                     <HStack gap="xs">
                       <IconButton
-                        name={runtime.status === "running" ? "stop" : "chevronRight"}
                         icon={
                           runtime.status === "running" ? (
                             <IconPlayerPause size={20} />
@@ -169,7 +166,7 @@ export function TimersWidget({ widget, onConfigChange }: WidgetProps<TimersConfi
                         }
                         size="lg"
                         appearance="subtle"
-                        onPress={() =>
+                        onClick={() =>
                           runtime.status === "running" ? pause(runtime.id) : resume(runtime.id)
                         }
                         aria-label={
@@ -180,12 +177,11 @@ export function TimersWidget({ widget, onConfigChange }: WidgetProps<TimersConfi
                         className={classes.touchAction}
                       />
                       <IconButton
-                        name="close"
                         icon={<IconX size={20} />}
                         size="lg"
                         appearance="subtle"
                         tone="danger"
-                        onPress={() => cancel(runtime.id)}
+                        onClick={() => cancel(runtime.id)}
                         aria-label={`Cancel ${runtime.label || "Timer"}`}
                         className={classes.touchAction}
                       />
@@ -207,11 +203,10 @@ export function TimersWidget({ widget, onConfigChange }: WidgetProps<TimersConfi
                 Presets
               </Text>
               <IconButton
-                name="check"
                 icon={<IconPlus size={20} />}
                 appearance="subtle"
                 size="lg"
-                onPress={addPreset}
+                onClick={addPreset}
                 aria-label="Add timer"
                 className={classes.touchAction}
               />
@@ -225,18 +220,17 @@ export function TimersWidget({ widget, onConfigChange }: WidgetProps<TimersConfi
                     <HStack gap="xs">
                       <TextField
                         value={preset.label}
-                        onChange={(value) => updatePreset(preset.id, { label: value })}
+                        onValueChange={(value) => updatePreset(preset.id, { label: value })}
                         aria-label="Timer label"
                         size="sm"
                         className={classes.labelInput}
                       />
                       <IconButton
-                        name="close"
                         icon={<IconTrash size={18} />}
                         appearance="ghost"
                         tone="danger"
                         size="lg"
-                        onPress={() => deletePreset(preset.id)}
+                        onClick={() => deletePreset(preset.id)}
                         aria-label={`Delete ${preset.label || "Timer"}`}
                         className={classes.touchAction}
                       />
@@ -244,32 +238,31 @@ export function TimersWidget({ widget, onConfigChange }: WidgetProps<TimersConfi
                     <HStack gap="xs">
                       <NumberInput
                         value={minutes}
-                        onChange={(value) => updateDuration(preset.id, "minutes", value)}
-                        minValue={0}
+                        onValueChange={(value) => updateDuration(preset.id, "minutes", value)}
+                        min={0}
                         aria-label="Timer minutes"
                         label="min"
                       />
                       <NumberInput
                         value={seconds}
-                        onChange={(value) => updateDuration(preset.id, "seconds", value)}
-                        minValue={0}
-                        maxValue={59}
+                        onValueChange={(value) => updateDuration(preset.id, "seconds", value)}
+                        min={0}
+                        max={59}
                         aria-label="Timer seconds"
                         label="sec"
                       />
                       <Select
                         aria-label="Timer tone"
                         options={TONE_SELECT_OPTIONS}
-                        selectedKey={preset.toneId}
-                        onSelectionChange={(key) => {
+                        value={preset.toneId}
+                        onValueChange={(key) => {
                           if (key && TONE_IDS.has(String(key) as AlarmToneId)) {
                             updatePreset(preset.id, { toneId: String(key) as AlarmToneId });
                           }
                         }}
-                        portalContainer={portalContainer}
                       />
                     </HStack>
-                    <Button onPress={() => startFromPreset(preset)} className={classes.touchButton}>
+                    <Button onClick={() => startFromPreset(preset)} className={classes.touchButton}>
                       <IconPlayerPlay size={18} />
                       Start
                     </Button>
@@ -296,8 +289,8 @@ export function TimersWidgetSettings({ widget, onConfigChange }: WidgetProps<Tim
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

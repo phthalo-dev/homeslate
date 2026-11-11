@@ -8,7 +8,7 @@ import {
   IconButton,
   Link,
   PinInput,
-  SimpleTooltip,
+  Tooltip,
   Spinner,
   Stack,
   Surface,
@@ -181,7 +181,7 @@ export function DisplayListPage() {
 
   return (
     <AppShell
-      contentPadding={4}
+      contentPadding="md"
       topNav={
         <TopNav
           heading={<TopNav.Heading heading={productName} />}
@@ -199,17 +199,17 @@ export function DisplayListPage() {
                   if (file) void importDisplay(file);
                 }}
               />
-              <Button size="sm" onPress={() => fileInputRef.current?.click()} isDisabled={creating}>
+              <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={creating}>
                 Import
               </Button>
               <Button
                 tone="accent"
                 appearance="filled"
-                onPress={() => {
+                onClick={() => {
                   setPickerError(null);
                   setPickerOpen(true);
                 }}
-                isPending={creating}
+                loading={creating}
               >
                 New display
               </Button>
@@ -232,8 +232,8 @@ export function DisplayListPage() {
               <Button
                 appearance="ghost"
                 size="sm"
-                isDisabled={!display.document || duplicatingId === display.id}
-                onPress={() => void duplicateDisplay(display)}
+                disabled={!display.document || duplicatingId === display.id}
+                onClick={() => void duplicateDisplay(display)}
               >
                 Duplicate
               </Button>
@@ -244,8 +244,8 @@ export function DisplayListPage() {
         ))}
       </Stack>
       <TemplatePicker
-        isOpen={pickerOpen}
-        isPending={creating}
+        open={pickerOpen}
+        loading={creating}
         error={pickerError}
         onOpenChange={setPickerOpen}
         onCreate={(document) => void createFromDocument(document)}
@@ -272,19 +272,21 @@ function DisplayNameHeading(props: { name: string; onRename: (name: string) => v
     return (
       <HStack gap="xs" align="center">
         <Heading level={4}>{name}</Heading>
-        <SimpleTooltip content="Rename display">
-          <IconButton
-            name="wrench"
-            icon={<IconEdit size={14} />}
-            appearance="ghost"
-            size="sm"
-            aria-label="Rename display"
-            onPress={() => {
-              setValue(name);
-              setEditing(true);
-            }}
-          />
-        </SimpleTooltip>
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            <IconButton
+              icon={<IconEdit size={14} />}
+              appearance="ghost"
+              size="sm"
+              aria-label="Rename display"
+              onClick={() => {
+                setValue(name);
+                setEditing(true);
+              }}
+            />
+          </Tooltip.Trigger>
+          <Tooltip.Popup>Rename display</Tooltip.Popup>
+        </Tooltip.Root>
       </HStack>
     );
   }
@@ -296,27 +298,25 @@ function DisplayNameHeading(props: { name: string; onRename: (name: string) => v
         size="sm"
         value={value}
         autoFocus
-        onChange={setValue}
+        onValueChange={setValue}
         onKeyDown={(event) => {
           if (event.key === "Enter") commit();
           if (event.key === "Escape") setEditing(false);
         }}
       />
       <IconButton
-        name="check"
         icon={<IconCheck size={14} />}
         appearance="ghost"
         size="sm"
         aria-label="Save display name"
-        onPress={commit}
+        onClick={commit}
       />
       <IconButton
-        name="close"
         icon={<IconX size={14} />}
         appearance="ghost"
         size="sm"
         aria-label="Cancel rename"
-        onPress={() => setEditing(false)}
+        onClick={() => setEditing(false)}
       />
     </HStack>
   );
@@ -350,7 +350,7 @@ export function EditorPage() {
 
   const tabs = [
     {
-      id: "views",
+      value: "views",
       label: "Views",
       content: (
         <ViewsPanel
@@ -361,7 +361,7 @@ export function EditorPage() {
       ),
     },
     {
-      id: "settings",
+      value: "settings",
       label: "Settings",
       content: (
         <DisplaySettingsPanel
@@ -373,7 +373,7 @@ export function EditorPage() {
       ),
     },
     {
-      id: "theme",
+      value: "theme",
       label: "Theme",
       content: (
         <ThemeEditor
@@ -390,7 +390,7 @@ export function EditorPage() {
   return (
     <HomeslateGoogleRuntime displayId={record.publicId} apiBaseUrl={apiBaseUrl}>
       <AppShell
-        contentPadding={4}
+        contentPadding="md"
         topNav={
           <TopNav
             heading={
@@ -409,7 +409,7 @@ export function EditorPage() {
                     Not saved: {saveError}
                   </Text>
                 )}
-                <Button size="sm" onPress={() => exportDisplayJson(document)}>
+                <Button size="sm" onClick={() => exportDisplayJson(document)}>
                   Export JSON
                 </Button>
                 <Link href={`/d/${record.publicId}`}>Open kiosk</Link>
@@ -420,8 +420,8 @@ export function EditorPage() {
       >
         <Tabs
           tabs={tabs}
-          selectedKey={tab}
-          onSelectionChange={(key) => setTab(String(key) as ManagementTab)}
+          value={tab}
+          onValueChange={(key) => setTab(String(key) as ManagementTab)}
         />
       </AppShell>
     </HomeslateGoogleRuntime>
@@ -445,7 +445,7 @@ export function ViewEditorPage() {
   const view = document.views.find((candidate) => candidate.id === viewId) ?? document.views[0];
   if (!view) {
     return (
-      <AppShell contentPadding={4}>
+      <AppShell contentPadding="md">
         <Text role="alert">This display has no views yet.</Text>
       </AppShell>
     );
@@ -454,7 +454,7 @@ export function ViewEditorPage() {
   return (
     <HomeslateGoogleRuntime displayId={record.publicId} apiBaseUrl={apiBaseUrl}>
       <AppShell
-        contentPadding={0}
+        contentPadding="none"
         topNav={
           <TopNav
             heading={
@@ -470,7 +470,7 @@ export function ViewEditorPage() {
                     Not saved: {saveError}
                   </Text>
                 )}
-                <Button size="sm" onPress={() => exportDisplayJson(document)}>
+                <Button size="sm" onClick={() => exportDisplayJson(document)}>
                   Export JSON
                 </Button>
                 <Link href={`/d/${record.publicId}`}>Open kiosk</Link>
@@ -585,12 +585,12 @@ export function KioskPage() {
             </Text>
             <PinInput
               length={4}
-              type="numeric"
+              characters="numeric"
               autoFocus
               aria-label="Display passcode"
               value={pinValue}
               errorMessage={pinError ? "Incorrect PIN" : undefined}
-              onChange={(value) => {
+              onValueChange={(value) => {
                 setPinValue(value);
                 setPinError(false);
               }}
@@ -600,8 +600,8 @@ export function KioskPage() {
               tone="accent"
               appearance="filled"
               size="sm"
-              isDisabled={pinValue.length !== 4}
-              onPress={() => setPasscode(pinValue)}
+              disabled={pinValue.length !== 4}
+              onClick={() => setPasscode(pinValue)}
             >
               Unlock
             </Button>

@@ -21,14 +21,14 @@ import {
   formatCommuteDuration,
   type CommuteUnits,
 } from "./commute";
-import { useOverlayPortalContainer } from "../overlayPortal";
+
 import * as classes from "./CommuteWidget.styles";
 
 const EMPTY_ROUTES: CommuteRoute[] = [];
 
 const UNIT_OPTIONS = [
-  { id: "imperial", label: "Imperial (miles)" },
-  { id: "metric", label: "Metric (kilometers)" },
+  { value: "imperial", label: "Imperial (miles)" },
+  { value: "metric", label: "Metric (kilometers)" },
 ];
 
 export interface CommuteRoute {
@@ -101,7 +101,7 @@ export function CommuteWidget({ widget }: WidgetProps<CommuteConfig>) {
           <Text size="sm" style={{ color: "var(--var-ui-color-tone-danger-foreground)" }}>
             {wholeWidgetError}
           </Text>
-          <Button appearance="subtle" size="sm" onPress={refresh}>
+          <Button appearance="subtle" size="sm" onClick={refresh}>
             <IconRefresh size={14} />
             Retry
           </Button>
@@ -154,7 +154,6 @@ export function CommuteWidgetSettings({ widget, onConfigChange }: WidgetProps<Co
   const routes = widget.config.routes ?? EMPTY_ROUTES;
   const units = widget.config.units ?? "imperial";
   const transparentBackground = widget.config.transparentBackground;
-  const portalContainer = useOverlayPortalContainer();
 
   const updateRoute = (id: string, patch: Partial<CommuteRoute>) => {
     onConfigChange({
@@ -190,7 +189,7 @@ export function CommuteWidgetSettings({ widget, onConfigChange }: WidgetProps<Co
                 appearance="ghost"
                 tone="danger"
                 size="sm"
-                onPress={() => removeRoute(route.id)}
+                onClick={() => removeRoute(route.id)}
               >
                 <IconTrash size={14} />
                 Remove
@@ -199,23 +198,23 @@ export function CommuteWidgetSettings({ widget, onConfigChange }: WidgetProps<Co
             <TextField
               label="Label"
               value={route.label}
-              onChange={(value) => updateRoute(route.id, { label: value })}
+              onValueChange={(value) => updateRoute(route.id, { label: value })}
             />
             <TextField
               label="Origin"
               value={route.origin}
-              onChange={(value) => updateRoute(route.id, { origin: value })}
+              onValueChange={(value) => updateRoute(route.id, { origin: value })}
             />
             <TextField
               label="Destination"
               value={route.destination}
-              onChange={(value) => updateRoute(route.id, { destination: value })}
+              onValueChange={(value) => updateRoute(route.id, { destination: value })}
             />
           </Stack>
         </Surface>
       ))}
 
-      <Button appearance="subtle" onPress={addRoute} isDisabled={routes.length >= 4}>
+      <Button appearance="subtle" onClick={addRoute} disabled={routes.length >= 4}>
         <IconPlus size={14} />
         Add route
       </Button>
@@ -223,19 +222,16 @@ export function CommuteWidgetSettings({ widget, onConfigChange }: WidgetProps<Co
       <Select
         label="Units"
         options={UNIT_OPTIONS}
-        selectedKey={units}
-        onSelectionChange={(key) =>
-          onConfigChange({ units: key === "metric" ? "metric" : "imperial" })
-        }
-        portalContainer={portalContainer}
+        value={units}
+        onValueChange={(key) => onConfigChange({ units: key === "metric" ? "metric" : "imperial" })}
       />
 
       <HStack justify="between">
         <Text size="sm">Transparent background</Text>
         <Switch
           aria-label="Transparent background"
-          isSelected={transparentBackground}
-          onChange={(value) => onConfigChange({ transparentBackground: value })}
+          checked={transparentBackground}
+          onCheckedChange={(value) => onConfigChange({ transparentBackground: value })}
         />
       </HStack>
     </Stack>

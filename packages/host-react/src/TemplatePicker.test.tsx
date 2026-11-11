@@ -7,7 +7,7 @@ import { TemplatePickerChoices } from "./TemplatePicker";
 describe("TemplatePicker", () => {
   it("lists Blank and every starter template", () => {
     const html = renderToStaticMarkup(
-      <TemplatePickerChoices isPending={false} onCreate={() => {}} />,
+      <TemplatePickerChoices loading={false} onCreate={() => {}} />,
     );
     expect(html).toContain("Blank");
     for (const template of DOCUMENT_TEMPLATES) {
@@ -19,7 +19,7 @@ describe("TemplatePicker", () => {
   it("creates a new display document for the chosen template", () => {
     const created: DisplayDocument[] = [];
     const html = renderToStaticMarkup(
-      <TemplatePickerChoices isPending={false} onCreate={(document) => created.push(document)} />,
+      <TemplatePickerChoices loading={false} onCreate={(document) => created.push(document)} />,
     );
     expect(html).toContain("Family Hub");
     const family = documentForNewDisplay("family-hub");
