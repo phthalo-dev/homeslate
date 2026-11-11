@@ -20,3 +20,5 @@ This rolls up the 0.2 → 0.9 migration, which drops the `is*`/`selectedKey` pro
 - `LayerProvider` is gone from `@var-ui/react`; apps no longer wrap the tree in it.
 
 Our own component APIs follow the same vocabulary, so `TemplatePicker` from `@homeslate/host-react` takes `open` / `loading` instead of `isOpen` / `isPending`. `@homeslate/widgets` keeps exporting `useDebouncedValue`, now re-exported from `@var-ui/react` instead of a local copy.
+
+`@homeslate/widgets`, `@homeslate/display`, and `@homeslate/editor` also return to the 0.x line: their packages are still settling, so this release is `0.2.0` rather than `1.4.0` / a major. The `1.x` versions stay on npm, but new work lands on 0.x.
