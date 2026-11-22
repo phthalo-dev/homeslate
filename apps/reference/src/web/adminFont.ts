@@ -25,3 +25,11 @@ face("Allo-SemiBoldOblique.woff2", 600, "italic");
 face("Allo-BoldOblique.woff2", 700, "italic");
 face("Allo-ExtraBoldOblique.woff2", 800, "italic");
 face("Allo-BlackOblique.woff2", 900, "italic");
+
+/**
+ * Allo's roundness axis (`ROND`: 0 sharp, 50 friendly (default), 100 round). It has no CSS property of its
+ * own, and form controls reset `font-variation-settings`, so set it on the root and on the controls.
+ */
+global.rule(":root, button, input, select, textarea", {
+  fontVariationSettings: '"ROND" 100',
+});
