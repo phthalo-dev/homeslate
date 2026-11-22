@@ -414,3 +414,37 @@ export const formField = styles.class("themeeditor-formField", {
   width: "100%",
   minWidth: 0,
 });
+
+/** Preset gallery on the empty Theme section. */
+export const presetGrid = styles.class("themeeditor-presetGrid", {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(8.5rem, 1fr))",
+  gap: "0.75rem",
+  width: "100%",
+  maxWidth: "560px",
+});
+
+export const presetCard = styles.class("themeeditor-presetCard", {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  gap: "0.5rem",
+  height: "auto",
+  padding: "0.6rem",
+  border: "1px solid var(--var-ui-color-border-default)",
+  borderRadius: "var(--var-ui-radius-md)",
+  textAlign: "start",
+});
+
+export const swatchRow = styles.class("themeeditor-swatchRow", {
+  display: "flex",
+  height: "28px",
+  borderRadius: "var(--var-ui-radius-sm)",
+  overflow: "hidden",
+});
+
+/** Each swatch's color arrives as `--swatch`. */
+export const swatch = styles.class("themeeditor-swatch", {
+  flex: 1,
+  background: "var(--swatch)",
+});

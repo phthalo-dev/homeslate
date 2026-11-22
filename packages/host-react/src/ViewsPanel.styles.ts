@@ -12,6 +12,9 @@ export const grid = styles.class("viewspanel-grid", {
 export const thumbnail = styles.class("viewspanel-thumbnail", {
   position: "relative",
   aspectRatio: "16 / 9",
+  // Keep single-column cards (tablet, phone) from becoming tall banners.
+  maxHeight: "200px",
+  width: "100%",
   borderRadius: "var(--var-ui-radius-md)",
   background: "var(--var-ui-color-background-app)",
   border: "1px solid var(--var-ui-color-border-default)",
@@ -55,10 +58,17 @@ export const tileLabel = styles.class("viewspanel-tileLabel", {
 export const editButton = styles.class("viewspanel-editButton", {
   flex: "1 1 8rem",
   maxWidth: "11rem",
+  // Phones: the primary action takes the full row and the icon actions spread across the next.
+  "@media (max-width: 47.99rem)": { flexBasis: "100%", maxWidth: "none" },
 });
 
 export const iconActions = styles.class("viewspanel-iconActions", {
   marginInlineStart: "auto",
+  "@media (max-width: 47.99rem)": {
+    width: "100%",
+    justifyContent: "space-between",
+    marginInlineStart: 0,
+  },
 });
 
 export const divider = styles.class("viewspanel-divider", {

@@ -8,10 +8,11 @@ Move to `@var-ui` 0.13 and `typestyles` 0.37, and rework the admin interface.
 
 **`@homeslate/host-react` (breaking)**
 
-- `EditorPage` is replaced by a layout route. `DisplayLayout` loads the display once and renders a shared app bar and secondary bar (breadcrumbs, export, kiosk link). Its child routes keep those bars mounted as you move between them:
+- `EditorPage` is replaced by a layout route. `DisplayLayout` loads the display once and renders one shared app bar: the logo, the breadcrumb trail, the editor's toolbar, and the export and kiosk actions. On phones the trail collapses to the current page so the bar stays one row. Its child routes keep the bar mounted as you move between them:
   - `ManageLayout` wraps `DisplayViewsPage` (`/edit/:id`), `DisplaySettingsPage` (`/edit/:id/settings`) and `DisplayThemePage` (`/edit/:id/theme`) with a 280px left nav, the same width as the view editor's widget palette. The left nav and the content scroll independently. Below VarUI's md breakpoint the nav becomes a sections switcher.
-  - `ViewEditorPage` (`/edit/:id/views/:viewId`) now sits inside `DisplayLayout`, with the editor toolbar in the secondary bar.
+  - `ViewEditorPage` (`/edit/:id/views/:viewId`) now sits inside `DisplayLayout`, with the editor toolbar in the app bar.
 - New exports: `DisplayLayout`, `ManageLayout`, `DisplayViewsPage`, `DisplaySettingsPage`, `DisplayThemePage`, `useDisplay`.
+- The empty Theme section starts from a gallery of presets with color swatches; the library's create form appears once a theme exists.
 - The display list shows displays as cards. Views are cards with a thumbnail of their widget layout. Settings are grouped into cards of label/description/control rows.
 - Styling moves to TypeStyles: the package now depends on `typestyles` and exposes `@homeslate/host-react/styles`, which hosts should import from their typestyles extract entry. There are no inline styles or stylesheet files left in the package.
 - Button hierarchy: one solid primary per page, outlined secondary actions, ghost tertiary actions.

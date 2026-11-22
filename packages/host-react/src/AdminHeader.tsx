@@ -23,20 +23,28 @@ function LogoMark(props: { productName: string }) {
 }
 
 /**
- * The primary app bar every admin page shares, full width: the logo (links home) on the left and
- * app-level actions on the right.
+ * The one app bar every admin page shares, full width and a single row: the logo (links home), the
+ * breadcrumb trail for where you are, then page tools and actions on the right. On phones the trail
+ * collapses to the current page (the logo is the way home) so the bar never wraps.
  */
-export function AdminHeader(props: { actions?: ReactNode }) {
-  const { actions } = props;
+export function AppBar(props: {
+  crumbs: AdminCrumb[];
+  actions?: ReactNode;
+  /** Receives the element that hosts page tools (for example the view editor's toolbar). */
+  toolsRef?: (element: HTMLElement | null) => void;
+}) {
+  const { crumbs, actions, toolsRef } = props;
   const { productName } = useHomeslateHost();
   return (
     <TopNav
       label="Primary"
       className={classes.topNav}
       heading={<TopNav.Heading heading={<LogoMark productName={productName} />} headingHref="/" />}
+      startContent={<Breadcrumbs label="You are here" separator="/" items={crumbs} />}
       endContent={
-        actions ? (
-          <HStack gap="sm" align="center">
+        toolsRef || actions ? (
+          <HStack gap="xs" align="center" wrap={false}>
+            {toolsRef ? <div ref={toolsRef} className={classes.tools} /> : null}
             {actions}
           </HStack>
         ) : undefined
@@ -45,42 +53,16 @@ export function AdminHeader(props: { actions?: ReactNode }) {
   );
 }
 
-/**
- * The secondary app bar shared by the display management page and the view editor: where you are
- * (breadcrumb trail) on the left, display-level actions on the right.
- */
-export function DisplayBar(props: {
-  crumbs: AdminCrumb[];
-  actions?: ReactNode;
-  /** Receives the element that hosts page tools (for example the view editor's toolbar). */
-  toolsRef?: (element: HTMLElement | null) => void;
-}) {
-  const { crumbs, actions, toolsRef } = props;
-  return (
-    <div className={classes.subbar}>
-      <Breadcrumbs label="You are here" separator="/" items={crumbs} />
-      <div className={classes.subbarEnd}>
-        {toolsRef ? <div ref={toolsRef} className={classes.subbarTools} /> : null}
-        {actions ? (
-          <HStack gap="sm" align="center">
-            {actions}
-          </HStack>
-        ) : null}
-      </div>
-    </div>
-  );
+/** The display list's bar: the same shell with "Displays" as the current page. */
+export function AdminHeader(props: { actions?: ReactNode }) {
+  return <AppBar crumbs={[{ id: "displays", label: "Displays" }]} actions={props.actions} />;
 }
 
-/** Both bars, stacked, for the `topNav` slot of pages inside a display. */
+/** The bar for pages inside a display (management sections and the view editor). */
 export function DisplayHeader(props: {
   crumbs: AdminCrumb[];
   actions?: ReactNode;
   toolsRef?: (element: HTMLElement | null) => void;
 }) {
-  return (
-    <>
-      <AdminHeader />
-      <DisplayBar crumbs={props.crumbs} actions={props.actions} toolsRef={props.toolsRef} />
-    </>
-  );
+  return <AppBar crumbs={props.crumbs} actions={props.actions} toolsRef={props.toolsRef} />;
 }

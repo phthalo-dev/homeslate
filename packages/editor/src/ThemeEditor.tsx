@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type JSX, type Key } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type JSX,
+  type Key,
+} from "react";
 import {
   Alert,
   Badge,
@@ -200,6 +208,19 @@ const PRESET_SELECT_OPTIONS = THEME_PRESET_OPTIONS.map((option) => ({
   value: option.value,
   label: option.label,
 }));
+
+/** The preset's dark-mode app background, surface and brand colors, for the gallery swatches. */
+function presetSwatches(presetId: string): string[] {
+  const dark = getPresetById(presetId).colorMode?.dark as
+    | {
+        background?: { app?: string; surface?: string };
+        link?: { default?: string };
+      }
+    | undefined;
+  return [dark?.background?.app, dark?.background?.surface, dark?.link?.default].filter(
+    (color): color is string => typeof color === "string",
+  );
+}
 
 function TokenControl({ entry, references, onChange }: TokenControlProps) {
   const isReference = ALIAS_VALUE_RE.test(entry.value);
@@ -783,7 +804,7 @@ export function ThemeEditor({
               <Stack gap="xs">
                 {themeDocuments.length === 0 ? (
                   <Text size="sm" tone="secondary">
-                    No themes yet. Create one below.
+                    No themes yet. Pick a preset to start.
                   </Text>
                 ) : (
                   themeDocuments.map((doc) => {
@@ -874,48 +895,56 @@ export function ThemeEditor({
               </Stack>
             </ScrollArea>
 
-            <Stack
-              gap="sm"
-              style={{
-                borderTop: "1px solid var(--var-ui-color-border-default)",
-                paddingTop: "0.75rem",
-              }}
-            >
-              <Text
-                size="xs"
-                weight="semibold"
-                tone="secondary"
-                style={{ textTransform: "uppercase" }}
+            {themeDocuments.length > 0 && (
+              <Stack
+                gap="sm"
+                style={{
+                  borderTop: "1px solid var(--var-ui-color-border-default)",
+                  paddingTop: "0.75rem",
+                }}
               >
-                New theme
-              </Text>
-              <TextField
-                label="Name"
-                size="sm"
-                className={classes.formField}
-                value={themeName}
-                onValueChange={setThemeName}
-                placeholder="My theme"
-              />
-              <Select
-                label="From preset"
-                className={classes.formField}
-                options={PRESET_SELECT_OPTIONS}
-                value={presetId}
-                onValueChange={(key) => key != null && setPresetId(String(key))}
-              />
-              <Button size="sm" onClick={createNewTheme} disabled={!themeName.trim()}>
-                <IconPlus size={14} />
-                Create theme
-              </Button>
-            </Stack>
+                <Text
+                  size="xs"
+                  weight="semibold"
+                  tone="secondary"
+                  style={{ textTransform: "uppercase" }}
+                >
+                  New theme
+                </Text>
+                <TextField
+                  label="Name"
+                  size="sm"
+                  className={classes.formField}
+                  value={themeName}
+                  onValueChange={setThemeName}
+                  placeholder="My theme"
+                />
+                <Select
+                  label="From preset"
+                  className={classes.formField}
+                  options={PRESET_SELECT_OPTIONS}
+                  value={presetId}
+                  onValueChange={(key) => key != null && setPresetId(String(key))}
+                />
+                <Button
+                  tone="accent"
+                  appearance="solid"
+                  size="sm"
+                  onClick={createNewTheme}
+                  disabled={!themeName.trim()}
+                >
+                  <IconPlus size={14} />
+                  Create theme
+                </Button>
+              </Stack>
+            )}
           </Stack>
         </Surface>
 
         <Surface padding="md" className={classes.workspace}>
           {!editingThemeId ? (
             <div className={classes.workspaceEmpty}>
-              <Stack gap="sm" align="center" style={{ maxWidth: 360 }}>
+              <Stack gap="sm" align="center" style={{ maxWidth: 560, width: "100%" }}>
                 <Text weight="semibold" style={{ textAlign: "center" }}>
                   Start from a preset
                 </Text>
@@ -923,17 +952,28 @@ export function ThemeEditor({
                   Pick a starting point. You can fine-tune every token afterwards, with a live
                   preview.
                 </Text>
-                <HStack gap="sm" justify="center" wrap>
+                <div className={classes.presetGrid}>
                   {THEME_PRESET_OPTIONS.map((option) => (
                     <Button
                       key={option.value}
-                      size="sm"
+                      appearance="ghost"
+                      className={classes.presetCard}
+                      aria-label={`Create a theme from ${option.label}`}
                       onClick={() => createFromPreset(option.value, option.label)}
                     >
-                      {option.label}
+                      <span className={classes.swatchRow} aria-hidden>
+                        {presetSwatches(option.value).map((color, index) => (
+                          <span
+                            key={index}
+                            className={classes.swatch}
+                            style={{ "--swatch": color } as CSSProperties}
+                          />
+                        ))}
+                      </span>
+                      <span>{option.label}</span>
                     </Button>
                   ))}
-                </HStack>
+                </div>
                 {focusedTheme && (
                   <Button appearance="subtle" onClick={() => beginEdit(focusedTheme.id)}>
                     <IconEdit size={16} />
