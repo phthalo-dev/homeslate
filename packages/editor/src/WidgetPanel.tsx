@@ -156,7 +156,7 @@ function BgThumbGrid({ photos, onRemove }: BgThumbGridProps) {
               aria-label="Remove photo"
               size="sm"
               tone="danger"
-              appearance="filled"
+              appearance="solid"
               onClick={() => onRemove(index)}
               style={{ position: "absolute", top: 2, right: 2, opacity: 0.85 }}
             />
@@ -431,7 +431,7 @@ export function BgSettings(props: {
             icon={<IconX size={12} />}
             aria-label="Remove background image"
             size="sm"
-            appearance="filled"
+            appearance="solid"
             tone="danger"
             onClick={() => updateBg({ image: undefined })}
             style={{ position: "absolute", top: 4, right: 4 }}
@@ -451,7 +451,7 @@ export function BgSettings(props: {
               <Button
                 key={value}
                 size="sm"
-                appearance={interval === value ? "filled" : "outline"}
+                appearance={interval === value ? "solid" : "outline"}
                 onClick={() => updateBg({ intervalSeconds: value })}
               >
                 {label}
@@ -459,7 +459,7 @@ export function BgSettings(props: {
             ))}
             <Button
               size="sm"
-              appearance={!INTERVAL_PRESET_VALUES.includes(interval) ? "filled" : "outline"}
+              appearance={!INTERVAL_PRESET_VALUES.includes(interval) ? "solid" : "outline"}
               onClick={() => {
                 if (INTERVAL_PRESET_VALUES.includes(interval)) updateBg({ intervalSeconds: 20 });
               }}
@@ -536,7 +536,18 @@ export function WidgetPanel(props: {
   widgetRegistry?: WidgetRegistryApi;
 }): JSX.Element {
   const { document, viewId, onChange, widgetRegistry } = props;
-  const [collapsed, setCollapsed] = useState(false);
+  // Start collapsed on phones so the palette doesn't swallow the canvas.
+  const [collapsed, setCollapsed] = useState(
+    () => typeof window !== "undefined" && !!window.matchMedia?.("(max-width: 640px)").matches,
+  );
+  const [filter, setFilter] = useState("");
+  useEffect(() => {
+    const query = window.matchMedia?.("(max-width: 640px)");
+    if (!query) return;
+    const onChange = (event: MediaQueryListEvent) => setCollapsed(event.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
   const documentRef = useRef(document);
   // eslint-disable-next-line react-hooks/refs -- keeps the ref current for edits that land in the same tick
   documentRef.current = document;
@@ -595,7 +606,7 @@ export function WidgetPanel(props: {
                   <Button
                     appearance="ghost"
                     size="sm"
-                    aria-label={widget.name}
+                    aria-label={`Add ${widget.name} widget`}
                     className={classes.iconOnly}
                     style={{ height: 36, minHeight: 36, width: 36, padding: 0 }}
                     onClick={() => handleAddWidget(widget.type)}
@@ -613,38 +624,59 @@ export function WidgetPanel(props: {
           <Text size="sm" weight="semibold" tone="secondary" className={classes.panelTitle}>
             ADD WIDGETS
           </Text>
+          <TextField
+            aria-label="Filter widgets"
+            placeholder="Filter widgets"
+            size="sm"
+            value={filter}
+            onValueChange={setFilter}
+            className={classes.filter}
+          />
           <Stack gap="md">
-            {widgetTypes.map((widget) => {
-              const Icon = widget.icon;
-              return (
-                <Button
-                  appearance="ghost"
-                  size="sm"
-                  key={widget.type}
-                  className={classes.widgetRow}
-                  style={{
-                    height: "auto",
-                    minHeight: 0,
-                    justifyContent: "flex-start",
-                    padding: "8px 6px",
-                    gap: 12,
-                  }}
-                  onClick={() => handleAddWidget(widget.type)}
-                >
-                  <div className={classes.widgetIcon}>
-                    <Icon size={20} />
-                  </div>
-                  <div className={classes.widgetCopy}>
-                    <Text as="span" size="md" weight="medium">
-                      {widget.name}
-                    </Text>
-                    <Text as="span" size="sm" tone="secondary" lineClamp={1}>
-                      {widget.description}
-                    </Text>
-                  </div>
-                </Button>
-              );
-            })}
+            {widgetTypes
+              .filter((widget) =>
+                `${widget.name} ${widget.description}`
+                  .toLowerCase()
+                  .includes(filter.trim().toLowerCase()),
+              )
+              .map((widget) => {
+                const Icon = widget.icon;
+                return (
+                  <Button
+                    appearance="ghost"
+                    size="sm"
+                    key={widget.type}
+                    aria-label={`Add ${widget.name} widget`}
+                    className={classes.widgetRow}
+                    style={{
+                      height: "auto",
+                      minHeight: 0,
+                      justifyContent: "flex-start",
+                      padding: "8px 6px",
+                      gap: 12,
+                    }}
+                    onClick={() => handleAddWidget(widget.type)}
+                  >
+                    <div className={classes.widgetIcon}>
+                      <Icon size={20} />
+                    </div>
+                    <div className={classes.widgetCopy}>
+                      <Text as="span" size="md" weight="medium">
+                        {widget.name}
+                      </Text>
+                      <Text
+                        as="span"
+                        size="sm"
+                        tone="secondary"
+                        lineClamp={2}
+                        title={widget.description}
+                      >
+                        {widget.description}
+                      </Text>
+                    </div>
+                  </Button>
+                );
+              })}
           </Stack>
         </div>
       )}

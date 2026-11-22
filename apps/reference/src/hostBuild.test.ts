@@ -83,6 +83,7 @@ describe("reference app build boundary", () => {
     expect(entry).toContain("@homeslate/widgets/styles");
     expect(entry).toContain("@homeslate/display/styles");
     expect(entry).toContain("@homeslate/editor/styles");
+    expect(entry).toContain("@homeslate/host-react/styles");
   });
 
   it("registers the default VarUI theme surface from the extract entry", async () => {

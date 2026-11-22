@@ -1,36 +1,28 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AppShell,
   Badge,
   Button,
+  EmptyState,
   Heading,
   HStack,
-  IconButton,
-  Link,
   PinInput,
-  Tooltip,
   Spinner,
   Stack,
   Surface,
-  Tabs,
   Text,
-  TextField,
-  TopNav,
 } from "@var-ui/react";
-import { IconCheck, IconEdit, IconX } from "@tabler/icons-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { AdminHeader } from "./AdminHeader";
+import * as classes from "./pages.styles";
+import * as shared from "./shared.styles";
 import { OfflineBanner } from "./OfflineBanner";
 import { loadLastDocument, saveLastDocument } from "./lastDocument";
 import { useOnlineStatus } from "./useOnlineStatus";
 import { useKioskWatchdog } from "./useKioskWatchdog";
-import type { DisplayDocument, ThemeDocument } from "@homeslate/schema";
-import { Editor, ThemeEditor } from "@homeslate/editor";
+import type { DisplayDocument } from "@homeslate/schema";
 import { Display } from "@homeslate/display";
-import {
-  duplicateDocument,
-  exportDocument,
-  parseImportedDocument,
-} from "@homeslate/display/canvas";
+import { duplicateDocument, parseImportedDocument } from "@homeslate/display/canvas";
 import {
   createDisplay,
   errorMessage,
@@ -39,53 +31,19 @@ import {
   joinUrl,
   publicDocumentUrl,
   putJson,
-  setDisplayPasscode,
   type DisplayRecord,
   type DisplaySummary,
 } from "./api";
-import { DisplaySettingsPanel } from "./DisplaySettingsPanel";
 import { HomeslateGoogleRuntime } from "./HomeslateGoogleRuntime";
 import { RouteErrorBoundary } from "./RouteErrorBoundary";
 import { TemplatePicker } from "./TemplatePicker";
-import { useDisplayDocument } from "./useDisplayDocument";
-import { ViewsPanel } from "./ViewsPanel";
 import { useHomeslateHost } from "./hostContext";
 
 const KIOSK_POLL_MS = 10_000;
 
-function exportFilename(name: string): string {
-  const slug = name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  return `${slug || "display"}.json`;
-}
-
-function exportDisplayJson(document: DisplayDocument) {
-  const blob = new Blob([exportDocument(document)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const anchor = window.document.createElement("a");
-  anchor.href = url;
-  anchor.download = exportFilename(document.name);
-  window.document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-}
-
 function importError(errors: Array<{ path: string; message: string }>): string {
   return errors.map((issue) => [issue.path, issue.message].filter(Boolean).join(": ")).join("; ");
 }
-
-const KIOSK_SAVE_ERROR_STYLE: CSSProperties = {
-  position: "fixed",
-  insetInline: 0,
-  top: 0,
-  zIndex: 1000,
-  textAlign: "center",
-  background: "rgba(0, 0, 0, 0.75)",
-};
 
 type ListedDisplay = DisplaySummary & {
   publicId?: string;
@@ -98,6 +56,9 @@ export function DisplayListPage() {
   const navigate = useNavigate();
   const { apiBaseUrl, productName } = useHomeslateHost();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    window.document.title = `Displays · ${productName}`;
+  }, [productName]);
   const [displays, setDisplays] = useState<ListedDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -179,14 +140,17 @@ export function DisplayListPage() {
     }
   };
 
+  // On an empty list the empty state owns the one primary action.
+  const emptyList = !loading && !error && displays.length === 0;
+
   return (
     <AppShell
+      variant="wash"
       contentPadding="md"
       topNav={
-        <TopNav
-          heading={<TopNav.Heading heading={productName} />}
-          endContent={
-            <HStack gap="sm">
+        <AdminHeader
+          actions={
+            <>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -203,8 +167,9 @@ export function DisplayListPage() {
                 Import
               </Button>
               <Button
-                tone="accent"
-                appearance="filled"
+                tone={emptyList ? undefined : "accent"}
+                appearance={emptyList ? undefined : "solid"}
+                size="sm"
                 onClick={() => {
                   setPickerError(null);
                   setPickerOpen(true);
@@ -213,35 +178,87 @@ export function DisplayListPage() {
               >
                 New display
               </Button>
-            </HStack>
+            </>
           }
         />
       }
     >
-      {loading && <Spinner />}
-      {error && <Text role="alert">{error}</Text>}
-      {!loading && displays.length === 0 && (
-        <Text tone="secondary">No displays yet. Create one to open the editor.</Text>
-      )}
-      <Stack gap="sm">
-        {displays.map((display) => (
-          <HStack key={display.id} justify="between">
-            <Text>{display.name}</Text>
-            <HStack gap="md">
-              {display.passcodeEnabled && <Badge tone="neutral">PIN</Badge>}
+      <Stack gap="lg" className={classes.pageColumn}>
+        <Heading level={1} size="lg">
+          Displays
+        </Heading>
+        {loading && <Spinner />}
+        {error && <Text role="alert">{error}</Text>}
+        {!loading && !error && displays.length === 0 && (
+          <EmptyState
+            title="No displays yet"
+            description="Create a display to start arranging widgets for your wall screen."
+            action={
               <Button
-                appearance="ghost"
-                size="sm"
-                disabled={!display.document || duplicatingId === display.id}
-                onClick={() => void duplicateDisplay(display)}
+                tone="accent"
+                appearance="solid"
+                onClick={() => {
+                  setPickerError(null);
+                  setPickerOpen(true);
+                }}
               >
-                Duplicate
+                New display
               </Button>
-              <Link href={`/edit/${display.id}`}>Manage</Link>
-              {display.publicId && <Link href={`/d/${display.publicId}`}>Kiosk</Link>}
-            </HStack>
-          </HStack>
-        ))}
+            }
+          />
+        )}
+        <Stack gap="sm">
+          {displays.map((display) => {
+            const viewCount = display.document?.views.length;
+            return (
+              <Surface key={display.id} padding="md">
+                <HStack justify="between" align="center" gap="md" wrap>
+                  <Stack gap="xs" className={shared.shrinkable}>
+                    <HStack gap="sm" align="center">
+                      <Heading level={2} size="sm">
+                        {display.name}
+                      </Heading>
+                      {display.passcodeEnabled && <Badge tone="neutral">PIN</Badge>}
+                    </HStack>
+                    {viewCount !== undefined && (
+                      <Text size="sm" tone="secondary">
+                        {viewCount} {viewCount === 1 ? "view" : "views"}
+                      </Text>
+                    )}
+                  </Stack>
+                  <HStack gap="sm" align="center" wrap>
+                    <Button
+                      size="sm"
+                      appearance="ghost"
+                      aria-label={`Duplicate ${display.name}`}
+                      disabled={!display.document || duplicatingId === display.id}
+                      onClick={() => void duplicateDisplay(display)}
+                    >
+                      Duplicate
+                    </Button>
+                    {display.publicId && (
+                      <Button
+                        size="sm"
+                        appearance="ghost"
+                        aria-label={`Open kiosk for ${display.name}`}
+                        href={`/d/${display.publicId}`}
+                      >
+                        Kiosk
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      aria-label={`Manage ${display.name}`}
+                      href={`/edit/${display.id}`}
+                    >
+                      Manage
+                    </Button>
+                  </HStack>
+                </HStack>
+              </Surface>
+            );
+          })}
+        </Stack>
       </Stack>
       <TemplatePicker
         open={pickerOpen}
@@ -251,244 +268,6 @@ export function DisplayListPage() {
         onCreate={(document) => void createFromDocument(document)}
       />
     </AppShell>
-  );
-}
-
-type ManagementTab = "views" | "settings" | "theme";
-
-/** Inline display-name editor for the management header. */
-function DisplayNameHeading(props: { name: string; onRename: (name: string) => void }) {
-  const { name, onRename } = props;
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(name);
-
-  const commit = () => {
-    const trimmed = value.trim();
-    setEditing(false);
-    if (trimmed && trimmed !== name) onRename(trimmed);
-  };
-
-  if (!editing) {
-    return (
-      <HStack gap="xs" align="center">
-        <Heading level={4}>{name}</Heading>
-        <Tooltip.Root>
-          <Tooltip.Trigger>
-            <IconButton
-              icon={<IconEdit size={14} />}
-              appearance="ghost"
-              size="sm"
-              aria-label="Rename display"
-              onClick={() => {
-                setValue(name);
-                setEditing(true);
-              }}
-            />
-          </Tooltip.Trigger>
-          <Tooltip.Popup>Rename display</Tooltip.Popup>
-        </Tooltip.Root>
-      </HStack>
-    );
-  }
-
-  return (
-    <HStack gap="xs" align="center">
-      <TextField
-        aria-label="Display name"
-        size="sm"
-        value={value}
-        autoFocus
-        onValueChange={setValue}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") commit();
-          if (event.key === "Escape") setEditing(false);
-        }}
-      />
-      <IconButton
-        icon={<IconCheck size={14} />}
-        appearance="ghost"
-        size="sm"
-        aria-label="Save display name"
-        onClick={commit}
-      />
-      <IconButton
-        icon={<IconX size={14} />}
-        appearance="ghost"
-        size="sm"
-        aria-label="Cancel rename"
-        onClick={() => setEditing(false)}
-      />
-    </HStack>
-  );
-}
-
-/** Display management: manage views, display settings, and themes. */
-export function EditorPage() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { apiBaseUrl } = useHomeslateHost();
-  const { record, document, passcodeEnabled, error, saveError, setDocument, setPasscodeEnabled } =
-    useDisplayDocument(apiBaseUrl, id);
-  const [tab, setTab] = useState<ManagementTab>("views");
-
-  const setPasscode = useCallback(
-    async (passcode: string | null) => {
-      if (!id) return;
-      await setDisplayPasscode(apiBaseUrl, id, passcode);
-      setPasscodeEnabled(passcode !== null);
-    },
-    [apiBaseUrl, id, setPasscodeEnabled],
-  );
-
-  if (error)
-    return (
-      <Text role="alert" style={{ padding: "1rem" }}>
-        {error}
-      </Text>
-    );
-  if (!record || !document) return <Spinner />;
-
-  const tabs = [
-    {
-      value: "views",
-      label: "Views",
-      content: (
-        <ViewsPanel
-          document={document}
-          onChange={setDocument}
-          onOpenView={(viewId) => navigate(`/edit/${record.id}/views/${viewId}`)}
-        />
-      ),
-    },
-    {
-      value: "settings",
-      label: "Settings",
-      content: (
-        <DisplaySettingsPanel
-          document={document}
-          onChange={setDocument}
-          passcodeEnabled={passcodeEnabled}
-          onSetPasscode={setPasscode}
-        />
-      ),
-    },
-    {
-      value: "theme",
-      label: "Theme",
-      content: (
-        <ThemeEditor
-          documents={document.themes as ThemeDocument[]}
-          activeThemeDocumentId={document.activeThemeId}
-          previewViews={document.views}
-          initialPreviewViewId={document.activeViewId}
-          onChange={(themes, activeThemeId) => setDocument({ ...document, themes, activeThemeId })}
-        />
-      ),
-    },
-  ];
-
-  return (
-    <HomeslateGoogleRuntime displayId={record.publicId} apiBaseUrl={apiBaseUrl}>
-      <AppShell
-        contentPadding="md"
-        topNav={
-          <TopNav
-            heading={
-              <HStack gap="md">
-                <Link href="/">Displays</Link>
-                <DisplayNameHeading
-                  name={document.name}
-                  onRename={(name) => setDocument({ ...document, name })}
-                />
-              </HStack>
-            }
-            endContent={
-              <HStack gap="md">
-                {saveError && (
-                  <Text as="span" size="sm" role="alert">
-                    Not saved: {saveError}
-                  </Text>
-                )}
-                <Button size="sm" onClick={() => exportDisplayJson(document)}>
-                  Export JSON
-                </Button>
-                <Link href={`/d/${record.publicId}`}>Open kiosk</Link>
-              </HStack>
-            }
-          />
-        }
-      >
-        <Tabs
-          tabs={tabs}
-          value={tab}
-          onValueChange={(key) => setTab(String(key) as ManagementTab)}
-        />
-      </AppShell>
-    </HomeslateGoogleRuntime>
-  );
-}
-
-/** Per-view canvas editor. Renders `@homeslate/editor` for one view. */
-export function ViewEditorPage() {
-  const { id, viewId } = useParams<{ id: string; viewId: string }>();
-  const { apiBaseUrl, widgetRegistry } = useHomeslateHost();
-  const { record, document, error, saveError, setDocument } = useDisplayDocument(apiBaseUrl, id);
-
-  if (error)
-    return (
-      <Text role="alert" style={{ padding: "1rem" }}>
-        {error}
-      </Text>
-    );
-  if (!record || !document) return <Spinner />;
-
-  const view = document.views.find((candidate) => candidate.id === viewId) ?? document.views[0];
-  if (!view) {
-    return (
-      <AppShell contentPadding="md">
-        <Text role="alert">This display has no views yet.</Text>
-      </AppShell>
-    );
-  }
-
-  return (
-    <HomeslateGoogleRuntime displayId={record.publicId} apiBaseUrl={apiBaseUrl}>
-      <AppShell
-        contentPadding="none"
-        topNav={
-          <TopNav
-            heading={
-              <HStack gap="md">
-                <Link href={`/edit/${record.id}`}>Views</Link>
-                <Heading level={4}>{view.name}</Heading>
-              </HStack>
-            }
-            endContent={
-              <HStack gap="md">
-                {saveError && (
-                  <Text as="span" size="sm" role="alert">
-                    Not saved: {saveError}
-                  </Text>
-                )}
-                <Button size="sm" onClick={() => exportDisplayJson(document)}>
-                  Export JSON
-                </Button>
-                <Link href={`/d/${record.publicId}`}>Open kiosk</Link>
-              </HStack>
-            }
-          />
-        }
-      >
-        <div style={{ height: "100%", display: "flex" }}>
-          <Editor
-            document={document}
-            viewId={view.id}
-            widgetRegistry={widgetRegistry}
-            onChange={setDocument}
-          />
-        </div>
-      </AppShell>
-    </HomeslateGoogleRuntime>
   );
 }
 
@@ -576,7 +355,7 @@ export function KioskPage() {
 
   if (passcodeRequired) {
     return (
-      <Stack align="center" justify="center" style={{ minHeight: "100vh", padding: "1rem" }}>
+      <Stack align="center" justify="center" className={classes.kioskCenter}>
         <Surface padding="md">
           <Stack gap="md" align="center">
             <Text weight="semibold">Enter passcode</Text>
@@ -598,7 +377,7 @@ export function KioskPage() {
             />
             <Button
               tone="accent"
-              appearance="filled"
+              appearance="solid"
               size="sm"
               disabled={pinValue.length !== 4}
               onClick={() => setPasscode(pinValue)}
@@ -613,7 +392,7 @@ export function KioskPage() {
 
   if (error && !document)
     return (
-      <Text role="alert" style={{ padding: "1rem" }}>
+      <Text role="alert" className={shared.alertPad}>
         {error}
       </Text>
     );
@@ -623,7 +402,7 @@ export function KioskPage() {
     <HomeslateGoogleRuntime displayId={publicId} apiBaseUrl={apiBaseUrl}>
       <OfflineBanner online={online} loadFailed={loadFailed} showingSaved={showingSaved} />
       {saveError && (
-        <Text as="span" size="sm" role="alert" style={KIOSK_SAVE_ERROR_STYLE}>
+        <Text as="span" size="sm" role="alert" className={classes.kioskSaveError}>
           Not saved: {saveError}
         </Text>
       )}

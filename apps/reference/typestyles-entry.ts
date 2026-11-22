@@ -4,3 +4,6 @@ import "@var-ui/core/register-default-theme";
 import "@homeslate/widgets/styles";
 import "@homeslate/display/styles";
 import "@homeslate/editor/styles";
+import "@homeslate/host-react/styles";
+import "./src/web/adminTheme";
+import "./src/web/adminFont";

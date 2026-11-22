@@ -175,7 +175,7 @@ export function ChoresWidgetSettings({ widget, onConfigChange }: WidgetProps<Cho
                 <Button
                   key={`${chore.id}-${day}`}
                   size="sm"
-                  appearance={active ? "filled" : "outline"}
+                  appearance={active ? "solid" : "outline"}
                   onClick={() => {
                     const days = active
                       ? chore.days.filter((item) => item !== day)

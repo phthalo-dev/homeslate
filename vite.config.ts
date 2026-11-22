@@ -27,6 +27,7 @@ export default defineConfig({
       "@homeslate/agent": workspaceSrc("./packages/agent/src/index.ts"),
       "@homeslate/relay": workspaceSrc("./packages/relay/src/index.ts"),
       "@homeslate/relay/node": workspaceSrc("./packages/relay/src/node.ts"),
+      "@homeslate/host-react/styles": workspaceSrc("./packages/host-react/src/styles.ts"),
       "@homeslate/host-react": workspaceSrc("./packages/host-react/src/index.ts"),
     },
   },

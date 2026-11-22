@@ -100,3 +100,7 @@ export const collapsed = styles.class("widgetpanel-collapsed", {
     justifyContent: "center",
   },
 });
+
+export const filter = styles.class("widgetpanel-filter", {
+  marginBottom: "12px",
+});

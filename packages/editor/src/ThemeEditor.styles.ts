@@ -33,7 +33,6 @@ export const library = styles.class("themeeditor-library", {
   },
   "@media (max-width: 900px)": {
     flexBasis: "auto",
-    maxHeight: "280px",
   },
 });
 
@@ -47,18 +46,18 @@ export const workspace = styles.class("themeeditor-workspace", {
     minHeight: "0",
   },
   "@media (max-width: 900px)": {
-    minHeight: "680px",
+    minHeight: "320px",
   },
 });
 
 export const libraryScroll = styles.class("themeeditor-libraryScroll", {
   flex: "1",
-  minHeight: "200px",
+  minHeight: "64px",
   maxHeight: "360px",
   "@media (min-width: 960px)": {
     maxHeight: "none",
-    flex: "1",
-    minHeight: "280px",
+    flex: "0 1 auto",
+    minHeight: "64px",
   },
 });
 
@@ -409,4 +408,9 @@ export const previewPlaceholder = styles.class("themeeditor-previewPlaceholder",
   fontSize: "var(--var-ui-fontSize-sm)",
   textAlign: "center",
   padding: "1rem",
+});
+
+export const formField = styles.class("themeeditor-formField", {
+  width: "100%",
+  minWidth: 0,
 });

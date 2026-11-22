@@ -11,6 +11,7 @@ import {
   IconButton,
   ScrollArea,
   SegmentedControl,
+  Heading,
   Select,
   Tooltip,
   Stack,
@@ -660,8 +661,10 @@ export function ThemeEditor({
     setPendingEditId(null);
   };
 
-  const createNewTheme = () => {
-    const rawDoc = createThemeDocumentFromPreset(presetId, themeName);
+  const createNewTheme = () => createFromPreset(presetId, themeName);
+
+  const createFromPreset = (fromPresetId: string, name: string) => {
+    const rawDoc = createThemeDocumentFromPreset(fromPresetId, name);
     const ids = new Set(themeDocuments.map((doc) => doc.id));
     const id = uniqueId(rawDoc.id, ids);
     const now = new Date().toISOString();
@@ -770,7 +773,9 @@ export function ThemeEditor({
         <Surface padding="md" className={classes.library}>
           <Stack gap="md" style={{ height: "100%", minHeight: 0 }}>
             <HStack justify="between">
-              <Text weight="semibold">Theme library</Text>
+              <Heading level={2} size="sm">
+                Theme library
+              </Heading>
               <Badge appearance="subtle">{themeDocuments.length} saved</Badge>
             </HStack>
 
@@ -887,12 +892,14 @@ export function ThemeEditor({
               <TextField
                 label="Name"
                 size="sm"
+                className={classes.formField}
                 value={themeName}
                 onValueChange={setThemeName}
                 placeholder="My theme"
               />
               <Select
                 label="From preset"
+                className={classes.formField}
                 options={PRESET_SELECT_OPTIONS}
                 value={presetId}
                 onValueChange={(key) => key != null && setPresetId(String(key))}
@@ -910,13 +917,23 @@ export function ThemeEditor({
             <div className={classes.workspaceEmpty}>
               <Stack gap="sm" align="center" style={{ maxWidth: 360 }}>
                 <Text weight="semibold" style={{ textAlign: "center" }}>
-                  Edit workspace
+                  Start from a preset
                 </Text>
                 <Text size="sm" tone="secondary" style={{ textAlign: "center" }}>
-                  Choose a theme in the library and click the pencil to edit its JSON and see a live
-                  preview. Active theme is used when you save config; use the checkmark in the
-                  library to switch which one is active.
+                  Pick a starting point. You can fine-tune every token afterwards, with a live
+                  preview.
                 </Text>
+                <HStack gap="sm" justify="center" wrap>
+                  {THEME_PRESET_OPTIONS.map((option) => (
+                    <Button
+                      key={option.value}
+                      size="sm"
+                      onClick={() => createFromPreset(option.value, option.label)}
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </HStack>
                 {focusedTheme && (
                   <Button appearance="subtle" onClick={() => beginEdit(focusedTheme.id)}>
                     <IconEdit size={16} />

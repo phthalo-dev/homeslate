@@ -16,14 +16,20 @@ override the widget registry used by the editor and kiosk.
 
 ## Routes
 
-`HomeslateApp` wires a `BrowserRouter` with four pages:
+`HomeslateApp` wires a `BrowserRouter` with these routes:
 
 - `/` — `DisplayListPage`: lists displays, flags ones with a viewer passcode, and
   creates new ones.
-- `/edit/:id` — `EditorPage`: display management with **Views**, **Settings**, and
-  **Theme** tabs.
-- `/edit/:id/views/:viewId` — `ViewEditorPage`: the per-view canvas editor
-  (`@homeslate/editor`).
+- `/edit/:id` — `DisplayLayout`: loads the display once and renders the app bar, the
+  secondary bar (breadcrumbs, export, kiosk link). Its child routes share those bars, so
+  they stay mounted as you move between them:
+  - `ManageLayout` wraps the management sections with a 280px left nav (the same width
+    as the view editor's widget palette; a switcher row on narrow screens):
+    - `/edit/:id` — `DisplayViewsPage`: the display's views.
+    - `/edit/:id/settings` — `DisplaySettingsPage`: rotation, extras, alarms, and access.
+    - `/edit/:id/theme` — `DisplayThemePage`: themes.
+  - `/edit/:id/views/:viewId` — `ViewEditorPage`: the per-view canvas editor
+    (`@homeslate/editor`), with its toolbar in the secondary bar.
 - `/d/:publicId` — `KioskPage`: polls the public document and, when the display
   has a passcode, prompts for the 4-digit PIN before rendering.
 

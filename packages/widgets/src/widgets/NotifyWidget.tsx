@@ -193,7 +193,7 @@ export function NotifyWidget({ widget, isEditing }: WidgetProps<NotifyConfig>) {
           <div className={classes.row}>
             <Button
               tone="accent"
-              appearance="filled"
+              appearance="solid"
               size="sm"
               onClick={send}
               disabled={!canSend || pending}

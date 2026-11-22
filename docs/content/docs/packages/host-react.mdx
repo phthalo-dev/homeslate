@@ -26,13 +26,19 @@ import { HomeslateApp } from "@homeslate/host-react";
 <HomeslateApp productName="Homeslate" />;
 ```
 
-`HomeslateApp` renders three routes:
+`HomeslateApp` renders these routes:
 
 | Route | Page |
 | --- | --- |
 | `/` | `DisplayListPage` |
-| `/edit/:id` | `EditorPage` |
+| `/edit/:id` | `DisplayLayout` (app bars) > `ManageLayout` (left nav) > `DisplayViewsPage` |
+| `/edit/:id/settings` | `DisplaySettingsPage`, inside the same layout |
+| `/edit/:id/theme` | `DisplayThemePage`, inside the same layout |
+| `/edit/:id/views/:viewId` | `ViewEditorPage`, inside the same layout |
 | `/d/:publicId` | `KioskPage` |
+
+The `/edit/:id` routes are children of one `DisplayLayout`, which loads the display once and keeps
+the app bar and secondary bar mounted as you move between them.
 
 ## Props
 
@@ -48,10 +54,10 @@ The pages are exported, so you can use your own router, nav, and chrome. Read
 the host config with `useHomeslateHost()`:
 
 ```tsx
-import { EditorPage, HomeslateHostProvider } from "@homeslate/host-react";
+import { DisplayListPage, HomeslateHostProvider } from "@homeslate/host-react";
 
 <HomeslateHostProvider value={{ apiBaseUrl: "", productName: "Kitchen" }}>
-  <EditorPage />
+  <DisplayListPage />
 </HomeslateHostProvider>;
 ```
 

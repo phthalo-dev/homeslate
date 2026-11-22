@@ -50,3 +50,7 @@ export const dayChipActive = styles.class("alarmlisteditor-dayChipActive", {
 export const addBtn = styles.class("alarmlisteditor-addBtn", {
   alignSelf: "flex-start",
 });
+
+export const addButton = styles.class("alarmlisteditor-addButton", {
+  alignSelf: "flex-start",
+});

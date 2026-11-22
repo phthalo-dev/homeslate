@@ -33,3 +33,14 @@ export const main = styles.class("editor-main", {
   backgroundColor: "var(--var-ui-color-background-app)",
   position: "relative",
 });
+
+/** Toolbar button text; the icon carries the button on phones (the aria-label keeps the name). */
+export const toolbarLabel = styles.class("editor-toolbarLabel", {
+  "@media (max-width: 600px)": {
+    display: "none",
+  },
+});
+
+export const toolbarButton = styles.class("editor-toolbarButton", {
+  whiteSpace: "nowrap",
+});

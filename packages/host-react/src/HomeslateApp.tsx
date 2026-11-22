@@ -1,7 +1,16 @@
 import type { WidgetRegistryApi } from "@homeslate/display/canvas";
 import { Navigate, Route, BrowserRouter, Routes, useHref, useNavigate } from "react-router-dom";
 import { RouterProvider } from "react-aria-components";
-import { DisplayListPage, EditorPage, KioskPage, ViewEditorPage } from "./pages";
+import { ToastProvider } from "@var-ui/react";
+import { DisplayListPage, KioskPage } from "./pages";
+import { DisplayLayout } from "./DisplayLayout";
+import { ManageLayout } from "./ManageLayout";
+import {
+  DisplaySettingsPage,
+  DisplayThemePage,
+  DisplayViewsPage,
+  ViewEditorPage,
+} from "./displayPages";
 import { RouteErrorBoundary } from "./RouteErrorBoundary";
 import { HomeslateHostProvider, useHomeslateHost, type HomeslateHostConfig } from "./hostContext";
 
@@ -28,9 +37,11 @@ export function HomeslateApp({ productName, apiBaseUrl, widgetRegistry }: Homesl
 
   return (
     <HomeslateHostProvider value={config}>
-      <BrowserRouter>
-        <HomeslateRoutes />
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
+          <HomeslateRoutes />
+        </BrowserRouter>
+      </ToastProvider>
     </HomeslateHostProvider>
   );
 }
@@ -46,18 +57,17 @@ function HomeslateRoutes() {
           path="/edit/:id"
           element={
             <RouteErrorBoundary productName={productName}>
-              <EditorPage />
+              <DisplayLayout />
             </RouteErrorBoundary>
           }
-        />
-        <Route
-          path="/edit/:id/views/:viewId"
-          element={
-            <RouteErrorBoundary productName={productName}>
-              <ViewEditorPage />
-            </RouteErrorBoundary>
-          }
-        />
+        >
+          <Route element={<ManageLayout />}>
+            <Route index element={<DisplayViewsPage />} />
+            <Route path="settings" element={<DisplaySettingsPage />} />
+            <Route path="theme" element={<DisplayThemePage />} />
+          </Route>
+          <Route path="views/:viewId" element={<ViewEditorPage />} />
+        </Route>
         <Route
           path="/d/:publicId"
           element={
