@@ -1,17 +1,79 @@
 ---
 title: Getting started
-description: Clone the repo, install, and run the reference app.
+eyebrow: Guide
+description: Clone the repo, install, and run the reference editor and kiosk on your machine in a few minutes.
 ---
 
-Requires **Node 22.13+**.
+This guide runs the reference app: the Hono API, the editor, and the kiosk display, all on one machine. It is the fastest way to see Homeslate working. To build your own host from the published packages instead, see [Self-hosting](/docs/self-hosting).
+
+## Prerequisites
+
+- **Node 22.13 or newer.** The repo pins Node 24 in `.nvmrc`.
+- **[Git](https://git-scm.com)** to clone the repository.
+- The **Vite+ CLI** (`vp`) that the repo scripts use. If you cannot install it, `pnpm install` and `pnpm dev:reference` run the same scripts.
+
+No accounts, API keys, or databases are required. Persistence is a sqlite file under `apps/reference/data`.
+
+## Run the reference app
+
+<Steps>
+  <li>
+
+**Clone the repository.**
 
 ```bash
 git clone https://github.com/phthalo-dev/homeslate.git
 cd homeslate
+```
+
+  </li>
+  <li>
+
+**Install the workspace dependencies.**
+
+```bash
 vp install
+```
+
+  </li>
+  <li>
+
+**Start the API and the UI.** One command starts both the Hono API (port 8787) and the Vite UI (port 5174). Vite proxies `/api` to the API.
+
+```bash
 vp run dev:reference
 ```
 
-Open [http://127.0.0.1:5174](http://127.0.0.1:5174). That command starts the Hono API and the Vite UI (Vite proxies `/api` to port 8787).
+  </li>
+  <li>
 
-See [Reference app](/docs/reference) for ports, persistence, and optional API keys.
+**Open the editor.** Go to [http://127.0.0.1:5174](http://127.0.0.1:5174). Opening the API port redirects there.
+
+  </li>
+</Steps>
+
+## What you should see
+
+The home page lists your displays, starting with one called **Homeslate**. Open it with **Manage** to reach the editor, where you add and reorder **views** (each one a full-screen page on the kiosk).
+
+<Alert tone="info" title="Try the preset views">
+  The first view is empty. Choose **Add preset views** to get Morning, Evening and Weekend layouts with a clock, weather, calendar, todo and news widgets, then **Kiosk** to open the display at `/d/<publicId>`.
+</Alert>
+
+Widgets that need a service you have not configured show a placeholder such as "No Calendars Selected" or "No Location Set". That is expected on a fresh install.
+
+## Optional services
+
+Calendar, commute, stock and Home Assistant widgets read optional settings from `apps/reference/.env`. Copy `.env.example` there, fill in what you want, and restart `vp run dev:reference`.
+
+<Alert tone="warning" title="Restart after editing .env">
+  The dev server reads the file once at startup. Variables already set in your environment win over the file.
+</Alert>
+
+## Next steps
+
+<Grid columns={{ base: 1, md: 3 }} gap="md">
+  <Card href="/docs/reference" title="Reference app" description="Ports, persistence and the optional Google Calendar setup." hint="Reference →" />
+  <Card href="/docs/packages" title="Packages" description="The host contract and a guide for every published package." hint="Packages →" />
+  <Card href="/docs/self-hosting" title="Self-hosting" description="Depend on @homeslate/server and host-react from your own repo." hint="Self-hosting →" />
+</Grid>

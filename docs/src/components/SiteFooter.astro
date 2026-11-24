@@ -1,0 +1,35 @@
+---
+import { Divider, HStack, Link, Stack, Text } from '@var-ui/astro';
+---
+
+<footer class="site-footer">
+  <Divider />
+  <Stack gap="sm" className="site-footer__inner">
+    <HStack gap="lg" wrap>
+      <Link href="https://github.com/phthalo-dev/homeslate" tone="secondary">GitHub</Link>
+      <Link href="https://www.npmjs.com/package/@homeslate/schema" tone="secondary">npm</Link>
+      <Link href="https://github.com/phthalo-dev/homeslate/blob/main/LICENSE" tone="secondary">
+        MIT license
+      </Link>
+      <Link href="/docs" tone="secondary">Documentation</Link>
+    </HStack>
+    <Text size="sm" tone="secondary">
+      The managed hosted product lives in the private
+      <Link href="https://github.com/phthalo-dev/homeslate-hosted">homeslate-hosted</Link>
+      repository. Everything documented here is MIT licensed and self-hostable.
+    </Text>
+  </Stack>
+</footer>
+
+<style is:global>
+  .site-footer__inner {
+    max-width: 72rem;
+    margin-inline: auto;
+    padding: 1.5rem 1rem 2.5rem;
+  }
+  @media (min-width: 768px) {
+    .site-footer__inner {
+      padding-inline: 2rem;
+    }
+  }
+</style>
