@@ -1,14 +1,6 @@
-import { Component, Fragment, type CSSProperties, type ReactNode } from "react";
+import { Component, Fragment, type ReactNode } from "react";
 import { Button, Heading, Stack, Text } from "@var-ui/react";
-
-const PAGE_STYLE: CSSProperties = {
-  minHeight: "100vh",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "1.5rem",
-  boxSizing: "border-box",
-};
+import * as classes from "./RouteErrorBoundary.styles";
 
 export type RouteErrorFallbackProps = {
   productName: string;
@@ -18,14 +10,14 @@ export type RouteErrorFallbackProps = {
 /** Full-page fallback so a route render failure is never a blank document. */
 export function RouteErrorFallback({ productName, onReload }: RouteErrorFallbackProps) {
   return (
-    <div role="alert" style={PAGE_STYLE}>
+    <div role="alert" className={classes.page}>
       <Stack gap="md" align="center">
         <Text size="sm" tone="secondary">
           {productName}
         </Text>
         <Heading level={1}>Something went wrong</Heading>
         <Text>This page hit an error. Reload to try again.</Text>
-        <Button tone="accent" appearance="filled" onClick={onReload}>
+        <Button tone="accent" appearance="solid" onClick={onReload}>
           Reload
         </Button>
         <a href="/">Back to displays</a>

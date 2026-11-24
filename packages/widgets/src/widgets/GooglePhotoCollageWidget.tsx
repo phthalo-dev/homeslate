@@ -383,7 +383,7 @@ function PhotoThumbGrid({ photos, onRemove }: PhotoThumbGridProps) {
                   icon={<IconX size={10} />}
                   size="sm"
                   tone="danger"
-                  appearance="filled"
+                  appearance="solid"
                   className={classes.thumbRemove}
                   aria-label="Remove photo"
                   onClick={() => onRemove(index)}
@@ -691,7 +691,7 @@ export function GooglePhotoCollageWidgetSettings({
             <Button
               key={value}
               size="sm"
-              appearance={rotationInterval === value ? "filled" : "outline"}
+              appearance={rotationInterval === value ? "solid" : "outline"}
               onClick={() => onConfigChange({ rotationInterval: value })}
             >
               {label}
@@ -699,7 +699,7 @@ export function GooglePhotoCollageWidgetSettings({
           ))}
           <Button
             size="sm"
-            appearance={!ROTATION_PRESET_VALUES.includes(rotationInterval) ? "filled" : "outline"}
+            appearance={!ROTATION_PRESET_VALUES.includes(rotationInterval) ? "solid" : "outline"}
             onClick={() => {
               if (ROTATION_PRESET_VALUES.includes(rotationInterval)) {
                 onConfigChange({ rotationInterval: 20 });

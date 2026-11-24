@@ -7,7 +7,7 @@ function read(relative: string): string {
 
 describe("HomeslateApp", () => {
   it("mounts Editor and Display from packages and does not import hosted auth", () => {
-    const source = read("./pages.tsx");
+    const source = read("./pages.tsx") + read("./displayPages.tsx");
     expect(source).toMatch(/from ['"]@homeslate\/editor['"]/);
     expect(source).toMatch(/from ['"]@homeslate\/display['"]/);
     expect(source).not.toMatch(/AuthContext/);
@@ -26,8 +26,12 @@ describe("HomeslateApp", () => {
   it("routes the display list, management, view editor, and kiosk", () => {
     const source = read("./HomeslateApp.tsx");
     expect(source).toMatch(/path="\/"\s+element=\{<DisplayListPage/);
-    expect(source).toMatch(/path="\/edit\/:id"[\s\S]*?<EditorPage/);
-    expect(source).toMatch(/path="\/edit\/:id\/views\/:viewId"[\s\S]*?<ViewEditorPage/);
+    // Management sections and the view editor are children of one layout, so the app bars persist.
+    expect(source).toMatch(/path="\/edit\/:id"[\s\S]*?<DisplayLayout/);
+    expect(source).toMatch(/<Route index element=\{<DisplayViewsPage/);
+    expect(source).toMatch(/path="settings" element=\{<DisplaySettingsPage/);
+    expect(source).toMatch(/path="theme" element=\{<DisplayThemePage/);
+    expect(source).toMatch(/path="views\/:viewId" element=\{<ViewEditorPage/);
     expect(source).toMatch(/path="\/d\/:publicId"[\s\S]*?<KioskPage/);
     expect(source).toMatch(/RouteErrorBoundary/);
 
@@ -49,10 +53,10 @@ describe("HomeslateApp", () => {
   });
 
   it("renames the display from the management header", () => {
-    const source = read("./pages.tsx");
+    const source = read("./DisplayLayout.tsx");
     expect(source).toMatch(/DisplayNameHeading/);
     expect(source).toMatch(/onRename=/);
-    expect(source).toMatch(/setDocument\(\{ \.\.\.document, name \}\)/);
+    expect(source).toMatch(/setDocument\(\{ \.\.\.loaded\.document, name \}\)/);
   });
 
   it("wires display settings for alarms, rotation, and passcode", () => {
@@ -62,8 +66,8 @@ describe("HomeslateApp", () => {
     expect(settings).toMatch(/PinInput/);
     expect(settings).toMatch(/onSetPasscode/);
 
+    expect(read("./displayPages.tsx")).toMatch(/DisplaySettingsPanel/);
     const pages = read("./pages.tsx");
-    expect(pages).toMatch(/DisplaySettingsPanel/);
     expect(pages).toMatch(/getPublicDocument/);
     expect(pages).toMatch(/passcodeRequired/);
   });

@@ -273,7 +273,7 @@ export function GooglePhotosWidgetSettings({
                 <Button
                   key={value}
                   size="sm"
-                  appearance={refreshInterval === value ? "filled" : "outline"}
+                  appearance={refreshInterval === value ? "solid" : "outline"}
                   onClick={() => onConfigChange({ refreshInterval: value })}
                 >
                   {label}

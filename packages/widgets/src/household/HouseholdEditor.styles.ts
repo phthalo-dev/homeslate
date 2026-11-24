@@ -7,10 +7,19 @@ export const list = styles.class("householdeditor-list", {
 export const row = styles.class("householdeditor-row", {
   display: "flex",
   alignItems: "center",
+  flexWrap: "wrap",
   gap: "0.5rem",
+  // VarUI fields default to a 15rem minimum width; let them shrink so the row fits the dialog.
+  "& > *": { minWidth: 0 },
 });
 
+export const nameField = styles.class("householdeditor-nameField", {
+  flex: "1 1 8rem",
+});
+
+/** The member's colour arrives as `--member-color`. */
 export const disc = styles.class("householdeditor-disc", {
+  background: "var(--member-color)",
   width: "1.75rem",
   height: "1.75rem",
   minWidth: "1.75rem",
@@ -24,8 +33,8 @@ export const disc = styles.class("householdeditor-disc", {
 });
 
 export const colorField = styles.class("householdeditor-colorField", {
-  width: "9rem",
-  flexShrink: 0,
+  flex: "1 1 9rem",
+  minWidth: 0,
 });
 
 export const swatch = styles.class("householdeditor-swatch", {

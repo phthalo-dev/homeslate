@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Button, DesignSystemProvider, Dialog, HStack, Stack } from "@var-ui/react";
 import { IconPalette, IconSettings, IconUsers } from "@tabler/icons-react";
 import type { DisplayDocument, StickyNote, ThemeDocument, ViewBackground } from "@homeslate/schema";
@@ -40,6 +41,12 @@ export type EditorProps = {
     filename?: string;
   }) => Promise<{ key: string; filename: string }>;
   actions?: ReactNode;
+  /**
+   * Where to render the editor's toolbar (Background Settings, Household, Themes). Omit it and the
+   * editor draws its own bar above the canvas. Pass an element (for example a slot in the host's
+   * app bar) to render the toolbar there; pass `null` while that element is not mounted yet.
+   */
+  toolbarContainer?: HTMLElement | null;
 };
 
 export function Editor(props: EditorProps): JSX.Element {
@@ -50,6 +57,7 @@ export function Editor(props: EditorProps): JSX.Element {
     widgetRegistry = DEFAULT_WIDGET_REGISTRY,
     onUploadBackgroundPhoto,
     actions,
+    toolbarContainer,
   } = props;
   const [bgSettingsOpen, setBgSettingsOpen] = useState(false);
   const [householdOpen, setHouseholdOpen] = useState(false);
@@ -150,34 +158,56 @@ export function Editor(props: EditorProps): JSX.Element {
     [emit, viewId],
   );
 
+  const toolbar = (
+    <HStack gap="sm" wrap>
+      {themesOpen ? (
+        <Button tone="accent" appearance="solid" size="sm" onClick={() => setThemesOpen(false)}>
+          Done
+        </Button>
+      ) : (
+        <>
+          <Button
+            appearance="ghost"
+            size="sm"
+            className={classes.toolbarButton}
+            aria-label="Background Settings"
+            onClick={() => setBgSettingsOpen(true)}
+          >
+            <IconSettings size={16} />
+            <span className={classes.toolbarLabel}>Background Settings</span>
+          </Button>
+          <Button
+            appearance="ghost"
+            size="sm"
+            aria-label="Household"
+            onClick={() => setHouseholdOpen(true)}
+          >
+            <IconUsers size={16} />
+            <span className={classes.toolbarLabel}>Household</span>
+          </Button>
+          <Button
+            appearance="ghost"
+            size="sm"
+            aria-label="Themes"
+            onClick={() => setThemesOpen(true)}
+          >
+            <IconPalette size={16} />
+            <span className={classes.toolbarLabel}>Themes</span>
+          </Button>
+          {actions}
+        </>
+      )}
+    </HStack>
+  );
+
   return (
     <DesignSystemProvider customTheme={theme} colorMode={editorColorMode}>
       <div ref={rootRef} className={classes.root}>
-        <div className={classes.pageActions}>
-          <HStack gap="sm">
-            {themesOpen ? (
-              <Button appearance="subtle" size="sm" onClick={() => setThemesOpen(false)}>
-                Done
-              </Button>
-            ) : (
-              <>
-                <Button appearance="subtle" size="sm" onClick={() => setBgSettingsOpen(true)}>
-                  <IconSettings size={16} />
-                  Background Settings
-                </Button>
-                <Button appearance="subtle" size="sm" onClick={() => setHouseholdOpen(true)}>
-                  <IconUsers size={16} />
-                  Household
-                </Button>
-                <Button appearance="subtle" size="sm" onClick={() => setThemesOpen(true)}>
-                  <IconPalette size={16} />
-                  Themes
-                </Button>
-                {actions}
-              </>
-            )}
-          </HStack>
-        </div>
+        {toolbarContainer === undefined ? (
+          <div className={classes.pageActions}>{toolbar}</div>
+        ) : toolbarContainer ? (
+          createPortal(toolbar, toolbarContainer)
+        ) : null}
 
         {themesOpen ? (
           <div className={classes.body}>
@@ -199,7 +229,7 @@ export function Editor(props: EditorProps): JSX.Element {
               onChange={emit}
               widgetRegistry={widgetRegistry}
             />
-            <main className={classes.main} style={canvasBackground}>
+            <div className={classes.main} style={canvasBackground}>
               {view && <BackgroundSlideshow view={view} />}
               <TimersProvider>
                 <HouseholdProvider
@@ -229,7 +259,7 @@ export function Editor(props: EditorProps): JSX.Element {
                   </AlarmsProvider>
                 </HouseholdProvider>
               </TimersProvider>
-            </main>
+            </div>
           </div>
         )}
         <Dialog.Root
@@ -245,7 +275,9 @@ export function Editor(props: EditorProps): JSX.Element {
                 members={document.household?.members ?? []}
                 onChange={(members) => emit({ ...documentRef.current, household: { members } })}
               />
-              <Button onClick={() => setHouseholdOpen(false)}>Done</Button>
+              <Button tone="accent" appearance="solid" onClick={() => setHouseholdOpen(false)}>
+                Done
+              </Button>
             </Stack>
           </Dialog.Popup>
         </Dialog.Root>
@@ -256,7 +288,7 @@ export function Editor(props: EditorProps): JSX.Element {
           }}
         >
           <Dialog.Popup>
-            <Dialog.Title>View Background</Dialog.Title>
+            <Dialog.Title>Background Settings</Dialog.Title>
             <Stack gap="md">
               {view && (
                 <BgSettings
@@ -265,7 +297,9 @@ export function Editor(props: EditorProps): JSX.Element {
                   onUploadBackgroundPhoto={onUploadBackgroundPhoto}
                 />
               )}
-              <Button onClick={() => setBgSettingsOpen(false)}>Done</Button>
+              <Button tone="accent" appearance="solid" onClick={() => setBgSettingsOpen(false)}>
+                Done
+              </Button>
             </Stack>
           </Dialog.Popup>
         </Dialog.Root>

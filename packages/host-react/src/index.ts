@@ -2,7 +2,17 @@ export const HOST_REACT_PACKAGE_NAME = "@homeslate/host-react";
 
 export { HomeslateApp } from "./HomeslateApp";
 export type { HomeslateAppProps } from "./HomeslateApp";
-export { DisplayListPage, EditorPage, KioskPage, ViewEditorPage } from "./pages";
+export { DisplayListPage, KioskPage } from "./pages";
+export { DisplayLayout, useDisplay } from "./DisplayLayout";
+export type { DisplayContextValue } from "./DisplayLayout";
+export { ManageLayout } from "./ManageLayout";
+export type { ManageSection } from "./manageSections";
+export {
+  DisplaySettingsPage,
+  DisplayThemePage,
+  DisplayViewsPage,
+  ViewEditorPage,
+} from "./displayPages";
 export { RouteErrorBoundary, RouteErrorFallback } from "./RouteErrorBoundary";
 export { TemplatePicker } from "./TemplatePicker";
 export { HomeslateGoogleRuntime } from "./HomeslateGoogleRuntime";

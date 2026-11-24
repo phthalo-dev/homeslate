@@ -9,7 +9,7 @@ export default defineConfig({
     clearMocks: false,
   },
   pack: {
-    entry: ["src/index.ts"],
+    entry: ["src/index.ts", "src/styles.ts"],
     dts: true,
     tsconfig: "../../tsconfig.app.json",
     format: ["esm"],
@@ -19,7 +19,13 @@ export default defineConfig({
       // Remove to preserve subpath imports as written (the new default).
       // https://tsdown.dev/options/dependencies#deps-resolvedepsubpath
       resolveDepSubpath: true,
-      neverBundle: ["react", "react-dom", "react-router-dom", "react-aria-components"],
+      neverBundle: [
+        "react",
+        "react-dom",
+        "react-router-dom",
+        "react-aria-components",
+        "typestyles",
+      ],
     },
   },
 });

@@ -1,9 +1,28 @@
-import { useState, type JSX, type ReactNode } from "react";
-import { Button, HStack, PinInput, Select, Stack, Surface, Switch, Text } from "@var-ui/react";
+import {
+  cloneElement,
+  isValidElement,
+  useId,
+  useState,
+  type JSX,
+  type ReactElement,
+  type ReactNode,
+} from "react";
+import {
+  Button,
+  Heading,
+  HStack,
+  PinInput,
+  Select,
+  Stack,
+  Surface,
+  Switch,
+  Text,
+} from "@var-ui/react";
 import { AlarmListEditor } from "@homeslate/widgets";
 import { HOLIDAY_PREVIEW_OPTIONS } from "@homeslate/display";
 import type { AlarmDefinition, DisplayDocument, HolidayId } from "@homeslate/schema";
 import { errorMessage } from "./api";
+import * as classes from "./DisplaySettingsPanel.styles";
 
 const INTERVAL_OPTIONS = [
   { value: "15000", label: "15 seconds" },
@@ -19,15 +38,60 @@ const HOLIDAY_OPTIONS = [
   ...HOLIDAY_PREVIEW_OPTIONS.map((option) => ({ value: option.value, label: option.label })),
 ];
 
-function Section(props: { title: string; children: ReactNode }): JSX.Element {
-  const { title, children } = props;
+/** A card that groups related settings; rows inside are separated by hairlines. */
+function Section(props: { title: string; description?: string; children: ReactNode }): JSX.Element {
+  const { title, description, children } = props;
   return (
-    <Surface padding="md">
-      <Stack gap="md">
-        <Text weight="semibold">{title}</Text>
-        {children}
-      </Stack>
+    <Surface padding="none">
+      <div className={classes.sectionHeader}>
+        <Heading level={3} size="sm">
+          {title}
+        </Heading>
+        {description ? (
+          <Text size="sm" tone="secondary" className={classes.sectionDescription}>
+            {description}
+          </Text>
+        ) : null}
+      </div>
+      <div>{children}</div>
     </Surface>
+  );
+}
+
+/** One setting: label and help on the left, its control on the right. */
+function SettingRow(props: {
+  label: string;
+  description?: ReactNode;
+  /** A node, or a function that receives the id of the description to wire up as aria-describedby. */
+  control?: ReactNode | ((descriptionId: string) => ReactNode);
+  children?: ReactNode;
+}): JSX.Element {
+  const { label, description, control, children } = props;
+  const descriptionId = useId();
+  // A bare Switch gets its help text announced with it; wrapped controls keep their own wiring.
+  const wiredControl =
+    typeof control === "function"
+      ? control(descriptionId)
+      : description && isValidElement(control) && control.type === Switch
+        ? cloneElement(control as ReactElement<{ "aria-describedby"?: string }>, {
+            "aria-describedby": descriptionId,
+          })
+        : control;
+  return (
+    <div className={classes.row}>
+      <HStack justify="between" align="center" gap="lg" wrap>
+        <Stack gap="xs" className={classes.rowText}>
+          <Text weight="medium">{label}</Text>
+          {description ? (
+            <Text size="sm" tone="secondary" id={descriptionId}>
+              {description}
+            </Text>
+          ) : null}
+        </Stack>
+        {wiredControl}
+      </HStack>
+      {children}
+    </div>
   );
 }
 
@@ -71,169 +135,166 @@ export function DisplaySettingsPanel(props: {
 
   return (
     <Stack gap="lg">
-      <Section title="Auto-Rotate">
-        <HStack justify="between" align="center" gap="md">
-          <Stack gap="xs">
-            <Text size="sm">Auto-rotate views</Text>
-            <Text size="xs" tone="secondary">
-              Automatically cycle through visible views.
-            </Text>
-          </Stack>
-          <Switch
-            checked={rotation.enabled}
-            disabled={visibleViewCount <= 1}
-            aria-label="Auto-rotate views"
-            onCheckedChange={(enabled) => patchRotation({ enabled })}
-          />
-        </HStack>
-        {rotation.enabled && visibleViewCount > 1 && (
-          <Select
-            aria-label="Rotation interval"
-            options={INTERVAL_OPTIONS}
-            value={String(rotation.intervalMs)}
-            onValueChange={(key) => {
-              if (key != null) patchRotation({ intervalMs: Number(key) });
-            }}
-          />
-        )}
-        {visibleViewCount <= 1 && (
-          <Text size="xs" tone="secondary">
-            {document.views.length <= 1
-              ? "Add a second view to enable auto-rotation."
-              : "Show at least two views to enable auto-rotation."}
-          </Text>
-        )}
-      </Section>
-
-      <Section title="Kiosk">
-        <HStack justify="between" align="center" gap="md">
-          <Stack gap="xs">
-            <Text size="sm">Keep the screen awake</Text>
-            <Text size="xs" tone="secondary">
-              Stops the kiosk display from sleeping while this board is open. On by default.
-            </Text>
-          </Stack>
-          <Switch
-            checked={document.settings.wakeLockEnabled !== false}
-            aria-label="Keep the screen awake"
-            onCheckedChange={(enabled) => patchSettings({ wakeLockEnabled: enabled })}
-          />
-        </HStack>
-      </Section>
-
-      <Section title="Sticky Notes">
-        <HStack justify="between" align="center" gap="md">
-          <Stack gap="xs">
-            <Text size="sm">Enable sticky notes</Text>
-            <Text size="xs" tone="secondary">
-              Show a "+" button to add floating notes on each view in the editor and kiosk.
-            </Text>
-          </Stack>
-          <Switch
-            checked={document.settings.stickyNotesEnabled ?? false}
-            aria-label="Enable sticky notes"
-            onCheckedChange={(enabled) => patchSettings({ stickyNotesEnabled: enabled })}
-          />
-        </HStack>
-      </Section>
-
-      <Section title="Alarms">
-        <Text size="xs" tone="secondary">
-          Recurring alarms ring on this display with sound. Snooze for 5, 10, or 15 minutes.
-        </Text>
-        <AlarmListEditor
-          alarms={document.alarms ?? []}
-          onChange={(alarms: AlarmDefinition[]) => onChange({ ...document, alarms })}
-        />
-        <HStack justify="between" align="center" gap="md">
-          <Stack gap="xs">
-            <Text size="sm">Enable voice commands</Text>
-            <Text size="xs" tone="secondary">
-              Say dismiss or snooze when an alarm rings. Microphone permission is requested on the
-              display (Chromium / HTTPS recommended).
-            </Text>
-          </Stack>
-          <Switch
-            checked={document.settings.voiceEnabled ?? false}
-            aria-label="Enable voice commands"
-            onCheckedChange={(enabled) => patchSettings({ voiceEnabled: enabled })}
-          />
-        </HStack>
-      </Section>
-
-      <Section title="Holiday Effects">
-        <HStack justify="between" align="center" gap="md">
-          <Stack gap="xs">
-            <Text size="sm">Enable holiday UI</Text>
-            <Text size="xs" tone="secondary">
-              Show holiday-specific visuals on matching dates (for example: St. Patrick&apos;s Day).
-            </Text>
-          </Stack>
-          <Switch
-            checked={document.settings.holidayEffectsEnabled ?? false}
-            aria-label="Enable holiday UI"
-            onCheckedChange={(enabled) => patchSettings({ holidayEffectsEnabled: enabled })}
-          />
-        </HStack>
-        <Stack gap="xs">
-          <Text size="sm">Preview holiday</Text>
-          <Text size="xs" tone="secondary">
-            Force a holiday theme for testing. Auto uses the current date.
-          </Text>
-          <Select
-            aria-label="Preview holiday"
-            options={HOLIDAY_OPTIONS}
-            value={document.settings.holidayPreviewId ?? "auto"}
-            onValueChange={(key) => {
-              const next: HolidayId | undefined =
-                key == null || key === "auto" ? undefined : (String(key) as HolidayId);
-              patchSettings({ holidayPreviewId: next });
-            }}
-          />
-        </Stack>
-      </Section>
-
-      <Section title="Viewer Passcode">
-        <HStack justify="between" align="center" gap="md">
-          <Stack gap="xs">
-            <Text size="sm">{passcodeEnabled ? "Passcode is set" : "No passcode"}</Text>
-            <Text size="xs" tone="secondary">
-              Require a 4-digit PIN before the display can be viewed.
-            </Text>
-          </Stack>
-          {passcodeEnabled && (
-            <Button
-              appearance="ghost"
-              tone="danger"
-              size="sm"
-              loading={pinSaving}
-              onClick={() => void savePin(null)}
-            >
-              Remove PIN
-            </Button>
+      <Section title="Playback" description="How the kiosk cycles through views and stays on.">
+        <SettingRow
+          label="Auto-rotate views"
+          description={
+            visibleViewCount <= 1
+              ? document.views.length <= 1
+                ? "Add a second view to enable auto-rotation."
+                : "Show at least two views to enable auto-rotation."
+              : "Automatically cycle through visible views."
+          }
+          control={(descId) => (
+            <HStack gap="md" align="center">
+              {rotation.enabled && visibleViewCount > 1 && (
+                <div className={classes.narrowField}>
+                  <Select
+                    aria-label="Rotation interval"
+                    options={INTERVAL_OPTIONS}
+                    value={String(rotation.intervalMs)}
+                    onValueChange={(key) => {
+                      if (key != null) patchRotation({ intervalMs: Number(key) });
+                    }}
+                  />
+                </div>
+              )}
+              <Switch
+                checked={rotation.enabled}
+                disabled={visibleViewCount <= 1}
+                aria-label="Auto-rotate views"
+                aria-describedby={descId}
+                onCheckedChange={(enabled) => patchRotation({ enabled })}
+              />
+            </HStack>
           )}
-        </HStack>
-        <HStack gap="sm" align="center">
-          <PinInput
-            length={4}
-            characters="numeric"
-            aria-label="Viewer passcode"
-            value={pin}
-            errorMessage={pinError ?? undefined}
-            onValueChange={(value) => {
-              setPin(value);
-              setPinError(null);
-            }}
-          />
-          <Button
-            size="sm"
-            disabled={pin.length !== 4}
-            loading={pinSaving}
-            onClick={() => void savePin(pin)}
-          >
-            {passcodeEnabled ? "Change PIN" : "Enable PIN"}
-          </Button>
-        </HStack>
+        />
+        <SettingRow
+          label="Keep the screen awake"
+          description="Stops the kiosk display from sleeping while this board is open. On by default."
+          control={
+            <Switch
+              checked={document.settings.wakeLockEnabled !== false}
+              aria-label="Keep the screen awake"
+              onCheckedChange={(enabled) => patchSettings({ wakeLockEnabled: enabled })}
+            />
+          }
+        />
+      </Section>
+
+      <Section title="Display" description="Optional extras shown on the board.">
+        <SettingRow
+          label="Sticky notes"
+          description={
+            'Show a "+" button to add floating notes on each view in the editor and kiosk.'
+          }
+          control={
+            <Switch
+              checked={document.settings.stickyNotesEnabled ?? false}
+              aria-label="Sticky notes"
+              onCheckedChange={(enabled) => patchSettings({ stickyNotesEnabled: enabled })}
+            />
+          }
+        />
+        <SettingRow
+          label="Holiday effects"
+          description="Show holiday-specific visuals on matching dates (for example: St. Patrick's Day)."
+          control={
+            <Switch
+              checked={document.settings.holidayEffectsEnabled ?? false}
+              aria-label="Holiday effects"
+              onCheckedChange={(enabled) => patchSettings({ holidayEffectsEnabled: enabled })}
+            />
+          }
+        />
+        <SettingRow
+          label="Preview holiday"
+          description="Force a holiday theme for testing. Turn on holiday effects to use it."
+          control={
+            <div className={classes.narrowField}>
+              <Select
+                aria-label="Preview holiday"
+                disabled={!(document.settings.holidayEffectsEnabled ?? false)}
+                options={HOLIDAY_OPTIONS}
+                value={document.settings.holidayPreviewId ?? "auto"}
+                onValueChange={(key) => {
+                  const next: HolidayId | undefined =
+                    key == null || key === "auto" ? undefined : (String(key) as HolidayId);
+                  patchSettings({ holidayPreviewId: next });
+                }}
+              />
+            </div>
+          }
+        />
+      </Section>
+
+      <Section
+        title="Alarms"
+        description="Recurring alarms ring on this display with sound. Snooze for 5, 10, or 15 minutes."
+      >
+        <SettingRow label="Alarm schedule">
+          <div className={classes.below}>
+            <AlarmListEditor
+              alarms={document.alarms ?? []}
+              onChange={(alarms: AlarmDefinition[]) => onChange({ ...document, alarms })}
+            />
+          </div>
+        </SettingRow>
+        <SettingRow
+          label="Voice commands"
+          description="Say dismiss or snooze when an alarm rings. Microphone permission is requested on the display (Chromium / HTTPS recommended)."
+          control={
+            <Switch
+              checked={document.settings.voiceEnabled ?? false}
+              aria-label="Voice commands"
+              onCheckedChange={(enabled) => patchSettings({ voiceEnabled: enabled })}
+            />
+          }
+        />
+      </Section>
+
+      <Section title="Access" description="Control who can open this display.">
+        <SettingRow
+          label={passcodeEnabled ? "Passcode is set" : "Viewer passcode"}
+          description={`Require a 4-digit PIN before the display can be viewed. Enter 4 digits to ${
+            passcodeEnabled ? "change the PIN" : "require a PIN on the kiosk"
+          }.`}
+          control={
+            passcodeEnabled ? (
+              <Button
+                appearance="ghost"
+                tone="danger"
+                size="sm"
+                loading={pinSaving}
+                onClick={() => void savePin(null)}
+              >
+                Remove PIN
+              </Button>
+            ) : undefined
+          }
+        >
+          <HStack gap="sm" align="center" className={classes.below}>
+            <PinInput
+              length={4}
+              characters="numeric"
+              aria-label="Viewer passcode"
+              value={pin}
+              errorMessage={pinError ?? undefined}
+              onValueChange={(value) => {
+                setPin(value);
+                setPinError(null);
+              }}
+            />
+            <Button
+              size="sm"
+              disabled={pin.length !== 4}
+              loading={pinSaving}
+              onClick={() => void savePin(pin)}
+            >
+              {passcodeEnabled ? "Change PIN" : "Enable PIN"}
+            </Button>
+          </HStack>
+        </SettingRow>
       </Section>
     </Stack>
   );

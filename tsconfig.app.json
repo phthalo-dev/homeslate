@@ -40,7 +40,8 @@
       "@homeslate/agent": ["./packages/agent/src/index.ts"],
       "@homeslate/relay": ["./packages/relay/src/index.ts"],
       "@homeslate/relay/node": ["./packages/relay/src/node.ts"],
-      "@homeslate/host-react": ["./packages/host-react/src/index.ts"]
+      "@homeslate/host-react": ["./packages/host-react/src/index.ts"],
+      "@homeslate/host-react/styles": ["./packages/host-react/src/styles.ts"]
     }
   },
   "include": [

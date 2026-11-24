@@ -15,6 +15,10 @@
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
+    },
+    "./styles": {
+      "types": "./dist/styles.d.mts",
+      "import": "./dist/styles.mjs"
     }
   },
   "publishConfig": {
@@ -33,6 +37,7 @@
     "@var-ui/react": "catalog:",
     "react-aria-components": "^1.19.0",
     "react-router-dom": "^7.13.1",
+    "typestyles": "catalog:",
     "uuid": "^13.0.0"
   },
   "peerDependencies": {

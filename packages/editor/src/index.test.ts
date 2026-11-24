@@ -35,9 +35,9 @@ describe("@homeslate/editor", () => {
     expect(source).toMatch(/getCanvasBackgroundStyle/);
   });
 
-  it("keeps editor chrome actions as small subtle buttons", () => {
+  it("keeps editor chrome actions as small ghost buttons", () => {
     const source = readFileSync(new URL("./Editor.tsx", import.meta.url), "utf8");
-    expect(source).toMatch(/appearance="subtle"/);
+    expect(source).toMatch(/appearance="ghost"/);
     expect(source).toMatch(/size="sm"/);
     expect(source).toMatch(/Background Settings/);
   });

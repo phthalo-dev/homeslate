@@ -17,6 +17,9 @@ export default defineConfig({
   plugins: lazyPlugins(() => [
     react(),
     typestyles({
+      // The extract entry is evaluated against built packages while the app graph aliases workspace
+      // sources, so the coverage check reports recipes that are in the entry (phthalo-dev/typestyles#384).
+      coverage: false,
       extract: {
         modules: ["typestyles-entry.ts"],
       },
@@ -60,6 +63,9 @@ export default defineConfig({
       ),
       "@homeslate/adapters": fileURLToPath(
         new URL("../../packages/adapters/src/index.ts", import.meta.url),
+      ),
+      "@homeslate/host-react/styles": fileURLToPath(
+        new URL("../../packages/host-react/src/styles.ts", import.meta.url),
       ),
       "@homeslate/host-react": fileURLToPath(
         new URL("../../packages/host-react/src/index.ts", import.meta.url),

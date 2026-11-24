@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import {
+  Button,
   Chip,
   HStack,
   IconButton,
@@ -116,14 +117,10 @@ export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmLis
           No alarms set.
         </Text>
         {!readOnly && (
-          <IconButton
-            icon={<IconPlus size={18} />}
-            appearance="subtle"
-            size="lg"
-            onClick={handleAdd}
-            aria-label="Add alarm"
-            className={classes.addBtn}
-          />
+          <Button appearance="subtle" size="sm" className={classes.addButton} onClick={handleAdd}>
+            <IconPlus size={16} />
+            Add alarm
+          </Button>
         )}
       </Stack>
     );
@@ -210,14 +207,10 @@ export function AlarmListEditor({ alarms, onChange, readOnly = false }: AlarmLis
         </Surface>
       ))}
       {!readOnly && (
-        <IconButton
-          icon={<IconPlus size={18} />}
-          appearance="subtle"
-          size="lg"
-          onClick={handleAdd}
-          aria-label="Add alarm"
-          className={classes.addBtn}
-        />
+        <Button appearance="subtle" size="sm" className={classes.addButton} onClick={handleAdd}>
+          <IconPlus size={16} />
+          Add alarm
+        </Button>
       )}
     </Stack>
   );

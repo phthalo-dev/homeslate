@@ -302,7 +302,7 @@ function PhotoThumbGrid({ photos, onRemove }: PhotoThumbGridProps) {
                   icon={<IconX size={10} />}
                   size="sm"
                   tone="danger"
-                  appearance="filled"
+                  appearance="solid"
                   className={classes.thumbRemove}
                   aria-label="Remove photo"
                   onClick={() => onRemove(index)}
@@ -624,7 +624,7 @@ export function PhotoWidgetSettings({ widget, onConfigChange }: WidgetProps<Phot
               <Button
                 key={value}
                 size="sm"
-                appearance={interval === value ? "filled" : "outline"}
+                appearance={interval === value ? "solid" : "outline"}
                 onClick={() => onConfigChange({ interval: value })}
               >
                 {label}
@@ -632,9 +632,7 @@ export function PhotoWidgetSettings({ widget, onConfigChange }: WidgetProps<Phot
             ))}
             <Button
               size="sm"
-              appearance={
-                !INTERVAL_PRESETS.some((p) => p.value === interval) ? "filled" : "outline"
-              }
+              appearance={!INTERVAL_PRESETS.some((p) => p.value === interval) ? "solid" : "outline"}
               onClick={() => {
                 if (INTERVAL_PRESETS.some((p) => p.value === interval)) {
                   onConfigChange({ interval: 20 });

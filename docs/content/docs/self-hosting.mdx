@@ -159,8 +159,8 @@ createRoot(document.getElementById("root")!).render(
 `HomeslateApp` takes three optional props: `productName`, `apiBaseUrl` (when the
 API is on another origin), and `widgetRegistry` (see
 [Customize](#customize)). To use your own chrome or routing, compose the
-exported `DisplayListPage`, `EditorPage`, `ViewEditorPage`, and `KioskPage`
-yourself and read `useHomeslateHost()` for the config.
+exported `DisplayListPage`, `DisplayLayout` (with `DisplayViewsPage`, `DisplaySettingsPage`,
+`DisplayThemePage`, and `ViewEditorPage` as its child routes), and `KioskPage` yourself and read `useHomeslateHost()` for the config.
 
 ## 4. Styles and HTML
 

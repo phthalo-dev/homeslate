@@ -33,7 +33,6 @@ export const library = styles.class("themeeditor-library", {
   },
   "@media (max-width: 900px)": {
     flexBasis: "auto",
-    maxHeight: "280px",
   },
 });
 
@@ -47,18 +46,18 @@ export const workspace = styles.class("themeeditor-workspace", {
     minHeight: "0",
   },
   "@media (max-width: 900px)": {
-    minHeight: "680px",
+    minHeight: "320px",
   },
 });
 
 export const libraryScroll = styles.class("themeeditor-libraryScroll", {
   flex: "1",
-  minHeight: "200px",
+  minHeight: "64px",
   maxHeight: "360px",
   "@media (min-width: 960px)": {
     maxHeight: "none",
-    flex: "1",
-    minHeight: "280px",
+    flex: "0 1 auto",
+    minHeight: "64px",
   },
 });
 
@@ -409,4 +408,43 @@ export const previewPlaceholder = styles.class("themeeditor-previewPlaceholder",
   fontSize: "var(--var-ui-fontSize-sm)",
   textAlign: "center",
   padding: "1rem",
+});
+
+export const formField = styles.class("themeeditor-formField", {
+  width: "100%",
+  minWidth: 0,
+});
+
+/** Preset gallery on the empty Theme section. */
+export const presetGrid = styles.class("themeeditor-presetGrid", {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(8.5rem, 1fr))",
+  gap: "0.75rem",
+  width: "100%",
+  maxWidth: "560px",
+});
+
+export const presetCard = styles.class("themeeditor-presetCard", {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  gap: "0.5rem",
+  height: "auto",
+  padding: "0.6rem",
+  border: "1px solid var(--var-ui-color-border-default)",
+  borderRadius: "var(--var-ui-radius-md)",
+  textAlign: "start",
+});
+
+export const swatchRow = styles.class("themeeditor-swatchRow", {
+  display: "flex",
+  height: "28px",
+  borderRadius: "var(--var-ui-radius-sm)",
+  overflow: "hidden",
+});
+
+/** Each swatch's color arrives as `--swatch`. */
+export const swatch = styles.class("themeeditor-swatch", {
+  flex: 1,
+  background: "var(--swatch)",
 });

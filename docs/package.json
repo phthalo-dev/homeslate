@@ -17,8 +17,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "@typestyles/build-runner": "^0.8.1",
-    "@typestyles/vite": "^0.7.1",
+    "@typestyles/build-runner": "^0.10.0",
+    "@typestyles/vite": "^0.9.0",
     "typedoc": "^0.28.14",
     "typedoc-plugin-frontmatter": "^1.3.0",
     "typedoc-plugin-markdown": "^4.9.0",

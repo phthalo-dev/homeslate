@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Button, ColorInput, HStack, IconButton, Stack, Text, TextField } from "@var-ui/react";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { v4 as uuidv4 } from "uuid";
@@ -51,7 +52,11 @@ export function HouseholdEditor({
       )}
       {members.map((member) => (
         <HStack key={member.id} align="center" gap="sm" className={classes.row}>
-          <span className={classes.disc} style={{ background: member.color }} aria-hidden>
+          <span
+            className={classes.disc}
+            style={{ "--member-color": member.color } as CSSProperties}
+            aria-hidden
+          >
             {member.name.trim().charAt(0).toUpperCase() || "?"}
           </span>
           <TextField
@@ -59,13 +64,13 @@ export function HouseholdEditor({
             value={member.name}
             onValueChange={(value) => update(member.id, { name: value })}
             disabled={readOnly}
-            style={{ flex: 1 }}
+            className={classes.nameField}
             aria-label="Member name"
           />
           {!readOnly && (
             <>
               <ColorInput
-                label={`Color for ${member.name}`}
+                aria-label={`Color for ${member.name}`}
                 value={member.color}
                 onValueChange={(value) => update(member.id, { color: value })}
                 swatches={[...HOUSEHOLD_MEMBER_COLORS]}

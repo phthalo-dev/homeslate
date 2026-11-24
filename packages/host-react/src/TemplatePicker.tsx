@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import { Button, Dialog, HStack, Stack, Surface, Text } from "@var-ui/react";
+import * as shared from "./shared.styles";
 import * as TablerIcons from "@tabler/icons-react";
 import type { DisplayDocument } from "@homeslate/schema";
 import {
@@ -13,6 +14,7 @@ const CHOICES: Array<{ id: NewDisplayChoice; name: string; description: string; 
     id: "blank",
     name: "Blank",
     description: "An empty board you can design yourself.",
+    icon: "IconLayoutBoard",
   },
   ...DOCUMENT_TEMPLATES.map((template) => ({
     id: template.id,
@@ -43,7 +45,9 @@ export function TemplatePickerChoices(props: {
           <Surface key={choice.id} padding="sm">
             <HStack justify="between" align="center" gap="sm">
               <HStack gap="sm" align="center">
-                {Icon ? <Icon size={18} stroke={1.5} /> : null}
+                <span className={shared.iconSlot}>
+                  {Icon ? <Icon size={18} stroke={1.5} /> : null}
+                </span>
                 <Stack gap="xs">
                   <Text weight="semibold">{choice.name}</Text>
                   <Text size="sm" tone="secondary">
@@ -53,10 +57,8 @@ export function TemplatePickerChoices(props: {
               </HStack>
               <Button
                 size="sm"
-                tone={choice.id === "blank" ? "accent" : undefined}
-                appearance={choice.id === "blank" ? "filled" : undefined}
                 disabled={loading}
-                aria-label={`Create ${choice.name} display`}
+                aria-label={`Use ${choice.name} template`}
                 onClick={() => onCreate(documentForNewDisplay(choice.id))}
               >
                 Use
@@ -88,6 +90,11 @@ export function TemplatePicker(props: {
           </Text>
           {error ? <Text role="alert">{error}</Text> : null}
           <TemplatePickerChoices loading={loading} onCreate={onCreate} />
+          <HStack justify="end">
+            <Button size="sm" appearance="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+          </HStack>
         </Stack>
       </Dialog.Popup>
     </Dialog.Root>
