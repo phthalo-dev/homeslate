@@ -1,5 +1,58 @@
 # @homeslate/host-react
 
+## 0.4.0
+
+### Minor Changes
+
+- [#54](https://github.com/phthalo-dev/homeslate/pull/54) [`96339ef`](https://github.com/phthalo-dev/homeslate/commit/96339ef995269cd2f2d6cd07b5133bcffde21fce) Thanks [@dbanksdesign](https://github.com/dbanksdesign)! - Move to `@var-ui` 0.13 and `typestyles` 0.37, and rework the admin interface.
+  
+  **`@homeslate/host-react` (breaking)**
+  
+  - `EditorPage` is replaced by a layout route. `DisplayLayout` loads the display once and renders one shared app bar: the logo, the breadcrumb trail, the editor's toolbar, and the export and kiosk actions. On phones the trail collapses to the current page so the bar stays one row. Its child routes keep the bar mounted as you move between them:
+    - `ManageLayout` wraps `DisplayViewsPage` (`/edit/:id`), `DisplaySettingsPage` (`/edit/:id/settings`) and `DisplayThemePage` (`/edit/:id/theme`) with a 280px left nav, the same width as the view editor's widget palette. The left nav and the content scroll independently. Below VarUI's md breakpoint the nav becomes a sections switcher.
+    - `ViewEditorPage` (`/edit/:id/views/:viewId`) now sits inside `DisplayLayout`, with the editor toolbar in the app bar.
+  - New exports: `DisplayLayout`, `ManageLayout`, `DisplayViewsPage`, `DisplaySettingsPage`, `DisplayThemePage`, `useDisplay`.
+  - The empty Theme section starts from a gallery of presets with color swatches; the library's create form appears once a theme exists.
+  - The display list shows displays as cards. Views are cards with a thumbnail of their widget layout. Settings are grouped into cards of label/description/control rows.
+  - Styling moves to TypeStyles: the package now depends on `typestyles` and exposes `@homeslate/host-react/styles`, which hosts should import from their typestyles extract entry. There are no inline styles or stylesheet files left in the package.
+  - Button hierarchy: one solid primary per page, outlined secondary actions, ghost tertiary actions.
+  
+  **`@homeslate/editor`**
+  
+  - `Editor` takes an optional `toolbarContainer`. Pass an element to render the toolbar (Background Settings, Household, Themes) there, for example in the host's app bar. Omit it for the previous inline bar.
+  - Toolbar buttons are ghost buttons, icon-only below 600px. The widget palette starts collapsed on phones, has a filter field, and names its buttons "Add X widget".
+  
+  **`@homeslate/widgets`**
+  
+  - `Button` `appearance="filled"` becomes `"solid"` (renamed in VarUI 0.13).
+  - The household editor row wraps and fits dialogs on narrow screens, and the alarm editor's add control is a labelled "Add alarm" button.
+
+- [#52](https://github.com/phthalo-dev/homeslate/pull/52) [`ce1a9b4`](https://github.com/phthalo-dev/homeslate/commit/ce1a9b46b6b2f48670a0d432519754e1a6f1d6aa) Thanks [@dbanksdesign](https://github.com/dbanksdesign)! - Move to `@var-ui/core` 0.9, `@var-ui/react` 0.9, `@var-ui/astro` 0.6, `@var-ui/docs` 0.3, `@var-ui/icons` 0.3, and `typestyles` 0.35, with every version pinned in the workspace catalog so all packages resolve one style registry.
+  
+  This rolls up the 0.2 → 0.9 migration, which drops the `is*`/`selectedKey` prop vocabulary and the app-level overlay portal:
+  
+  - `onPress` → `onClick`, `isDisabled` → `disabled`, `isPending` → `loading`, `isRequired` → `required`.
+  - `onChange` → `onValueChange` for text, number, slider, calendar, and color fields; sliders use `onValueCommit` for the end of a drag.
+  - `isSelected` → `checked` / `onCheckedChange` for checkbox and switch; `selected` / `onSelectedChange` for toggle buttons and chips.
+  - `selectedKey` / `onSelectionChange` → `value` / `onValueChange`; `SegmentedControl` now takes a single value instead of a key set.
+  - Option and tab definitions use `{ value, label }` instead of `{ id, label }`.
+  - `SimpleTooltip` is replaced by the `Tooltip.Root` / `Tooltip.Trigger` / `Tooltip.Popup` compound, and `SimpleGrid` by `Grid`.
+  - `Dialog.Backdrop` is gone, and no overlay accepts `portalContainer`. `@homeslate/widgets` no longer exports `OverlayPortalContext` / `useOverlayPortalContainer`, since overlays no longer need a host element.
+  - `Alert` uses `tone` instead of `variant`, `Collapsible` uses `expanded` instead of `isExpanded`, `PinInput` uses `characters` instead of `type`, and `AppShell` `contentPadding` takes a space token instead of a number.
+  - `LayerProvider` is gone from `@var-ui/react`; apps no longer wrap the tree in it.
+  
+  Our own component APIs follow the same vocabulary, so `TemplatePicker` from `@homeslate/host-react` takes `open` / `loading` instead of `isOpen` / `isPending`. `@homeslate/widgets` keeps exporting `useDebouncedValue`, now re-exported from `@var-ui/react` instead of a local copy.
+  
+  `@homeslate/widgets`, `@homeslate/display`, and `@homeslate/editor` also return to the 0.x line: their packages are still settling, so this release is `0.2.0` rather than `1.4.0` / a major. The `1.x` versions stay on npm, but new work lands on 0.x.
+
+### Patch Changes
+
+- Updated dependencies [[`96339ef`](https://github.com/phthalo-dev/homeslate/commit/96339ef995269cd2f2d6cd07b5133bcffde21fce), [`ce1a9b4`](https://github.com/phthalo-dev/homeslate/commit/ce1a9b46b6b2f48670a0d432519754e1a6f1d6aa), [`ce1a9b4`](https://github.com/phthalo-dev/homeslate/commit/ce1a9b46b6b2f48670a0d432519754e1a6f1d6aa), [`a01b4fe`](https://github.com/phthalo-dev/homeslate/commit/a01b4fed63aeb389125a45783eccd3e6e2ff4430), [`ce1a9b4`](https://github.com/phthalo-dev/homeslate/commit/ce1a9b46b6b2f48670a0d432519754e1a6f1d6aa), [`4f692a9`](https://github.com/phthalo-dev/homeslate/commit/4f692a9d5cd7e34e7ecc0d873353c35176c6f810)]:
+  - @homeslate/editor@0.2.0
+  - @homeslate/widgets@0.2.0
+  - @homeslate/display@0.2.0
+  - @homeslate/schema@0.1.3
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@homeslate/server",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Hono API for homeslate: displays, Google OAuth, and the calendar, commute, weather, and Home Assistant proxies.",
   "license": "MIT",
   "repository": {
