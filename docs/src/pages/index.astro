@@ -1,106 +1,254 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import DocsMarketingPage from '@var-ui/docs/DocsMarketingPage';
+import CodeBlock from '@var-ui/docs/CodeDemoCodeBlock';
+import PackageInstall from '@var-ui/docs/PackageInstall';
+import { defaultThemeClassName } from '@var-ui/core';
+import { Badge, Button, Card, Grid, Heading, HStack, Link, Stack, Text } from '@var-ui/astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { brand, loadDocsNavigation, topNav } from '../data/navigation';
+
+const { searchItems } = await loadDocsNavigation();
+const clone = `git clone https://github.com/phthalo-dev/homeslate.git
+cd homeslate
+vp install
+vp run dev:reference`;
+
+// What the built-in widgets cover, grouped; names come from `packages/widgets/src/builtins.ts`.
+const features = [
+  {
+    title: 'Calendars',
+    text: 'Any iCal feed, plus Google Calendar in month, week, day and agenda views.',
+  },
+  {
+    title: 'Weather and commute',
+    text: 'Current conditions and forecast, official US weather alerts, and travel times for your usual routes.',
+  },
+  {
+    title: 'Photos',
+    text: 'Slideshows from a URL, Google Photos or device uploads, and a masonry collage.',
+  },
+  {
+    title: 'The household',
+    text: 'Alarms, timers, chores, a daily routine, a shared grocery list and pinned announcements.',
+  },
+  {
+    title: 'News, stocks and scores',
+    text: 'RSS headlines, market prices and live sports scores on one screen.',
+  },
+  {
+    title: 'Home Assistant',
+    text: 'Thermostats, lights, scenes, locks and cameras, with direct or relayed access.',
+  },
+];
+
+const steps = [
+  {
+    title: 'Design in the editor',
+    text: 'Lay out widgets on a view with @homeslate/editor, and preview it as you go.',
+    href: '/docs/packages/editor',
+    hint: 'Editor package →',
+  },
+  {
+    title: 'Serve from your host',
+    text: 'The host stores your views and fetches calendars, weather and more through @homeslate/server.',
+    href: '/docs/packages/server',
+    hint: 'Server package →',
+  },
+  {
+    title: 'Show it on a kiosk',
+    text: 'Open the view full screen on any display with @homeslate/display.',
+    href: '/docs/packages/display',
+    hint: 'Display package →',
+  },
+];
 ---
 
-<BaseLayout title="Homeslate" showToc={false}>
-  <article class="home">
-    <header class="intro">
-      <h1>Homeslate</h1>
-      <p class="pitch">
-        MIT packages and a clone-and-run host for a household command center.
-      </p>
-    </header>
+<DocsMarketingPage
+  title="Homeslate: a household command center"
+  themeClassName={defaultThemeClassName}
+  topNav={topNav}
+  searchItems={searchItems}
+  brand={brand}
+  bleed
+>
+  <meta
+    slot="head"
+    name="description"
+    content="MIT packages and a clone-and-run host for a household command center: calendars, weather, commute and a kiosk display you design yourself."
+  />
+  <span slot="brand" class="homeslate-wordmark">Homeslate</span>
+  <Stack gap="xxl" className="home">
+    <div class="home__hero">
+    <Stack gap="md" className="home__pitch">
+      <HStack><Badge tone="accent">Open source · MIT</Badge></HStack>
+      <Heading level={1} size="xl" className="home__title">Homeslate</Heading>
+      <Text size="lg" tone="secondary" className="home__lead">
+        A household command center. Design the calendar, weather and commute display for your
+        kitchen wall in an editor, then run it on any screen as a kiosk. MIT packages and a
+        clone-and-run host.
+      </Text>
+      <HStack gap="sm" wrap>
+        <Button href="/docs/getting-started" tone="accent" appearance="solid" size="lg">
+          Get started
+        </Button>
+        <Button
+          href="https://github.com/phthalo-dev/homeslate"
+          tone="neutral"
+          appearance="outline"
+          size="lg"
+        >
+          View on GitHub
+        </Button>
+      </HStack>
+    </Stack>
 
-    <nav class="doors" aria-label="Start here">
-      <a class="door" href="/docs/getting-started">
-        <h2>Run it</h2>
-        <p>Clone the repo, install, and start the reference editor and kiosk.</p>
+    <figure class="home__shot">
+      <a href="/docs/getting-started" aria-label="Get started with Homeslate">
+        <img
+          class="home__img home__img--light"
+          src="/images/editor-light.png"
+          width="2000"
+          height="1120"
+          alt="The Homeslate editor showing a Morning view with clock, weather, calendar, todo and news widgets beside the widget palette."
+          fetchpriority="high"
+        />
+        <img class="home__img home__img--dark" src="/images/editor.png" width="2000" height="1120" alt="" aria-hidden="true" />
       </a>
-      <a class="door" href="/docs/packages">
-        <h2>Embed the packages</h2>
-        <p>Host contract and usage for every published <code>@homeslate/*</code> package.</p>
-      </a>
-      <a class="door" href="/docs/api">
-        <h2>Read the API</h2>
-        <p>Generated signatures for each public entry point.</p>
-      </a>
-    </nav>
+      <figcaption>The reference editor: lay out widgets on a view, then open it as a kiosk.</figcaption>
+    </figure>
+    </div>
 
-    <p class="note">
-      The managed hosted product lives in the private
-      <a href="https://github.com/phthalo-dev/homeslate-hosted">homeslate-hosted</a> repository.
-    </p>
-  </article>
-</BaseLayout>
+    <Stack gap="md">
+      <Heading level={2} size="lg">Run it locally</Heading>
+      <CodeBlock code={clone} language="bash" filename="Terminal" />
+      <Text tone="secondary">
+        Then open <code>http://127.0.0.1:5174</code>. Node 22.13 or newer is required;
+        <Link href="/docs/getting-started">getting started</Link> walks through what you should see.
+      </Text>
+    </Stack>
 
-<style>
+    <Stack gap="md">
+      <Heading level={2} size="lg">How it works</Heading>
+      <Grid columns={{ base: 1, md: 3 }} gap="md">
+        {steps.map((step, i) => <Card title={`${i + 1}. ${step.title}`} description={step.text} href={step.href} hint={step.hint} />)}
+      </Grid>
+    </Stack>
+
+    <Stack gap="md">
+      <Heading level={2} size="lg">What it shows</Heading>
+      <Grid columns={{ base: 1, md: 2, lg: 3 }} gap="md">
+        {features.map((f) => <Card title={f.title} description={f.text} />)}
+      </Grid>
+    </Stack>
+
+    <Stack gap="md">
+      <Heading level={2} size="lg">Where to go next</Heading>
+      <Grid columns={{ base: 1, md: 3 }} gap="md">
+        <Card
+          href="/docs/getting-started"
+          title="Run it"
+          description="Clone the repo, install, and start the reference editor and kiosk."
+          hint="Getting started →"
+        />
+        <Card
+          href="/docs/packages"
+          title="Embed the packages"
+          description="Host contract and usage for every published @homeslate/* package."
+          hint="Packages →"
+        />
+        <Card
+          href="/docs/api"
+          title="Read the API"
+          description="Generated signatures for each public entry point."
+          hint="API reference →"
+        />
+      </Grid>
+    </Stack>
+
+    <Stack gap="sm">
+      <Heading level={2} size="lg">Or depend on the packages</Heading>
+      <Text tone="secondary">
+        Write a small host app and upgrade with a version bump. See
+        <Link href="/docs/self-hosting">self-hosting</Link>.
+      </Text>
+      <PackageInstall packages="@homeslate/server @homeslate/host-react" />
+    </Stack>
+  </Stack>
+  <SiteFooter slot="footer" />
+</DocsMarketingPage>
+
+<style is:global>
+  .homeslate-wordmark {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  /* Same gutters as the docs pages: 16px on phones, 32px from the md breakpoint. */
   .home {
-    max-width: 36rem;
-    padding: 2.5rem 0 4rem;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding: 2rem 1rem 3rem;
+    box-sizing: border-box;
   }
-
-  .intro h1 {
-    margin: 0 0 0.5rem;
-    font-size: clamp(2rem, 4vw, 2.75rem);
-    font-weight: 650;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
+  @media (min-width: 768px) {
+    .home {
+      padding: 3.5rem 2rem 4rem;
+    }
   }
-
-  .pitch {
+  .home__title {
+    font-size: clamp(2.5rem, 6vw, 3.75rem);
+    line-height: 1.05;
+  }
+  .home__lead {
+    max-width: 42rem;
+  }
+  /* Hero: the pitch beside the screenshot on wide screens, stacked below that. */
+  .home__hero {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  @media (min-width: 1100px) {
+    .home__hero {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      gap: 3rem;
+    }
+  }
+  .home__shot {
     margin: 0;
-    font-size: 1.125rem;
-    line-height: 1.45;
-    color: var(--var-ui-color-text-secondary, inherit);
-    max-width: 28rem;
   }
-
-  .doors {
-    display: flex;
-    flex-direction: column;
-    margin-block: 2.5rem 2rem;
-    border-block-start: 1px solid var(--var-ui-color-border-default, currentColor);
-  }
-
-  .door {
+  .home__img {
     display: block;
-    padding-block: 1.15rem;
-    padding-inline: 0 1rem;
-    border-block-end: 1px solid var(--var-ui-color-border-default, currentColor);
-    text-decoration: none;
-    color: inherit;
+    width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+    border: 1px solid var(--var-ui-color-border-default, rgba(128, 128, 128, 0.3));
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
   }
-
-  .door:hover h2,
-  .door:focus-visible h2 {
-    text-decoration: underline;
-    text-underline-offset: 0.18em;
+  /* Light and dark captures of the same view; the page's colour mode picks one. */
+  .home__img--dark {
+    display: none;
   }
-
-  .door:focus-visible {
-    outline: 2px solid var(--var-ui-color-border-focus, currentColor);
-    outline-offset: 4px;
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-color-mode='light']) .home__img--light {
+      display: none;
+    }
+    :root:not([data-color-mode='light']) .home__img--dark {
+      display: block;
+    }
   }
-
-  .door h2 {
-    margin: 0 0 0.3rem;
-    font-size: 1.125rem;
-    font-weight: 600;
-    letter-spacing: -0.015em;
+  :root[data-color-mode='dark'] .home__img--light {
+    display: none;
   }
-
-  .door p {
-    margin: 0;
-    max-width: 32rem;
-    font-size: 0.95rem;
-    line-height: 1.45;
-    color: var(--var-ui-color-text-secondary, inherit);
+  :root[data-color-mode='dark'] .home__img--dark {
+    display: block;
   }
-
-  .note {
-    margin: 0;
+  .home__shot figcaption {
+    margin-top: 0.75rem;
     font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--var-ui-color-text-secondary, inherit);
+    opacity: 0.75;
   }
 </style>
+
+<script>
+  import '../../typestyles-entry.ts';
+</script>

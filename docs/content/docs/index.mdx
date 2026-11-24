@@ -1,21 +1,25 @@
 ---
-title: Homeslate
-description: Public MIT packages and reference self-host app for Homeslate.
+title: Homeslate documentation
+eyebrow: Documentation
+description: Public MIT packages and a clone-and-run reference host for a household command center. The managed hosted product lives in a private repository.
 ---
 
-# Homeslate
+Homeslate is a household command center: a calendar, weather and commute display you design yourself. This repository publishes the `@homeslate/*` packages on npm and a reference host (`apps/reference`) with no accounts, Stripe, or quotas.
 
-Public MIT packages and a reference self-host app. The managed hosted product (Netlify + Neon) lives in the private [homeslate-hosted](https://github.com/phthalo-dev/homeslate-hosted) repository.
+## Start here
 
-## What this repo is
+<Grid columns={{ base: 1, md: 2 }} gap="md">
+  <Card href="/docs/getting-started" title="Getting started" description="Clone the repo, install, and run the reference editor and kiosk." hint="Run it →" />
+  <Card href="/docs/reference" title="Reference app" description="Ports, sqlite persistence, and optional Google, commute and Home Assistant settings." hint="Reference →" />
+  <Card href="/docs/packages" title="Packages" description="The host contract and a usage guide for every published @homeslate/* package." hint="Packages →" />
+  <Card href="/docs/api" title="API reference" description="Generated signatures for each public entry point." hint="API →" />
+  <Card href="/docs/self-hosting" title="Self-hosting" description="Build your own host from @homeslate/server and @homeslate/host-react." hint="Self-hosting →" />
+  <Card href="/docs/releasing" title="Releasing" description="Independent package versions and Changesets." hint="Releasing →" />
+</Grid>
 
-- npm packages published as `@homeslate/*`
-- A clone-and-run reference host (`apps/reference`) with no accounts, Stripe, or quotas
+## What is in the repository
 
-## Next
+- npm packages published as `@homeslate/*`.
+- A clone-and-run reference host (`apps/reference`) that is a thin consumer of those packages.
 
-- [Getting started](/docs/getting-started) — clone and run
-- [Reference app](/docs/reference) — ports, sqlite, optional APIs
-- [Packages](/docs/packages) — map, usage, host contract
-- [API](/docs/api) — generated public exports
-- [Releasing](/docs/releasing) — Changesets
+The managed hosted product (Netlify and Neon) lives in the private [homeslate-hosted](https://github.com/phthalo-dev/homeslate-hosted) repository.

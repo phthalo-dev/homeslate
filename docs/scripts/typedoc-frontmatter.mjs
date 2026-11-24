@@ -5,7 +5,8 @@ export function load(app) {
   app.renderer.on(MarkdownPageEvent.BEGIN, (page) => {
     page.frontmatter = {
       ...page.frontmatter,
-      title: process.env.HOMESLATE_API_TITLE,
+      title: `${process.env.HOMESLATE_API_TITLE} API`,
+      eyebrow: "API",
       description: process.env.HOMESLATE_API_DESCRIPTION,
     };
   });

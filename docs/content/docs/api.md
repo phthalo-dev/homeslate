@@ -1,11 +1,12 @@
 ---
-title: API
+title: API reference
+eyebrow: API
 description: Generated public API for @homeslate/* entry points.
 ---
 
-# API
-
 These pages are generated from the public TypeScript barrels (not `dist`). Signatures and types are the source of truth; missing JSDoc is expected.
+
+## Entry points
 
 - [`@homeslate/schema`](/docs/api/schema)
 - [`@homeslate/google`](/docs/api/google)
@@ -16,5 +17,11 @@ These pages are generated from the public TypeScript barrels (not `dist`). Signa
 - [`@homeslate/display/canvas`](/docs/api/display/canvas)
 - [`@homeslate/editor`](/docs/api/editor)
 - [`@homeslate/adapters`](/docs/api/adapters)
+- [`@homeslate/server`](/docs/api/server)
+- [`@homeslate/agent`](/docs/api/agent)
+- [`@homeslate/relay`](/docs/api/relay)
+- [`@homeslate/host-react`](/docs/api/host-react)
 
-Usage sketches live under [Packages](/docs/packages).
+## Usage guides
+
+Narrative usage guides live under [Packages](/docs/packages).

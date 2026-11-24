@@ -1,34 +1,460 @@
 ---
 import DocsPage from '@var-ui/docs/DocsPage';
 import { defaultThemeClassName } from '@var-ui/core';
-import { docsSearchItems, docsSidebarSections } from '../data/navigation';
+import { Breadcrumbs, Card, Collapsible, Grid, Link, Toc, mergeProps } from '@var-ui/astro';
+import { docsPage } from '@var-ui/docs/styles';
+import { getEntry, render } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+import { brand, loadDocsNavigation, topNav } from '../data/navigation';
 
-const {
-  title = 'Homeslate',
-  contentWidth = 'default',
-  showToc: showTocProp,
-} = Astro.props as {
-  title?: string;
-  contentWidth?: 'default' | 'full';
-  showToc?: boolean;
-};
+const { title = 'Homeslate', showToc } = Astro.props as { title?: string; showToc?: boolean };
+const { sidebarSections, searchItems } = await loadDocsNavigation();
+
+// The guide route stores the matched entry here; use it for the meta description, the pager,
+// the edit link and the mobile "On this page" list.
+const route = Astro.locals.varDocsRoute;
+const description = route?.description;
+const current = route?.pathname.replace(/\/$/, '') || '';
+
+// "Homeslate documentation · Homeslate" repeats itself; keep the bare title in that case.
+const documentTitle = /^Homeslate\b/.test(title) ? title.replace(/ · Homeslate$/, '') : title;
+
+// Prev/next walk the sidebar group the page belongs to, so guides, packages and API each read in order.
+const group = sidebarSections.find((s) => s.items.some((i) => i.link === current));
+const at = group ? group.items.findIndex((i) => i.link === current) : -1;
+const prev = group && at > 0 ? group.items[at - 1] : undefined;
+const next = group && at >= 0 ? group.items[at + 1] : undefined;
+
+// Headings and file path come from the content entry. `render()` is cached per entry by Astro.
+const entry = route ? await getEntry('docs', route.id) : undefined;
+const headings: MarkdownHeading[] = entry ? (await render(entry)).headings : [];
+// Generated API pages have a heading per symbol; the mobile list keeps only the groups there.
+const maxDepth = headings.length > 25 ? 2 : 3;
+const outline = headings.filter((h) => h.depth >= 2 && h.depth <= maxDepth);
+
+// Generated API pages (`api/<package>[/<subpath>]`) are not edited by hand: link to their source.
+const REPO = 'https://github.com/phthalo-dev/homeslate';
+const apiPackage = route?.id.startsWith('api/') ? route.id.split('/')[1] : undefined;
+const editHref = apiPackage
+  ? `${REPO}/tree/main/packages/${apiPackage}/src`
+  : entry?.filePath
+    ? `${REPO}/edit/main/docs/${entry.filePath}`
+    : undefined;
+const editLabel = apiPackage ? 'View the source on GitHub' : 'Edit this page on GitHub';
+const issueHref = `${REPO}/issues/new?title=${encodeURIComponent(`Docs: ${title.replace(/ · Homeslate$/, '')}`)}`;
+
+// Breadcrumb: Docs > section > page. "Docs" is the guides index, so a guide has no middle step;
+// Packages and API link to their own index pages. Section landing pages drop the duplicate last step.
+const landingLabel = (g: string | undefined, path: string) =>
+  g && (path === '/docs/packages' || path === '/docs/api') ? g : undefined;
+const groupLanding = { Packages: '/docs/packages', API: '/docs/api' } as const;
+const pageLabel = title.replace(/ · Homeslate$/, '');
+// Landing pages are labelled "Packages overview" in the sidebar; the trail just says "Packages".
+const leaf = current === '/docs' ? 'Overview' : landingLabel(group?.title, current) ?? group?.items[at]?.text ?? pageLabel;
+const crumbs: { id: string; label: string; href?: string }[] = [{ id: 'docs', label: 'Docs', href: '/docs' }];
+const landing = group ? groupLanding[group.title as keyof typeof groupLanding] : undefined;
+if (landing && current !== landing) {
+  crumbs.push({ id: 'group', label: group?.title ?? '', href: landing });
+}
+if (current) crumbs.push({ id: 'page', label: leaf });
+
+// API pages have a heading per symbol (hundreds); their rail lists the kinds (h2) and search finds symbols.
+const apiToc = Boolean(apiPackage);
+const rail = docsPage();
+const markdownGlyph =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3.5" width="13" height="9" rx="2"/><path d="M4 10V6l2 2 2-2v4M11 6v4m-1.5-1.5L11 10l1.5-1.5"/></svg>';
 ---
 
 <DocsPage
-  title={title}
-  contentWidth={contentWidth}
-  showToc={showTocProp}
+  title={documentTitle}
+  showToc={showToc}
   themeClassName={defaultThemeClassName}
-  topNav={[{ text: 'Docs', link: '/docs', match: '/docs' }]}
-  sidebarSections={docsSidebarSections}
-  searchItems={docsSearchItems}
-  brand={{ heading: 'Homeslate', href: '/' }}
+  topNav={topNav}
+  sidebarSections={sidebarSections}
+  searchItems={searchItems}
+  brand={brand}
 >
-  <slot name="head" slot="head" />
-  <slot name="toc" slot="toc" />
+  <Fragment slot="head">
+    {description ? <meta name="description" content={description} /> : null}
+    <slot name="head" />
+  </Fragment>
+  <span slot="brand" class="homeslate-wordmark">Homeslate</span>
+  {
+    apiToc ? (
+      <Fragment slot="toc">
+        <Toc
+          title="On this page"
+          label="On this page"
+          auto
+          contentSelector=".docs-article"
+          headingSelector="h2[id]:not([data-not-prose] *)"
+          className="docs-page-toc-nav"
+          stickyTop="calc(var(--docs-header-height, 3.5rem) + 1.5rem)"
+        />
+        <p class="docs-toc-hint">Symbols are listed by kind. Search (⌘K) jumps to any symbol.</p>
+        <div {...mergeProps(rail.tocActions)}>
+          <a {...mergeProps(rail.tocAction)} href={`/docs/${route?.id}.md`}>
+            <span aria-hidden="true" set:html={markdownGlyph} />
+            View as Markdown
+          </a>
+        </div>
+      </Fragment>
+    ) : (
+      <slot name="toc" slot="toc" />
+    )
+  }
+  {
+    crumbs.length > 1 ? (
+      <Breadcrumbs items={crumbs} label="Breadcrumb" className="docs-breadcrumbs" />
+    ) : null
+  }
+  {
+    outline.length > 1 ? (
+      <Collapsible title="On this page" variant="bordered" className="docs-mobile-toc">
+        <ul class="docs-mobile-toc__list">
+          {outline.map((h) => (
+            <li data-depth={h.depth}>
+              <Link href={`#${h.slug}`} tone="secondary">
+                {h.text}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Collapsible>
+    ) : null
+  }
   <slot />
+  {
+    editHref ? (
+      <div class="docs-edit-link">
+        <Link href={editHref} tone="secondary" size="sm">{editLabel}</Link>
+        <Link href={issueHref} tone="secondary" size="sm">Report an issue</Link>
+      </div>
+    ) : null
+  }
+  {
+    prev || next ? (
+      <nav aria-label="Previous and next pages" class="docs-pager">
+        <Grid columns={2} gap="md">
+          {prev ? <Card href={prev.link} title={prev.text} hint="Previous" /> : <span />}
+          {next ? <Card href={next.link} title={next.text} hint="Next" /> : <span />}
+        </Grid>
+      </nav>
+    ) : null
+  }
 </DocsPage>
+
+<style is:global>
+  /* Anchor jumps (TOC, search results, #hash loads) land below the collapsed page bar (3.5rem). */
+  .docs-article :is(h2, h3, h4, h5) {
+    scroll-margin-top: 4.75rem;
+  }
+
+  /* Sidebar group headers toggle (they do not navigate): make that read as a control. */
+  .var-ui-side-nav__sectionSummary {
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 120ms;
+  }
+  .var-ui-side-nav__sectionSummary:hover {
+    background: var(--var-ui-color-background-muted, rgba(128, 128, 128, 0.12));
+  }
+  .var-ui-side-nav__sectionSummary:hover .var-ui-side-nav__sectionTitle,
+  .var-ui-side-nav__sectionSummary:hover .var-ui-side-nav__sectionChevron {
+    color: var(--var-ui-color-text-primary, inherit);
+  }
+  .var-ui-side-nav__sectionChevron svg {
+    width: 1rem;
+    height: 1rem;
+    stroke-width: 2.25;
+  }
+  .var-ui-side-nav__sectionCount {
+    font-variant-numeric: tabular-nums;
+  }
+  .homeslate-wordmark {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  /* The page frame is a grid: the breadcrumb takes the row above the hero. */
+  [data-docs-content] > nav.docs-breadcrumbs {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    margin-block: 1.25rem 0;
+  }
+  .docs-toc-hint {
+    margin: 0.75rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--var-ui-color-text-secondary, inherit);
+  }
+
+  /* Upstream workaround (empty hero showcase): DocsGuidePage always fills the header's `preview`
+     slot (a conditional <slot> still counts as provided), so DocsPageHeader renders an empty dot
+     stage and reserves a column for it on every guide. Collapse it when nothing is inside. */
+  .var-ui-docs-page-header__preview:not(:has(*)) {
+    display: none;
+  }
+  .var-ui-docs-page-header[data-has-preview]:has(> .var-ui-docs-page-header__preview:not(:has(*))) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Tables scroll sideways inside their wrapper (see rehypeScrollTables in astro.config.mjs);
+     edge shadows appear only on the side that has hidden content. */
+  .docs-table-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+    background:
+      linear-gradient(to right, var(--var-ui-app-shell-background, Canvas) 30%, transparent) left center / 2rem 100% no-repeat local,
+      linear-gradient(to left, var(--var-ui-app-shell-background, Canvas) 30%, transparent) right center / 2rem 100% no-repeat local,
+      linear-gradient(to right, rgba(128, 128, 128, 0.4), transparent) left center / 1rem 100% no-repeat scroll,
+      linear-gradient(to left, rgba(128, 128, 128, 0.4), transparent) right center / 1rem 100% no-repeat scroll;
+  }
+  .docs-table-scroll > table {
+    margin-block: 0.5rem 1rem;
+  }
+  /* A narrow description column is unreadable: keep it wide and let the table scroll instead. */
+  .docs-table-scroll th,
+  .docs-table-scroll td {
+    min-width: 7rem;
+  }
+  .docs-table-scroll :is(th, td)[data-wide] {
+    min-width: 16rem;
+  }
+  .docs-table-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 128, 128, 0.3) transparent;
+  }
+  .docs-table-scroll:focus-visible {
+    outline: 2px solid var(--var-ui-color-border-focus, currentColor);
+    outline-offset: 2px;
+  }
+
+  .docs-edit-link {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-block: 2.5rem 0;
+    padding-block-start: 1rem;
+    border-block-start: 1px solid var(--var-ui-color-border-default, rgba(128, 128, 128, 0.25));
+  }
+  /* Upstream workaround: Collapsible's chevron is an inline-flex span around an SVG with no
+     width/height, so it renders 0x0 and never rotates on <details>. Size it and flip it on [open]. */
+  .docs-mobile-toc .var-ui-collapsible__triggerIcon svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .docs-mobile-toc[open] .var-ui-collapsible__triggerIcon {
+    transform: rotate(180deg);
+  }
+  .docs-pager {
+    margin-block: 1.5rem 1rem;
+  }
+  /* Small "Previous"/"Next" label first, page title below. */
+  .docs-pager a {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+  }
+  .docs-pager a:last-child {
+    text-align: end;
+  }
+
+  /* "On this page" fallback: the rail is hidden when the main column is narrower than 57.4rem
+     (upstream container query), so show a collapsible list there. */
+  .docs-mobile-toc {
+    margin-block: 0 1.5rem;
+  }
+  .docs-mobile-toc__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .docs-mobile-toc__list li[data-depth='3'] {
+    padding-inline-start: 1rem;
+  }
+  @container var-ui-docs-main (min-width: 57.41rem) {
+    .docs-mobile-toc {
+      display: none;
+    }
+  }
+
+  /* Upstream workaround (page bar ghost): the collapsed bar is hidden with a 140ms
+     "visibility" delay, which paints it over the eyebrow and title for a moment on every page
+     load. Hide it instantly; the reveal transition on `[data-stuck]` is unchanged. */
+  [data-docs-page-bar]:not([data-stuck]) {
+    transition: none;
+  }
+</style>
 
 <script>
   import '../../typestyles-entry.ts';
+  import { positionTocIndicator } from '@var-ui/core/components/indicators/toc';
+
+  // Dev-only workaround: under `astro dev` typestyles injects its rules at runtime into
+  // `<style id="typestyles">` (5000+ rules built with insertRule, so no text content). The
+  // ClientRouter head swap removes any head element the next page's HTML lacks, which wipes every
+  // component style on the first navigation. Mark those runtime sheets persistent and give the
+  // incoming document a matching placeholder so Astro keeps the live ones. A production build
+  // links `typestyles.css` instead, so this finds nothing there.
+  document.addEventListener('astro:before-swap', (e) => {
+    const incoming = (e as Event & { newDocument: Document }).newDocument;
+    document.head.querySelectorAll<HTMLStyleElement>('style[id^="typestyles"]').forEach((el) => {
+      el.setAttribute('data-astro-transition-persist', el.id);
+      const stub = incoming.createElement('style');
+      stub.setAttribute('data-astro-transition-persist', el.id);
+      incoming.head.append(stub);
+    });
+  });
+
+  // The palette's empty-state hint is a stock "component name like button" line that DocsSearch
+  // does not expose through DocsPage. Replace it once the palette has rendered the empty state.
+  document.addEventListener('input', (e) => {
+    const input = e.target as HTMLElement | null;
+    if (!input?.matches?.('[data-var-ui-command-palette-input]')) return;
+    input
+      .closest('[data-var-ui-command-palette-root]')
+      ?.querySelectorAll('[data-var-ui-command-palette-empty] p:nth-of-type(2)')
+      .forEach((p) => (p.textContent = 'Try a symbol like \u201cWidgetDefinition\u201d, a package like \u201cserver\u201d, or a topic like \u201cself-hosting\u201d.'));
+  });
+
+  // Expose the disclosure state on the mobile "On this page" trigger.
+  function syncTocDisclosure() {
+    document.querySelectorAll<HTMLDetailsElement>('details.docs-mobile-toc').forEach((d) => {
+      const summary = d.querySelector('summary');
+      const sync = () => summary?.setAttribute('aria-expanded', String(d.open));
+      sync();
+      if (!d.dataset.disclosureBound) {
+        d.dataset.disclosureBound = '';
+        d.addEventListener('toggle', sync);
+      }
+    });
+  }
+  document.addEventListener('astro:page-load', syncTocDisclosure);
+  if (document.readyState !== 'loading') syncTocDisclosure();
+
+  // Sidebar: with ~30 links every group renders open (upstream collapses only past 40). Close the
+  // groups that do not hold the current page, unless the reader opened them this session, then
+  // bring the current link into view.
+  const OPENED_KEY = 'homeslate-docs-opened-groups';
+  let opened = new Set<string>();
+  try {
+    opened = new Set(JSON.parse(sessionStorage.getItem(OPENED_KEY) ?? '[]'));
+  } catch {}
+  document.addEventListener('click', (e) => {
+    const summary = (e.target as Element | null)?.closest?.('details[data-var-ui-section-id] > summary');
+    const details = summary?.parentElement as HTMLDetailsElement | undefined;
+    if (!details) return;
+    // The click runs before the toggle: `open` is still the old state.
+    const id = details.dataset.varUiSectionId ?? '';
+    if (details.open) opened.delete(id);
+    else opened.add(id);
+    try {
+      sessionStorage.setItem(OPENED_KEY, JSON.stringify([...opened]));
+    } catch {}
+  });
+  function tidySidebar() {
+    document.querySelectorAll<HTMLDetailsElement>('details[data-var-ui-section-id]').forEach((d) => {
+      if (!d.querySelector('[aria-current="page"]') && !opened.has(d.dataset.varUiSectionId ?? '')) {
+        d.open = false;
+      }
+    });
+    document.querySelectorAll('[aria-current="page"]').forEach((el) => {
+      if (el.closest('aside, nav')?.getBoundingClientRect().width) el.scrollIntoView({ block: 'nearest' });
+    });
+  }
+  document.addEventListener('astro:page-load', tidySidebar);
+  if (document.readyState !== 'loading') tidySidebar();
+
+  // TOC: the last heading never reaches the spy's trigger line on a short tail, so it is never
+  // highlighted at the bottom of the page. The spy rewrites `data-selected` on every scroll and
+  // intersection change, so an override on `scroll` gets overwritten. Instead watch the list
+  // itself (a mutation callback runs after the spy's write) and the scroller: at the bottom, mark
+  // the last link; once the reader leaves the bottom, put back what the spy had selected.
+  let disposeTocBottom: (() => void) | undefined;
+  function tocBottom() {
+    disposeTocBottom?.();
+    disposeTocBottom = undefined;
+    const list = document.querySelector<HTMLElement>('[data-var-ui-toc-list]');
+    const article = document.querySelector('.docs-article');
+    if (!list || !article) return;
+    let scroller: HTMLElement | null = null;
+    for (let el = article.parentElement; el; el = el.parentElement) {
+      if (/(auto|scroll|overlay)/.test(getComputedStyle(el).overflowY)) {
+        scroller = el;
+        break;
+      }
+    }
+    const view = scroller ?? document.documentElement;
+    let restore: HTMLAnchorElement | null = null;
+    const select = (link: HTMLAnchorElement) => {
+      list.querySelectorAll<HTMLAnchorElement>('[data-var-ui-toc-link]').forEach((l) => {
+        l.removeAttribute('data-selected');
+        l.removeAttribute('aria-current');
+        if (l !== link) l.removeAttribute('data-docs-bottom');
+      });
+      link.setAttribute('data-selected', '');
+      link.setAttribute('aria-current', 'location');
+      positionTocIndicator(list, link);
+    };
+    const apply = () => {
+      const links = list.querySelectorAll<HTMLAnchorElement>('[data-var-ui-toc-link]');
+      const last = links[links.length - 1];
+      if (!last || links.length < 2) return;
+      const atBottom = view.scrollTop + view.clientHeight >= view.scrollHeight - 4;
+      const mine = last.hasAttribute('data-docs-bottom');
+      if (atBottom && view.scrollHeight > view.clientHeight) {
+        if (!last.hasAttribute('data-selected')) {
+          restore = list.querySelector<HTMLAnchorElement>('[data-selected]');
+          select(last);
+          last.setAttribute('data-docs-bottom', '');
+        }
+      } else if (mine) {
+        last.removeAttribute('data-docs-bottom');
+        if (restore?.isConnected) select(restore);
+        restore = null;
+      }
+    };
+    const onScroll = () => requestAnimationFrame(apply);
+    (scroller ?? window).addEventListener('scroll', onScroll, { passive: true });
+    const mo = new MutationObserver(apply);
+    mo.observe(list, { attributes: true, attributeFilter: ['data-selected'], childList: true, subtree: true });
+    apply();
+    disposeTocBottom = () => {
+      (scroller ?? window).removeEventListener('scroll', onScroll);
+      mo.disconnect();
+    };
+  }
+  document.addEventListener('astro:page-load', () => setTimeout(tocBottom, 0));
+  if (document.readyState !== 'loading') setTimeout(tocBottom, 0);
+
+  // Deep links (#hash loads, search results): the page scrolls inside `.var-ui-docs-page__main`, and
+  // the browser's own fragment scroll can run before that column has its final layout (dev styles
+  // are injected at runtime). Re-apply it once laid out; `scroll-margin-top` clears the page bar.
+  function jumpToHash() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    const go = () => document.getElementById(id)?.scrollIntoView({ block: 'start' });
+    setTimeout(go, 60);
+    setTimeout(go, 400);
+  }
+  document.addEventListener('astro:page-load', jumpToHash);
+  if (document.readyState !== 'loading') jumpToHash();
+
+  // Escape closes the search palette but leaves focus on <body> when it was opened with the
+  // keyboard shortcut; put it back on the search trigger.
+  document.addEventListener(
+    'close',
+    (e) => {
+      const dialog = e.target as HTMLElement | null;
+      if (!dialog?.matches?.('[data-var-ui-command-palette-dialog]')) return;
+      // Focus is still inside the closing dialog (or already on <body>) when `close` fires.
+      setTimeout(() => {
+        const at = document.activeElement;
+        if (at && at !== document.body && !dialog.contains(at)) return;
+        document.querySelector<HTMLElement>('[data-var-ui-search-input-trigger]')?.focus();
+      }, 30);
+    },
+    { capture: true },
+  );
 </script>
