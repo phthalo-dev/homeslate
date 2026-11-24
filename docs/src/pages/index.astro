@@ -1,106 +1,52 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import DocsMarketingPage from '@var-ui/docs/DocsMarketingPage';
+import { defaultThemeClassName } from '@var-ui/core';
+import { Card, Heading, Link, Stack, Text } from '@var-ui/astro';
+import { brand, loadDocsNavigation, topNav } from '../data/navigation';
+
+const { searchItems } = await loadDocsNavigation();
 ---
 
-<BaseLayout title="Homeslate" showToc={false}>
-  <article class="home">
-    <header class="intro">
-      <h1>Homeslate</h1>
-      <p class="pitch">
+<DocsMarketingPage
+  title="Homeslate"
+  themeClassName={defaultThemeClassName}
+  topNav={topNav}
+  searchItems={searchItems}
+  brand={brand}
+>
+  <Stack gap="xl" style="max-width: 44rem; margin-inline: auto; padding-block: 3rem 4rem;">
+    <Stack gap="sm">
+      <Heading level={1} size="xl">Homeslate</Heading>
+      <Text tone="secondary">
         MIT packages and a clone-and-run host for a household command center.
-      </p>
-    </header>
+      </Text>
+    </Stack>
 
-    <nav class="doors" aria-label="Start here">
-      <a class="door" href="/docs/getting-started">
-        <h2>Run it</h2>
-        <p>Clone the repo, install, and start the reference editor and kiosk.</p>
-      </a>
-      <a class="door" href="/docs/packages">
-        <h2>Embed the packages</h2>
-        <p>Host contract and usage for every published <code>@homeslate/*</code> package.</p>
-      </a>
-      <a class="door" href="/docs/api">
-        <h2>Read the API</h2>
-        <p>Generated signatures for each public entry point.</p>
-      </a>
-    </nav>
+    <Stack gap="md">
+      <Card
+        href="/docs/getting-started"
+        title="Run it"
+        description="Clone the repo, install, and start the reference editor and kiosk."
+      />
+      <Card
+        href="/docs/packages"
+        title="Embed the packages"
+        description="Host contract and usage for every published @homeslate/* package."
+      />
+      <Card
+        href="/docs/api"
+        title="Read the API"
+        description="Generated signatures for each public entry point."
+      />
+    </Stack>
 
-    <p class="note">
+    <Text size="sm" tone="secondary">
       The managed hosted product lives in the private
-      <a href="https://github.com/phthalo-dev/homeslate-hosted">homeslate-hosted</a> repository.
-    </p>
-  </article>
-</BaseLayout>
+      <Link href="https://github.com/phthalo-dev/homeslate-hosted">homeslate-hosted</Link> repository.
+    </Text>
+  </Stack>
+</DocsMarketingPage>
 
-<style>
-  .home {
-    max-width: 36rem;
-    padding: 2.5rem 0 4rem;
-  }
-
-  .intro h1 {
-    margin: 0 0 0.5rem;
-    font-size: clamp(2rem, 4vw, 2.75rem);
-    font-weight: 650;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-  }
-
-  .pitch {
-    margin: 0;
-    font-size: 1.125rem;
-    line-height: 1.45;
-    color: var(--var-ui-color-text-secondary, inherit);
-    max-width: 28rem;
-  }
-
-  .doors {
-    display: flex;
-    flex-direction: column;
-    margin-block: 2.5rem 2rem;
-    border-block-start: 1px solid var(--var-ui-color-border-default, currentColor);
-  }
-
-  .door {
-    display: block;
-    padding-block: 1.15rem;
-    padding-inline: 0 1rem;
-    border-block-end: 1px solid var(--var-ui-color-border-default, currentColor);
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .door:hover h2,
-  .door:focus-visible h2 {
-    text-decoration: underline;
-    text-underline-offset: 0.18em;
-  }
-
-  .door:focus-visible {
-    outline: 2px solid var(--var-ui-color-border-focus, currentColor);
-    outline-offset: 4px;
-  }
-
-  .door h2 {
-    margin: 0 0 0.3rem;
-    font-size: 1.125rem;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-
-  .door p {
-    margin: 0;
-    max-width: 32rem;
-    font-size: 0.95rem;
-    line-height: 1.45;
-    color: var(--var-ui-color-text-secondary, inherit);
-  }
-
-  .note {
-    margin: 0;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--var-ui-color-text-secondary, inherit);
-  }
-</style>
+<script>
+  import '../../typestyles-entry.ts';
+</script>

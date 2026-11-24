@@ -20,8 +20,8 @@ export default defineConfig({
       },
       components: {
         Layout: './src/layouts/BaseLayout.astro',
+        mdxComponents: './src/mdx-components.ts',
       },
-      topNav: [{ text: 'Docs', link: '/docs', match: '/docs' }],
     }),
   ],
   vite: {

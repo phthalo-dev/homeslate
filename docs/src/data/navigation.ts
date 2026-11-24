@@ -1,262 +1,79 @@
+import { getCollection } from 'astro:content';
 import type { DocsSearchItem, SidebarSection } from '@var-ui/docs';
 
-export const docsSidebarSections: SidebarSection[] = [
-  {
-    title: 'Guides',
-    items: [
-      { text: 'Overview', link: '/docs' },
-      { text: 'Getting started', link: '/docs/getting-started' },
-      { text: 'Reference app', link: '/docs/reference' },
-      { text: 'Self-hosting', link: '/docs/self-hosting' },
-      { text: 'Releasing', link: '/docs/releasing' },
-    ],
-  },
-  {
-    title: 'Packages',
-    items: [
-      { text: 'Overview', link: '/docs/packages' },
-      { text: '@homeslate/schema', link: '/docs/packages/schema' },
-      { text: '@homeslate/google', link: '/docs/packages/google' },
-      { text: '@homeslate/widgets', link: '/docs/packages/widgets' },
-      { text: '@homeslate/editor', link: '/docs/packages/editor' },
-      { text: '@homeslate/display', link: '/docs/packages/display' },
-      { text: '@homeslate/adapters', link: '/docs/packages/adapters' },
-      { text: '@homeslate/server', link: '/docs/packages/server' },
-      { text: '@homeslate/agent', link: '/docs/packages/agent' },
-      { text: '@homeslate/relay', link: '/docs/packages/relay' },
-      { text: '@homeslate/host-react', link: '/docs/packages/host-react' },
-    ],
-  },
-  {
-    title: 'API',
-    items: [
-      { text: 'Overview', link: '/docs/api' },
-      { text: '@homeslate/schema', link: '/docs/api/schema' },
-      { text: '@homeslate/google', link: '/docs/api/google' },
-      { text: '@homeslate/widgets', link: '/docs/api/widgets' },
-      { text: '@homeslate/widgets/schemas', link: '/docs/api/widgets/schemas' },
-      { text: '@homeslate/widgets/server', link: '/docs/api/widgets/server' },
-      { text: '@homeslate/display', link: '/docs/api/display' },
-      { text: '@homeslate/display/canvas', link: '/docs/api/display/canvas' },
-      { text: '@homeslate/editor', link: '/docs/api/editor' },
-      { text: '@homeslate/adapters', link: '/docs/api/adapters' },
-      { text: '@homeslate/server', link: '/docs/api/server' },
-      { text: '@homeslate/agent', link: '/docs/api/agent' },
-      { text: '@homeslate/relay', link: '/docs/api/relay' },
-      { text: '@homeslate/host-react', link: '/docs/api/host-react' },
-    ],
-  },
+export const topNav = [{ text: 'Docs', link: '/docs', match: '/docs' }];
+export const brand = { heading: 'Homeslate', href: '/' };
+
+/** Order of the guide pages; everything else in `content/docs/*` is ignored by the Guides group. */
+const GUIDES = ['index', 'getting-started', 'reference', 'self-hosting', 'releasing'];
+
+/** Package order, shared by the Packages and API groups (matched on the first path segment after the group). */
+const PACKAGES = [
+  'schema',
+  'google',
+  'widgets',
+  'editor',
+  'display',
+  'adapters',
+  'server',
+  'agent',
+  'relay',
+  'host-react',
 ];
 
-export const docsSearchItems: DocsSearchItem[] = [
-  {
-    id: 'docs',
-    title: 'Overview',
-    meta: 'Guides',
-    keywords: ['docs', 'homeslate'],
-    group: 'Guides',
-  },
-  {
-    id: 'getting-started',
-    title: 'Getting started',
-    meta: 'Guides',
-    keywords: ['start', 'clone', 'install', 'quickstart'],
-    group: 'Guides',
-  },
-  {
-    id: 'reference',
-    title: 'Reference app',
-    meta: 'Guides',
-    keywords: ['self-host', 'kiosk', 'sqlite', 'google'],
-    group: 'Guides',
-  },
-  {
-    id: 'self-hosting',
-    title: 'Self-hosting',
-    meta: 'Guides',
-    keywords: ['self-host', 'packages', 'server', 'caddy', 'homelab'],
-    group: 'Guides',
-  },
-  {
-    id: 'releasing',
-    title: 'Releasing',
-    meta: 'Guides',
-    keywords: ['changeset', 'publish', 'npm'],
-    group: 'Guides',
-  },
-  {
-    id: 'packages',
-    title: 'Packages',
-    meta: 'Packages',
-    keywords: ['npm', '@homeslate/schema', 'host contract'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/schema',
-    title: '@homeslate/schema',
-    meta: 'Packages',
-    keywords: ['@homeslate/schema', 'zod', 'validate'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/google',
-    title: '@homeslate/google',
-    meta: 'Packages',
-    keywords: ['@homeslate/google', 'oauth', 'calendar', 'photos'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/widgets',
-    title: '@homeslate/widgets',
-    meta: 'Packages',
-    keywords: ['@homeslate/widgets', 'registry', 'google runtime'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/editor',
-    title: '@homeslate/editor',
-    meta: 'Packages',
-    keywords: ['@homeslate/editor', 'canvas', 'theme'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/display',
-    title: '@homeslate/display',
-    meta: 'Packages',
-    keywords: ['@homeslate/display', 'kiosk', 'alarms'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/adapters',
-    title: '@homeslate/adapters',
-    meta: 'Packages',
-    keywords: ['@homeslate/adapters', 'sqlite', 'store'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/server',
-    title: '@homeslate/server',
-    meta: 'Packages',
-    keywords: ['@homeslate/server', 'hono', 'api', 'oauth'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/agent',
-    title: '@homeslate/agent',
-    meta: 'Packages',
-    keywords: ['@homeslate/agent', 'home assistant', 'lan', 'agent'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/relay',
-    title: '@homeslate/relay',
-    meta: 'Packages',
-    keywords: ['@homeslate/relay', 'home assistant', 'websocket', 'relay'],
-    group: 'Packages',
-  },
-  {
-    id: 'packages/host-react',
-    title: '@homeslate/host-react',
-    meta: 'Packages',
-    keywords: ['@homeslate/host-react', 'react', 'routes', 'google runtime'],
-    group: 'Packages',
-  },
-  {
-    id: 'api',
-    title: 'API',
-    meta: 'API',
-    keywords: ['api', 'typedoc', 'exports'],
-    group: 'API',
-  },
-  {
-    id: 'api/schema',
-    title: '@homeslate/schema',
-    meta: 'API',
-    keywords: ['@homeslate/schema'],
-    group: 'API',
-  },
-  {
-    id: 'api/google',
-    title: '@homeslate/google',
-    meta: 'API',
-    keywords: ['@homeslate/google'],
-    group: 'API',
-  },
-  {
-    id: 'api/widgets',
-    title: '@homeslate/widgets',
-    meta: 'API',
-    keywords: ['@homeslate/widgets'],
-    group: 'API',
-  },
-  {
-    id: 'api/widgets/schemas',
-    title: '@homeslate/widgets/schemas',
-    meta: 'API',
-    keywords: ['@homeslate/widgets/schemas'],
-    group: 'API',
-  },
-  {
-    id: 'api/widgets/server',
-    title: '@homeslate/widgets/server',
-    meta: 'API',
-    keywords: ['@homeslate/widgets/server'],
-    group: 'API',
-  },
-  {
-    id: 'api/display',
-    title: '@homeslate/display',
-    meta: 'API',
-    keywords: ['@homeslate/display'],
-    group: 'API',
-  },
-  {
-    id: 'api/display/canvas',
-    title: '@homeslate/display/canvas',
-    meta: 'API',
-    keywords: ['@homeslate/display/canvas'],
-    group: 'API',
-  },
-  {
-    id: 'api/editor',
-    title: '@homeslate/editor',
-    meta: 'API',
-    keywords: ['@homeslate/editor'],
-    group: 'API',
-  },
-  {
-    id: 'api/adapters',
-    title: '@homeslate/adapters',
-    meta: 'API',
-    keywords: ['@homeslate/adapters'],
-    group: 'API',
-  },
-  {
-    id: 'api/server',
-    title: '@homeslate/server',
-    meta: 'API',
-    keywords: ['@homeslate/server'],
-    group: 'API',
-  },
-  {
-    id: 'api/agent',
-    title: '@homeslate/agent',
-    meta: 'API',
-    keywords: ['@homeslate/agent'],
-    group: 'API',
-  },
-  {
-    id: 'api/relay',
-    title: '@homeslate/relay',
-    meta: 'API',
-    keywords: ['@homeslate/relay'],
-    group: 'API',
-  },
-  {
-    id: 'api/host-react',
-    title: '@homeslate/host-react',
-    meta: 'API',
-    keywords: ['@homeslate/host-react'],
-    group: 'API',
-  },
-];
+const GROUPS = [
+  { title: 'Guides', root: null },
+  { title: 'Packages', root: 'packages' },
+  { title: 'API', root: 'api' },
+] as const;
+
+const link = (id: string) => (id === 'index' ? '/docs' : `/docs/${id}`);
+
+function groupOf(id: string): (typeof GROUPS)[number] {
+  return GROUPS.find((g) => g.root && (id === g.root || id.startsWith(`${g.root}/`))) ?? GROUPS[0];
+}
+
+function rank(id: string): number {
+  const [, pkg = ''] = id.split('/');
+  const i = PACKAGES.indexOf(pkg);
+  return id === 'packages' || id === 'api' ? -1 : i === -1 ? PACKAGES.length : i;
+}
+
+/** Sidebar and search index, derived from the `docs` collection so new pages show up without editing a list. */
+export async function loadDocsNavigation(): Promise<{
+  sidebarSections: SidebarSection[];
+  searchItems: DocsSearchItem[];
+}> {
+  const entries = await getCollection('docs');
+  const sorted = [...entries].sort((a, b) => {
+    const ga = groupOf(a.id);
+    const gb = groupOf(b.id);
+    if (ga !== gb) return GROUPS.indexOf(ga) - GROUPS.indexOf(gb);
+    if (!ga.root) return GUIDES.indexOf(a.id) - GUIDES.indexOf(b.id);
+    return rank(a.id) - rank(b.id) || a.id.localeCompare(b.id);
+  });
+
+  const sidebarSections = GROUPS.map((group) => ({
+    title: group.title,
+    items: sorted
+      .filter((e) => groupOf(e.id) === group && (group.root || GUIDES.includes(e.id)))
+      .map((e) => ({
+        // Section landing pages all carry a package-ish title; label them uniformly.
+        text: e.id === 'index' || e.id === group.root ? 'Overview' : e.data.title,
+        link: link(e.id),
+      })),
+  }));
+
+  const searchItems = sorted.map((e) => {
+    const group = groupOf(e.id).title;
+    return {
+      id: e.id === 'index' ? 'docs' : e.id,
+      title: e.id === 'index' ? 'Overview' : e.data.title,
+      meta: group,
+      keywords: [...(e.data.keywords ?? []), ...(e.data.description ? [e.data.description] : [])],
+      group,
+    };
+  });
+
+  return { sidebarSections, searchItems };
+}

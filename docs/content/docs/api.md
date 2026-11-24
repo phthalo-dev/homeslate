@@ -3,8 +3,6 @@ title: API
 description: Generated public API for @homeslate/* entry points.
 ---
 
-# API
-
 These pages are generated from the public TypeScript barrels (not `dist`). Signatures and types are the source of truth; missing JSDoc is expected.
 
 - [`@homeslate/schema`](/docs/api/schema)
